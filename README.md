@@ -7,56 +7,59 @@
 ## 1. Concepto y Narrativa 🧭
 
 ### ¿Qué es PokéRadar?
-PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartográfica inmersiva basada en biomas reales de Argentina y del mundo. En lugar de colocar marcadores estáticos sobre un mapa genérico, el sistema fusiona:
-- **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Acero/Normal) y Cumbre del Aconcagua (Volador/Dragón).
-- **Meteorología en Tiempo Real (Open-Meteo)**: El clima vivo de cada región condiciona la ambientación y la tasa de avistamiento de especies.
-- **Audio Auténtico (`cries.latest`)**: Reproducción en alta fidelidad de los alaridos sonoros de cada criatura descubierta mediante Web Audio API.
-- **Equipo de Expedición (Party Dock)**: Dock flotante inspirado en interfaces tácticas donde el investigador puede reclutar y guardar hasta 6 especímenes en su equipo de campo (con persistencia local en `localStorage`).
+PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartográfica inmersiva basada en biomas reales de Argentina. Inspirado en el concepto visual moderno de Pokédex (Behance), en lugar de colocar marcadores estáticos sobre un mapa genérico, el sistema fusiona:
+- **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Normal/Psíquico), Cumbre del Aconcagua (Volador/Dragón) y Península Valdés (Agua/Hada/Siniestro).
+- **Meteorología en Tiempo Real (Open-Meteo)**: El clima vivo de cada región condiciona la atmósfera y contextualiza los avistamientos de las criaturas.
+- **Visualización Limpia sin Cajas**: Marcadores sobre el mapa representados directamente por el sprite nativo del espécimen, con sombras de contacto en el terreno y microinteracciones de elevación (`scale-125`).
+- **Audio Auténtico (`cries.latest`) & SFX Web Audio**: Reproducción de alaridos sonoros oficiales en formato `.ogg` y sintetizador de efectos auditivos para radares, capturas y liberaciones.
+- **Equipo de Expedición (Party Dock)**: Dock flotante donde el investigador recluta hasta 6 Pokémon con persistencia en `localStorage`, celebración con confetti y diagnóstico táctico de cobertura elemental y estadísticas.
+- **Diseño Pokédex Blanco & Tipografía Poppins**: Paleta clara, pulida y tipografía Poppins (400, 500, 600) con elementos en español.
 
 ---
 
 ## 2. Arquitectura y Stack Técnico 🛠️
 
 ### Stack Principal
-- **Framework**: [Next.js](https://nextjs.org/) (App Router, React 19).
+- **Framework**: [Next.js](https://nextjs.org/) 16 (App Router, Turbopack, React 19).
 - **Lenguaje**: TypeScript Estricto (cero `any`).
-- **Motor Geoespacial**: [MapLibre GL JS](https://maplibre.org/) con tiles vectoriales oscuros de [OpenFreeMap](https://openfreemap.org/) (Dark Style sin API Keys).
-- **Animaciones e Interacciones**: [Framer Motion](https://www.framer.com/motion/) para transiciones de radar, drawer lateral, microinteracciones y barras de estadísticas.
-- **Estilos**: Tailwind CSS v4 para diseño Dark Mode táctico / radar sci-fi.
+- **Gestor de Paquetes**: **pnpm** (aislamiento eficiente de dependencias y rendimiento).
+- **Motor Geoespacial**: [MapLibre GL JS](https://maplibre.org/) con raster tiles optimizados de OpenStreetMap a 60 FPS, sin marcas de agua ni API keys.
+- **Animaciones e Interacciones**: [Framer Motion](https://www.framer.com/motion/) para transiciones de radar, drawer lateral, microinteracciones, halo pulsante y barras de estadísticas.
+- **Estilos**: Tailwind CSS v4 para diseño Pokédex claro con efectos de cristal y acentos vibrantes.
+- **Tipografía**: Google Font **Poppins** (Regular, Medium y SemiBold) configurada en Next.js Font.
 - **Iconografía**: [Lucide React](https://lucide.dev/).
-- **Efectos Festivos**: `canvas-confetti` al capturar criaturas para el equipo.
+- **Efectos**: `canvas-confetti` al reclutar criaturas.
 
 ### Estructura del Código
 ```text
 src/
 ├── app/
-│   ├── layout.tsx              # Shell global, fuentes Geist y metadata
-│   ├── page.tsx                # Dashboard principal del radar
-│   └── globals.css             # Estilos de radar y temas MapLibre
+│   ├── layout.tsx              # Shell global con fuentes Poppins y supresión de hydration warnings
+│   ├── page.tsx                # Dashboard principal integrador
+│   └── globals.css             # Estilos de radar, scrollbars tácticas y temas MapLibre
 ├── components/
 │   ├── map/
 │   │   ├── map-container.tsx   # Envoltorio client-side con dynamic(..., { ssr: false })
-│   │   ├── map-view.tsx        # Instancia MapLibre GL, capas de biomas y marcadores pulsantes
-│   │   └── radar-hud.tsx       # Controles de cámara, escáner y selector rápido de regiones
+│   │   ├── map-view.tsx        # Instancia MapLibre GL, halos de biomas y sprites directos
+│   │   └── radar-hud.tsx       # Controles superiores, biomas, búsqueda y filtro de tipos en español
 │   ├── pokemon/
-│   │   ├── detail-drawer.tsx   # Panel lateral desplegable con estadísticas y datos
-│   │   ├── stats-bars.tsx      # Visualizador animado de stats base (HP, Atk, Def, SpA, SpD, Spe)
-│   │   ├── cry-player.tsx      # Reproductor reactivo de audio (.ogg)
-│   │   └── type-badge.tsx      # Badges con gradientes oficiales por tipo
+│   │   ├── detail-drawer.tsx   # Panel lateral Behance con sprite animado, fondo dinámico y stats
+│   │   ├── stats-bars.tsx      # Barras animadas de stats base (HP, Ataque, Defensa, Velocidad)
+│   │   ├── cry-player.tsx      # Reproductor reactivo de audio (.ogg) con visualizador de ondas
+│   │   └── type-badge.tsx      # Badges con colores oficiales de tipos en español
 │   ├── expedition/
-│   │   └── party-dock.tsx      # Dock flotante con el equipo de 6 y persistencia
-│   ├── weather/
-│   │   └── weather-badge.tsx   # Widget en vivo conectado a Open-Meteo
-│   └── ui/
-│       ├── skeletons.tsx       # Estados de carga de interfaz
-│       └── search-filter.tsx   # Filtro en tiempo real por nombre y tipo
+│   │   ├── party-dock.tsx      # Dock flotante con el equipo de 6 y persistencia en localStorage
+│   │   └── team-analysis-modal.tsx # Diagnóstico táctico de cobertura elemental y exportación
+│   └── weather/
+│       └── weather-badge.tsx   # Widget en vivo conectado a Open-Meteo
 ├── hooks/
-│   ├── use-pokemon-radar.ts    # Orquestador del estado de criaturas y selección
-│   └── use-expedition-party.ts # Manejo de capturas con localStorage
+│   ├── use-pokemon-radar.ts    # Orquestador del estado de criaturas, biomas y filtros
+│   └── use-expedition.ts       # Manejo reactivo del equipo con persistencia
 ├── lib/
-│   ├── biomes.ts               # Coordenadas, polígonos y tablas de spawn por bioma
+│   ├── biomes.ts               # Coordenadas, estilo raster claro y tablas de distribución
 │   ├── pokeapi.ts              # Cliente tipado de PokéAPI y Open-Meteo con cache
-│   └── utils.ts                # Clsx + Tailwind Merge
+│   ├── sound-effects.ts        # Motor de efectos de audio sintetizados con Web Audio API
+│   └── utils.ts                # Clsx + Tailwind Merge y traductor de tipos a español
 └── types/
     └── pokemon.ts              # Modelos e interfaces TypeScript estrictas
 ```
@@ -65,24 +68,35 @@ src/
 
 ## 3. Uso de Inteligencia Artificial (AI-Native Workflow) 🤖
 
-El desarrollo de este proyecto se estructuró siguiendo un flujo de trabajo **AI-Native** asistido:
-- **Generación de Scaffolding y Tipados**: Asistencia en la formulación de interfaces exhaustivas de la PokéAPI v2 y estructuras GeoJSON para coordenadas en MapLibre GL.
-- **Microinteracciones y Shaders CSS**: Diseño de animaciones de pulso de radar (`ping-radar`), transiciones con Framer Motion y gradientes por tipo elemental.
+El desarrollo de este proyecto se estructuró siguiendo un flujo de trabajo **AI-Native** asistido con herramientas de última generación:
+- **Scaffolding y Modelado de Datos**: Formulación rápida de interfaces exhaustivas para PokéAPI v2, meteorología de Open-Meteo y capas GeoJSON.
+- **Diseño de Interfaz y Microinteracciones**: Adaptación del sistema de diseño Pokédex (Behance) a componentes modulares con Tailwind CSS y Framer Motion.
 
 ### Detección y Corrección de Alucinaciones / Errores de la IA:
-1. **Acceso al objeto `window` en SSR de Next.js App Router**: La IA tiende a importar directamente `maplibre-gl` dentro de un Server Component o en un componente sin aislamiento cliente. Se intervino implementando de forma estricta un wrapper con `next/dynamic` y `{ ssr: false }`, además de inyectar hojas de estilo de MapLibre en el cliente para evitar el error clásico `window is not defined`.
-2. **Estructura del endpoint de audio `cries`**: Modelos de IA obsoletos asumían que los audios de Pokémon estaban en `sprites.cries` o archivos estáticos de GitHub desactualizados. Se validó y corrigió hacia el endpoint nativo oficial `cries.latest` (archivos `.ogg` de alta fidelidad incorporados recientemente en la API v2).
-3. **Coordenadas Geoespaciales [Lng, Lat] vs [Lat, Lng]**: En librerías como Leaflet se usa `[lat, lng]`, mientras que en MapLibre GL / GeoJSON el orden estándar estricto es `[longitude, latitude]`. La IA mezcló ambos formatos; se auditaron y estandarizaron todas las coordenadas a `[lng, lat]` en `biomes.ts`.
+1. **Acceso a `window` y Web Workers en Next.js (Turbopack)**:
+   - *Error de la IA*: Importó directamente MapLibre GL en Server Components y asumió que el worker interno cargaba automáticamente sin configuración adicional.
+   - *Intervención*: Se implementó un wrapper estricto con `next/dynamic({ ssr: false })` y se sirvió el worker estático `maplibre-gl-worker.mjs` en `/public/` con `setWorkerUrl()`.
+2. **Dependencias no declaradas y Tipados Globales**:
+   - *Error de la IA*: Utilizó el espacio de nombres `GeoJSON.FeatureCollection` asumiendo que existía globalmente en el compilador, lo que arrojaba `TS2503`.
+   - *Intervención*: Se instaló `@types/geojson` mediante `pnpm` y se importaron explícitamente `FeatureCollection` y `Point` desde `geojson`.
+3. **Sobrescritura de Fuentes Monoespaciadas en Tailwind v4**:
+   - *Error de la IA*: Al utilizar utilidades `font-mono` en badges y textos técnicos, el navegador caía en fuentes del sistema (`Courier/Menlo`) saltándose la fuente requerida Poppins.
+   - *Intervención*: Se eliminaron las clases `font-mono`, se mapearon las variables de tema a Poppins y se forzó `Poppins` globalmente en todas las etiquetas.
+4. **Marcas de Agua y Latencia en Basemaps Vectoriales**:
+   - *Error de la IA*: Sugirió estilos de CARTO que mostraban una marca de agua diagonal de "API KEY REQUIRED" o vector tiles con latencia en CPUs modestas.
+   - *Intervención*: Se diseñó un estilo raster claro acelerado por GPU (`HIGH_PERF_LIGHT_STYLE`) sobre tiles libres de OpenStreetMap, garantizando 60 FPS estables sin costo ni marcas de agua.
+5. **Formato de Coordenadas [Lng, Lat] vs [Lat, Lng]**:
+   - *Error de la IA*: Confundió la convención de Leaflet `[lat, lng]` con la convención estándar de MapLibre GL / GeoJSON `[longitude, latitude]`. Se corrigieron y auditaron todas las coordenadas geográficas de los biomas argentinos.
 
 ---
 
 ## 4. Próximos Pasos (Hoja de Ruta a 1 Semana) 🚀
 
 Si contáramos con una semana adicional de desarrollo:
-1. **Generación Procedural de Capas GeoJSON de Biomas**: Representar los polígonos geográficos reales (mediante datos vectoriales de OpenStreetMap) con sombreado de elevación 3D en MapLibre GL.
-2. **Modo Batalla / Exploración AR Táctica**: Permitir simular encuentros aleatorios al mover el cursor en áreas inexploradas con cálculo de probabilidad de captura según estadísticas base y tipo de Pokéball.
-3. **PWA Offline con Service Worker**: Cachear tiles vectoriales y audios de las criaturas para exploración offline en dispositivos móviles sobre el terreno.
-4. **Filtro Avanzado de Generaciones y Habilidades**: Selector de filtros multidimensionales con gráficos radar de estadísticas comparadas entre especies.
+1. **Modelos 3D de Criaturas (glTF/three.js)**: Integrar renderizado Three.js dentro del canvas de MapLibre GL para observar los Pokémon en 3D volumétrico sobre el relieve del terreno.
+2. **Simulador de Rutas de Exploración**: Trazado de rutas automáticas entre biomas con cálculo de distancia geodésica y Pokémon avistados en el trayecto.
+3. **PWA Offline Completa**: Cachear los tiles del mapa y los sprites en un Service Worker para exploración en zonas sin conectividad.
+4. **Modo Expedición Colaborativa**: Sincronización en tiempo real vía WebSockets para ver en el mapa a otros exploradores conectados simultáneamente.
 
 ---
 
@@ -90,7 +104,7 @@ Si contáramos con una semana adicional de desarrollo:
 
 ```bash
 # 1. Clonar el repositorio
-git clone <URL_DEL_REPO>
+git clone https://github.com/marcoslopezsoft/pokeradar-dataint.git
 cd pokeradar-dataint
 
 # 2. Instalar dependencias con pnpm
