@@ -3,11 +3,16 @@
 import React, { useEffect, useRef } from "react";
 import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
-import { INITIAL_MAP_CONFIG, BIOMES } from "@/lib/biomes";
+import { INITIAL_MAP_CONFIG, BIOMES, OSM_DARK_FALLBACK_STYLE } from "@/lib/biomes";
 
 // Configure MapLibre Web Worker URL for Next.js App Router & Turbopack
 if (typeof window !== "undefined") {
-  setWorkerUrl("/maplibre-gl-worker.mjs");
+  try {
+    const workerUrl = new URL("/maplibre-gl-worker.mjs", window.location.href).href;
+    setWorkerUrl(workerUrl);
+  } catch (e) {
+    console.warn("Failed to set worker URL:", e);
+  }
 }
 
 interface MapViewProps {
@@ -61,6 +66,15 @@ export function MapView({
         height: 1,
         data: new Uint8Array([0, 0, 0, 0]),
       };
+    });
+
+    // Auto-fallback to OSM dark tiles if OpenFreeMap is blocked or unavailable
+    map.on("error", (e) => {
+      const msg = e?.error?.message || "";
+      if (msg.includes("Failed to fetch") || msg.includes("401") || msg.includes("403")) {
+        console.warn("Switching to OSM dark fallback style:", msg);
+        map.setStyle(OSM_DARK_FALLBACK_STYLE);
+      }
     });
 
     map.on("load", () => {

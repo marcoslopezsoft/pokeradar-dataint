@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Shield, Swords, Zap, Heart, Award } from "lucide-react";
+import { X, Sparkles, Swords, Zap, Heart, Award, Copy, Check } from "lucide-react";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { TypeBadge } from "../pokemon/type-badge";
 
@@ -17,6 +17,8 @@ export function TeamAnalysisModal({
   onClose,
   party,
 }: TeamAnalysisModalProps) {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
 
   // Compute coverage of types
@@ -43,19 +45,31 @@ export function TeamAnalysisModal({
     party[0]
   );
 
+  const handleCopySummary = () => {
+    const list = party
+      .map((p, i) => `${i + 1}. ${p.displayName} (Nv. ${p.level}) - ${p.types.join("/")}`)
+      .join("\n");
+
+    const text = `🔴 EQUIPO DE EXPEDICIÓN POKÉRADAR (DATAINT) ⚡\n\n${list}\n\n📊 Cobertura: ${coveredTypes.length} tipos elementales | Nivel Promedio: Nv. ${avgLevel}\n🛰️ Explorado en PokéRadar Geoespacial`;
+
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-lg rounded-2xl bg-slate-950 border border-cyan-500/40 p-6 shadow-2xl shadow-cyan-950/50 space-y-5"
+          className="relative w-full max-w-lg rounded-2xl bg-[#0f1420] border border-red-500/40 p-6 shadow-2xl shadow-red-950/60 space-y-5"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center justify-between border-b-2 border-red-600/80 pb-3">
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-cyan-400" />
+              <Award className="w-5 h-5 text-yellow-400" />
               <h3 className="font-mono text-base font-bold text-white tracking-wide">
                 DIAGNÓSTICO TÁCTICO DE EXPEDICIÓN
               </h3>
@@ -81,7 +95,7 @@ export function TeamAnalysisModal({
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
                   <span className="text-slate-400">Miembros:</span>
-                  <span className="text-cyan-400 font-bold text-sm">
+                  <span className="text-yellow-400 font-bold text-sm">
                     {party.length} / 6
                   </span>
                 </div>
@@ -97,7 +111,7 @@ export function TeamAnalysisModal({
               <div className="space-y-2">
                 <div className="text-xs font-mono text-slate-400 flex items-center justify-between">
                   <span>COBERTURA ELEMENTAL ({coveredTypes.length} tipos)</span>
-                  <span className="text-emerald-400 font-semibold">
+                  <span className="text-yellow-400 font-semibold">
                     {Math.round((coveredTypes.length / 18) * 100)}% Global
                   </span>
                 </div>
@@ -154,11 +168,30 @@ export function TeamAnalysisModal({
             </div>
           )}
 
-          {/* Footer */}
-          <div className="border-t border-slate-800 pt-3 flex justify-end">
+          {/* Footer Actions */}
+          <div className="border-t border-slate-800 pt-3 flex items-center justify-between gap-3">
+            {party.length > 0 && (
+              <button
+                onClick={handleCopySummary}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-yellow-400 text-yellow-300 font-mono text-xs font-semibold transition-all cursor-pointer"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>¡Copiado al Portapapeles!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar Ficha de Equipo</span>
+                  </>
+                )}
+              </button>
+            )}
+
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono text-xs font-bold transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-mono text-xs font-bold transition-all cursor-pointer ml-auto shadow-md shadow-red-600/30"
             >
               CERRAR DIAGNÓSTICO
             </button>
