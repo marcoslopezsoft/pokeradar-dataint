@@ -129,7 +129,7 @@ export function DetailDrawer({
   isInParty,
   isPartyFull,
 }: DetailDrawerProps) {
-  const [activeTab, setActiveTab] = useState<"about" | "stats">("about");
+  const [activeTab, setActiveTab] = useState<'about' | 'stats'>('about');
   const [spriteMode, setSpriteMode] = useState<"animated" | "artwork">("animated");
 
   if (!pokemon) return null;
@@ -176,7 +176,7 @@ export function DetailDrawer({
           >
             {/* Top Color Card with Animated Pokéball & Elemental Background */}
             <div
-              className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-16`}
+              className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-8 flex flex-col justify-between min-h-[350px]`}
             >
               {/* Floating Ambient Atmosphere Particles */}
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -215,60 +215,62 @@ export function DetailDrawer({
                 <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
               </motion.svg>
 
-              {/* Navigation Header */}
-              <div className="relative z-10 flex items-center justify-between">
-                <button
-                  onClick={onClose}
-                  className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
-                  aria-label="Volver"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
-                    Nv. {pokemon.level}
-                  </span>
+              {/* Top Navigation & Title Section */}
+              <div>
+                <div className="relative z-10 flex items-center justify-between">
                   <button
-                    onClick={handleCapture}
-                    disabled={isInParty || isPartyFull}
-                    className="p-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
-                    title={isInParty ? 'En el equipo' : 'Capturar'}
+                    onClick={onClose}
+                    className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
+                    aria-label="Volver"
                   >
-                    <Heart
-                      className={`w-5 h-5 ${
-                        isInParty ? 'fill-white text-white' : ''
-                      }`}
-                    />
+                    <ArrowLeft className="w-5 h-5" />
                   </button>
-                </div>
-              </div>
-
-              {/* Pokemon Title & #ID */}
-              <div className="relative z-10 mt-3 flex items-start justify-between">
-                <div>
-                  <h2 className="text-3xl font-extrabold capitalize tracking-tight font-sans">
-                    {pokemon.displayName}
-                  </h2>
-                  {/* Type Pills (In Spanish) */}
-                  <div className="flex items-center gap-2 mt-2">
-                    {pokemon.types.map((type) => (
-                      <span
-                        key={type}
-                        className="px-3.5 py-1 rounded-full text-xs font-semibold bg-white/25 backdrop-blur-md shadow-xs uppercase tracking-wide"
-                      >
-                        {translateTypeToSpanish(type)}
-                      </span>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                      Nv. {pokemon.level}
+                    </span>
+                    <button
+                      onClick={handleCapture}
+                      disabled={isInParty || isPartyFull}
+                      className="p-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
+                      title={isInParty ? 'En el equipo' : 'Capturar'}
+                    >
+                      <Heart
+                        className={`w-5 h-5 ${
+                          isInParty ? 'fill-white text-white' : ''
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
 
-                <span className="text-xl font-bold text-white/80 font-sans tracking-wider">
-                  #{String(pokemon.id).padStart(3, '0')}
-                </span>
+                {/* Pokemon Title & #ID */}
+                <div className="relative z-10 mt-2 flex items-start justify-between">
+                  <div>
+                    <h2 className="text-3xl font-extrabold capitalize tracking-tight font-sans">
+                      {pokemon.displayName}
+                    </h2>
+                    {/* Type Pills (In Spanish) */}
+                    <div className="flex items-center gap-2 mt-2">
+                      {pokemon.types.map((type) => (
+                        <span
+                          key={type}
+                          className="px-3.5 py-1 rounded-full text-xs font-semibold bg-white/25 backdrop-blur-md shadow-xs uppercase tracking-wide"
+                        >
+                          {translateTypeToSpanish(type)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <span className="text-xl font-bold text-white/80 font-sans tracking-wider">
+                    #{String(pokemon.id).padStart(3, '0')}
+                  </span>
+                </div>
               </div>
 
-              {/* Overlapping Sprite Showcase with Floating Animation & Breathing Shadow */}
-              <div className="relative z-20 flex flex-col items-center justify-center -mb-28 mt-2">
+              {/* Center Sprite Showcase with Floating Animation & Breathing Shadow */}
+              <div className="relative z-20 flex flex-col items-center justify-center my-auto py-3">
                 {/* Luminous Pulsing Aura Behind Pokemon */}
                 <motion.div
                   className="absolute w-44 h-44 rounded-full bg-white/20 blur-2xl pointer-events-none"
@@ -292,7 +294,7 @@ export function DetailDrawer({
                         : pokemon.sprite || pokemon.animatedSprite
                     }
                     alt={pokemon.displayName}
-                    className="w-44 h-44 object-contain pixelated filter drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
+                    className="w-40 h-40 object-contain pixelated filter drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
                   />
                 </motion.div>
 
@@ -307,7 +309,7 @@ export function DetailDrawer({
                 />
 
                 {/* View Mode Switcher Pill (Animated vs HD Artwork) */}
-                <div className="flex items-center gap-1 mt-2.5 px-1.5 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90">
+                <div className="flex items-center gap-1 mt-3 px-1.5 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90">
                   <button
                     onClick={() => setSpriteMode("animated")}
                     className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
@@ -335,7 +337,7 @@ export function DetailDrawer({
             </div>
 
             {/* Bottom Sheet Card (Behance Rounded Tabs & Stats) */}
-            <div className="flex-1 rounded-t-[32px] bg-white pt-16 p-6 flex flex-col justify-between space-y-6 -mt-8 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)]">
+            <div className="flex-1 rounded-t-[32px] bg-white p-6 flex flex-col justify-between space-y-6 -mt-4 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)]">
               {/* Tab Navigators: Acerca de / Estadísticas Base */}
               <div>
                 <div className="flex items-center justify-around border-b border-slate-100 pb-3 mb-5">
