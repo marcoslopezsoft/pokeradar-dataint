@@ -68,9 +68,9 @@ export function RadarHud({
     return unsubscribe;
   }, []);
 
-  // Close type dropdown on click outside
+  // Close type dropdown on click outside (supporting both desktop mouse and mobile touch)
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
       if (
         typeDropdownRef.current &&
         !typeDropdownRef.current.contains(e.target as Node)
@@ -79,14 +79,18 @@ export function RadarHud({
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   return (
     <>
       <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
-        {/* Top Pokédex Navigation Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
+        {/* Top Pokédex Navigation Bar: higher z-index (z-30) so dropdown always floats on top */}
+        <div className="relative z-30 flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
           {/* Brand & Pokeball Icon */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 hover:scale-110 hover:rotate-12 cursor-pointer">
@@ -215,70 +219,78 @@ export function RadarHud({
 
               {/* Dropdown Menu */}
               {isTypeDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <button
-                    onClick={() => {
-                      sfx.playButtonPress();
-                      onTypeChange("all");
-                      setIsTypeDropdownOpen(false);
-                    }}
-                    className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                      selectedType === "all"
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-700 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon icon="solar:globus-bold" width={15} height={15} className="text-slate-500" />
-                      <span>Todos los tipos</span>
-                    </div>
-                    {selectedType === "all" && (
-                      <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
-                    )}
-                  </button>
+                <>
+                  {/* Backdrop on mobile so dropdown has high contrast and closes on tap outside */}
+                  <div
+                    className="fixed inset-0 z-40 sm:hidden bg-slate-900/20 backdrop-blur-xs"
+                    onClick={() => setIsTypeDropdownOpen(false)}
+                  />
 
-                  <div className="my-1 border-t border-slate-100" />
+                  <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <button
+                      onClick={() => {
+                        sfx.playButtonPress();
+                        onTypeChange("all");
+                        setIsTypeDropdownOpen(false);
+                      }}
+                      className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                        selectedType === "all"
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon icon="solar:globus-bold" width={15} height={15} className="text-slate-500" />
+                        <span>Todos los tipos</span>
+                      </div>
+                      {selectedType === "all" && (
+                        <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
+                      )}
+                    </button>
 
-                  {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => {
-                    const cfg = TYPE_CONFIG[type];
-                    const isSelected = selectedType === type;
-                    return (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          sfx.playButtonPress();
-                          onTypeChange(type);
-                          setIsTypeDropdownOpen(false);
-                        }}
-                        className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? "bg-slate-900 text-white"
-                            : "text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Icon
-                            icon={cfg?.icon || "solar:record-circle-bold"}
-                            width={15}
-                            height={15}
-                            className={isSelected ? "text-white" : cfg?.text || "text-slate-600"}
-                          />
-                          <span>{cfg?.label || translateTypeToSpanish(type)}</span>
-                        </div>
-                        {isSelected && (
-                          <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                    <div className="my-1 border-t border-slate-100" />
+
+                    {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => {
+                      const cfg = TYPE_CONFIG[type];
+                      const isSelected = selectedType === type;
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            sfx.playButtonPress();
+                            onTypeChange(type);
+                            setIsTypeDropdownOpen(false);
+                          }}
+                          className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-slate-900 text-white"
+                              : "text-slate-700 hover:bg-slate-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon
+                              icon={cfg?.icon || "solar:record-circle-bold"}
+                              width={15}
+                              height={15}
+                              className={isSelected ? "text-white" : cfg?.text || "text-slate-600"}
+                            />
+                            <span>{cfg?.label || translateTypeToSpanish(type)}</span>
+                          </div>
+                          {isSelected && (
+                            <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           </div>
         </div>
 
-        {/* Vertical Biomes Selector: Sits naturally below navbar, never overlaps on mobile or desktop */}
-        <div className="self-start pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
+        {/* Vertical Biomes Selector: Lower z-index (z-10) so it never sits on top of open menus */}
+        <div className="relative z-10 self-start pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
           <span className="text-[8px] font-extrabold text-slate-400 tracking-wider text-center uppercase leading-none pt-0.5">
             Biomas
           </span>
@@ -331,8 +343,8 @@ export function RadarHud({
                   </svg>
                 </button>
 
-                {/* Active Biome Name extends HORIZONTALLY to the right */}
-                {isActive ? (
+                {/* Active Biome Name extends HORIZONTALLY to the right (hidden when type dropdown is open to prevent visual clutter) */}
+                {isActive && !isTypeDropdownOpen ? (
                   <div className="absolute left-full ml-2.5 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-semibold shadow-xl border border-slate-700/60 flex items-center gap-1.5 whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200 z-20 pointer-events-none">
                     <span
                       className="w-1.5 h-1.5 rounded-full shrink-0 animate-ping"
