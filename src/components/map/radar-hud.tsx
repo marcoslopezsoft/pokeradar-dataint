@@ -123,27 +123,8 @@ export function RadarHud({
             />
           </div>
 
-          {/* Controls: Team Button (if party > 0), 1. Buscador, 2. Configuración de Sonido, 3. Tipos */}
+          {/* Controls: 1. Buscador, 2. Sonido, 3. Tipos, 4. Equipo (Último) */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            {/* Team analysis button in navbar, ONLY visible if user has Pokémon in party */}
-            {party.length > 0 && onOpenTeamAnalysis && (
-              <button
-                onClick={() => {
-                  sfx.playMenuOpen();
-                  onOpenTeamAnalysis();
-                }}
-                className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-red-500/25 transition-all cursor-pointer animate-in fade-in duration-200"
-                title="Abrir diagnóstico del equipo"
-                aria-label="Diagnóstico del equipo"
-              >
-                <Icon icon="solar:users-group-rounded-bold" width={16} height={16} />
-                <span className="hidden sm:inline">EQUIPO</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-bold">
-                  {party.length}/6
-                </span>
-              </button>
-            )}
-
             {/* 1. Buscador */}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -156,7 +137,28 @@ export function RadarHud({
               />
             </div>
 
-            {/* 2. Tipos (Custom Type Filter Dropdown with Icons) */}
+            {/* 2. Sonido */}
+            <button
+              onClick={() => {
+                sfx.playButtonPress();
+                setIsAudioModalOpen(true);
+              }}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                isMuted
+                  ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
+                  : "bg-red-50 border-red-200 text-red-600 shadow-xs hover:bg-red-100"
+              }`}
+              title="Ajustes de Sonido y Música"
+              aria-label="Ajustes de Sonido"
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4 animate-pulse" />
+              )}
+            </button>
+
+            {/* 3. Tipos (Custom Type Filter Dropdown with Icons) */}
             <div className="relative" ref={typeDropdownRef}>
               <button
                 onClick={() => {
@@ -199,85 +201,83 @@ export function RadarHud({
               {/* Dropdown Menu */}
               {isTypeDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <button
-                      onClick={() => {
-                        sfx.playButtonPress();
-                        onTypeChange("all");
-                        setIsTypeDropdownOpen(false);
-                      }}
-                      className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                        selectedType === "all"
-                          ? "bg-slate-900 text-white"
-                          : "text-slate-700 hover:bg-slate-100"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon icon="solar:globus-bold" width={15} height={15} className="text-slate-500" />
-                        <span>Todos los tipos</span>
-                      </div>
-                      {selectedType === "all" && (
-                        <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
-                      )}
-                    </button>
+                  <button
+                    onClick={() => {
+                      sfx.playButtonPress();
+                      onTypeChange("all");
+                      setIsTypeDropdownOpen(false);
+                    }}
+                    className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                      selectedType === "all"
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon icon="solar:globus-bold" width={15} height={15} className="text-slate-500" />
+                      <span>Todos los tipos</span>
+                    </div>
+                    {selectedType === "all" && (
+                      <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
+                    )}
+                  </button>
 
-                    <div className="my-1 border-t border-slate-100" />
+                  <div className="my-1 border-t border-slate-100" />
 
-                    {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => {
-                      const cfg = TYPE_CONFIG[type];
-                      const isSelected = selectedType === type;
-                      return (
-                        <button
-                          key={type}
-                          onClick={() => {
-                            sfx.playButtonPress();
-                            onTypeChange(type);
-                            setIsTypeDropdownOpen(false);
-                          }}
-                          className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
-                              ? "bg-slate-900 text-white"
-                              : "text-slate-700 hover:bg-slate-100"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Icon
-                              icon={cfg?.icon || "solar:record-circle-bold"}
-                              width={15}
-                              height={15}
-                              className={isSelected ? "text-white" : cfg?.text || "text-slate-600"}
-                            />
-                            <span>{cfg?.label || translateTypeToSpanish(type)}</span>
-                          </div>
-                          {isSelected && (
-                            <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => {
+                    const cfg = TYPE_CONFIG[type];
+                    const isSelected = selectedType === type;
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          sfx.playButtonPress();
+                          onTypeChange(type);
+                          setIsTypeDropdownOpen(false);
+                        }}
+                        className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-slate-900 text-white"
+                            : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            icon={cfg?.icon || "solar:record-circle-bold"}
+                            width={15}
+                            height={15}
+                            className={isSelected ? "text-white" : cfg?.text || "text-slate-600"}
+                          />
+                          <span>{cfg?.label || translateTypeToSpanish(type)}</span>
+                        </div>
+                        {isSelected && (
+                          <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
             </div>
 
-            {/* 3. Configuración de Sonido */}
-            <button
-              onClick={() => {
-                sfx.playButtonPress();
-                setIsAudioModalOpen(true);
-              }}
-              className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                isMuted
-                  ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
-                  : "bg-red-50 border-red-200 text-red-600 shadow-xs hover:bg-red-100"
-              }`}
-              title="Ajustes de Sonido y Música"
-              aria-label="Ajustes de Sonido"
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4 animate-pulse" />
-              )}
-            </button>
+            {/* 4. Equipo (Último, visible solo si tiene Pokémon reclutados) */}
+            {party.length > 0 && onOpenTeamAnalysis && (
+              <button
+                onClick={() => {
+                  sfx.playMenuOpen();
+                  onOpenTeamAnalysis();
+                }}
+                className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-red-500/25 transition-all cursor-pointer animate-in fade-in duration-200"
+                title="Abrir diagnóstico del equipo"
+                aria-label="Diagnóstico del equipo"
+              >
+                <Icon icon="solar:users-group-rounded-bold" width={16} height={16} />
+                <span className="hidden sm:inline">EQUIPO</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-bold">
+                  {party.length}/6
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
