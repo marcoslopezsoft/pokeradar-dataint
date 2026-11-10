@@ -6,6 +6,7 @@ import { BiomeRegion } from "@/types/pokemon";
 import { Compass, Search, Volume2, VolumeX } from "lucide-react";
 import { WeatherBadge } from "../weather/weather-badge";
 import { sfx } from "@/lib/sound-effects";
+import { translateTypeToSpanish } from "@/lib/utils";
 
 interface RadarHudProps {
   activeBiome: BiomeRegion;
@@ -28,6 +29,15 @@ const AVAILABLE_TYPES = [
   "ground",
   "flying",
   "dragon",
+  "normal",
+  "fighting",
+  "poison",
+  "psychic",
+  "bug",
+  "ghost",
+  "steel",
+  "fairy",
+  "dark",
 ];
 
 export function RadarHud({
@@ -122,12 +132,12 @@ export function RadarHud({
             <select
               value={selectedType}
               onChange={(e) => onTypeChange(e.target.value)}
-              className="py-1.5 px-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-red-500 focus:bg-white cursor-pointer capitalize"
+              className="py-1.5 px-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-red-500 focus:bg-white cursor-pointer"
             >
               <option value="all">Tipos (Todos)</option>
               {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => (
                 <option key={type} value={type}>
-                  {type}
+                  {translateTypeToSpanish(type)}
                 </option>
               ))}
             </select>

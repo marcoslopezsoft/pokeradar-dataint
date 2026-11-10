@@ -25,6 +25,15 @@ export interface PokemonSpritesRef {
       front_default: string | null;
     };
   };
+  versions?: {
+    "generation-v"?: {
+      "black-white"?: {
+        animated?: {
+          front_default: string | null;
+        };
+      };
+    };
+  };
 }
 
 export interface PokemonCriesRef {

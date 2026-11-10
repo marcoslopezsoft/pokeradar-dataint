@@ -11,12 +11,15 @@ import {
   Weight,
   ShieldCheck,
   Volume2,
+  Film,
+  Image as ImageIcon,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { StatsBars } from "./stats-bars";
 import { CryPlayer } from "./cry-player";
 import { sfx } from "@/lib/sound-effects";
+import { translateTypeToSpanish } from "@/lib/utils";
 
 interface DetailDrawerProps {
   pokemon: PokemonRadarEntity | null;
@@ -127,6 +130,7 @@ export function DetailDrawer({
   isPartyFull,
 }: DetailDrawerProps) {
   const [activeTab, setActiveTab] = useState<"about" | "stats">("about");
+  const [spriteMode, setSpriteMode] = useState<"animated" | "artwork">("animated");
 
   if (!pokemon) return null;
 
@@ -170,18 +174,46 @@ export function DetailDrawer({
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
-            {/* Top Color Card with Pokéball Watermark (Behance Layout) */}
+            {/* Top Color Card with Animated Pokéball & Elemental Background */}
             <div
-              className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-14`}
+              className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-16`}
             >
-              {/* Pokéball Background Watermark */}
-              <svg
+              {/* Floating Ambient Atmosphere Particles */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-2 h-2 rounded-full bg-white/20"
+                    initial={{
+                      x: `${10 + i * 16}%`,
+                      y: "110%",
+                      scale: 0.6 + (i % 3) * 0.3,
+                      opacity: 0.1,
+                    }}
+                    animate={{
+                      y: ["110%", "-20%"],
+                      opacity: [0.1, 0.45, 0],
+                    }}
+                    transition={{
+                      duration: 4.5 + (i % 3) * 2,
+                      repeat: Infinity,
+                      delay: i * 0.7,
+                      ease: "linear",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Pokéball Background Watermark with slow rotation */}
+              <motion.svg
                 viewBox="0 0 100 100"
-                className="absolute -right-6 -bottom-6 w-56 h-56 text-white/15 pointer-events-none transform rotate-12"
+                className="absolute -right-8 -bottom-8 w-60 h-60 text-white/15 pointer-events-none"
                 fill="currentColor"
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
               >
                 <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
-              </svg>
+              </motion.svg>
 
               {/* Navigation Header */}
               <div className="relative z-10 flex items-center justify-between">
@@ -217,14 +249,14 @@ export function DetailDrawer({
                   <h2 className="text-3xl font-extrabold capitalize tracking-tight font-sans">
                     {pokemon.displayName}
                   </h2>
-                  {/* Type Pills */}
+                  {/* Type Pills (In Spanish) */}
                   <div className="flex items-center gap-2 mt-2">
                     {pokemon.types.map((type) => (
                       <span
                         key={type}
-                        className="px-3.5 py-1 rounded-full text-xs font-medium bg-white/25 backdrop-blur-md shadow-sm uppercase tracking-wide"
+                        className="px-3.5 py-1 rounded-full text-xs font-semibold bg-white/25 backdrop-blur-md shadow-xs uppercase tracking-wide"
                       >
-                        {type}
+                        {translateTypeToSpanish(type)}
                       </span>
                     ))}
                   </div>
@@ -235,33 +267,75 @@ export function DetailDrawer({
                 </span>
               </div>
 
-              {/* Overlapping Sprite Showcase */}
-              <div className="relative z-20 flex justify-center -mb-24 mt-2">
+              {/* Overlapping Sprite Showcase with Floating Animation & Breathing Shadow */}
+              <div className="relative z-20 flex flex-col items-center justify-center -mb-28 mt-2">
+                {/* Luminous Pulsing Aura Behind Pokemon */}
                 <motion.div
-                  initial={{ scale: 0.8, y: 15 }}
-                  animate={{ scale: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                  className="relative"
+                  className="absolute w-44 h-44 rounded-full bg-white/20 blur-2xl pointer-events-none"
+                  animate={{
+                    scale: [0.95, 1.25, 0.95],
+                    opacity: [0.25, 0.55, 0.25],
+                  }}
+                  transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}
+                />
+
+                {/* Floating Bobbing Pokemon Sprite */}
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                  className="relative flex items-center justify-center min-h-[160px]"
                 >
-                  {pokemon.animatedSprite ? (
-                    <img
-                      src={pokemon.animatedSprite}
-                      alt={pokemon.displayName}
-                      className="w-44 h-44 object-contain pixelated filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
-                    />
-                  ) : (
-                    <img
-                      src={pokemon.sprite}
-                      alt={pokemon.displayName}
-                      className="w-44 h-44 object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
-                    />
-                  )}
+                  <img
+                    src={
+                      spriteMode === "animated" && pokemon.animatedSprite
+                        ? pokemon.animatedSprite
+                        : pokemon.sprite || pokemon.animatedSprite
+                    }
+                    alt={pokemon.displayName}
+                    className="w-44 h-44 object-contain pixelated filter drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
+                  />
                 </motion.div>
+
+                {/* Dynamic Ground Breathing Shadow */}
+                <motion.div
+                  className="w-28 h-3.5 rounded-full bg-black/25 blur-xs mx-auto -mt-2"
+                  animate={{
+                    scaleX: [1, 0.8, 1],
+                    opacity: [0.35, 0.18, 0.35],
+                  }}
+                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                />
+
+                {/* View Mode Switcher Pill (Animated vs HD Artwork) */}
+                <div className="flex items-center gap-1 mt-2.5 px-1.5 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90">
+                  <button
+                    onClick={() => setSpriteMode("animated")}
+                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                      spriteMode === "animated"
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-white/80 hover:text-white"
+                    }`}
+                  >
+                    <Film className="w-3 h-3" />
+                    <span>Animado</span>
+                  </button>
+                  <button
+                    onClick={() => setSpriteMode("artwork")}
+                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                      spriteMode === "artwork"
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-white/80 hover:text-white"
+                    }`}
+                  >
+                    <ImageIcon className="w-3 h-3" />
+                    <span>Arte HD</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Bottom Sheet Card (Behance Rounded Tabs & Stats) */}
-            <div className="flex-1 rounded-t-[32px] bg-white pt-14 p-6 flex flex-col justify-between space-y-6 -mt-8 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)]">
+            <div className="flex-1 rounded-t-[32px] bg-white pt-16 p-6 flex flex-col justify-between space-y-6 -mt-8 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)]">
               {/* Tab Navigators: Acerca de / Estadísticas Base */}
               <div>
                 <div className="flex items-center justify-around border-b border-slate-100 pb-3 mb-5">

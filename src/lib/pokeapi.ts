@@ -43,9 +43,11 @@ export function transformToRadarEntity(
 
   const types = raw.types.map((t) => t.type.name);
 
-  // Animated showdown sprite with fallback to official artwork or front_default
+  // Animated showdown sprite with fallback to Generation V animated, direct showdown GIF or static
   const animatedSprite =
     raw.sprites.other?.showdown?.front_default ||
+    raw.sprites.versions?.["generation-v"]?.["black-white"]?.animated?.front_default ||
+    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${raw.id}.gif` ||
     raw.sprites.other?.["official-artwork"]?.front_default ||
     raw.sprites.front_default ||
     "";
