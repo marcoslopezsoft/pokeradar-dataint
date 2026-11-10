@@ -64,18 +64,15 @@ export function RadarHud({
     <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
       {/* Top Pokédex Navigation Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
-        {/* Brand & Pokédex Sensor Lights */}
-        <div className="flex items-center gap-3">
-          {/* Main Blue Sensor + 3 LEDs (Classic Pokédex) */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-cyan-300 border-2 border-white/80 shadow-md animate-pokedex-sensor">
-              <div className="w-2.5 h-2.5 rounded-full bg-white/70 transform -translate-x-1 -translate-y-1" />
-            </div>
-            <div className="flex items-center gap-1.5 pl-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 ring-1 ring-red-400 shadow-[0_0_8px_#ef4444]" />
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 ring-1 ring-yellow-300 shadow-[0_0_8px_#eab308]" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-1 ring-emerald-300 shadow-[0_0_8px_#10b981]" />
-            </div>
+        {/* Brand & PokéRadar Device Icon */}
+        <div className="flex items-center gap-2.5">
+          {/* Authentic PokéRadar Device Icon */}
+          <div className="relative flex items-center justify-center w-8 h-8 transition-transform hover:scale-110">
+            <img
+              src="/pokeradar-device.png"
+              alt="PokéRadar"
+              className="w-full h-full object-contain filter drop-shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+            />
           </div>
 
           <div>
