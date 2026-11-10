@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion } from "@/types/pokemon";
-import { Compass, Search, Filter, Radio } from "lucide-react";
+import { Compass, Search, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { WeatherBadge } from "../weather/weather-badge";
 import { sfx } from "@/lib/sound-effects";
 
@@ -39,27 +39,46 @@ export function RadarHud({
   onTypeChange,
   totalSpotted,
 }: RadarHudProps) {
+  const [isMuted, setIsMuted] = useState(sfx.getIsMuted());
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    sfx.setMuted(nextMuted);
+    if (!nextMuted) {
+      sfx.playRadarPing();
+    }
+  };
+
   return (
     <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
-      {/* Top Navbar Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/85 backdrop-blur-xl border border-cyan-500/30 shadow-2xl shadow-cyan-950/40 pointer-events-auto">
-        {/* Brand */}
+      {/* Top Pokédex Navigation Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#0f1420]/90 backdrop-blur-xl border border-red-500/30 shadow-2xl shadow-red-950/40 pointer-events-auto">
+        {/* Brand & Pokédex Sensor Lights */}
         <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-cyan-950/80 border border-cyan-500/50 text-cyan-400">
-            <Radio className="w-5 h-5 animate-pulse text-cyan-400" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950 animate-ping" />
+          {/* Main Blue Sensor + 3 LEDs (Classic Pokédex) */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-cyan-300 border-2 border-white/80 shadow-md animate-pokedex-sensor">
+              <div className="w-2.5 h-2.5 rounded-full bg-white/70 transform -translate-x-1 -translate-y-1" />
+            </div>
+            <div className="flex items-center gap-1.5 pl-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 ring-1 ring-red-400 shadow-[0_0_8px_#ef4444]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 ring-1 ring-yellow-300 shadow-[0_0_8px_#eab308]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-1 ring-emerald-300 shadow-[0_0_8px_#10b981]" />
+            </div>
           </div>
+
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold font-mono tracking-wider text-white">
-                POKÉRADAR <span className="text-cyan-400">GEO</span>
+              <h1 className="text-sm font-extrabold font-mono tracking-wider text-[#ffcb05] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                POKÉRADAR <span className="text-white font-normal">GEO</span>
               </h1>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-950 border border-cyan-800 text-cyan-300">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-red-600 text-white shadow-sm shadow-red-600/50">
                 DATAINT
               </span>
             </div>
             <div className="text-[11px] font-mono text-slate-400">
-              {totalSpotted} especímenes detectados en radar
+              {totalSpotted} especímenes en radar
             </div>
           </div>
         </div>
@@ -73,8 +92,21 @@ export function RadarHud({
           />
         </div>
 
-        {/* Search & Type filter */}
+        {/* Search, Type filter & Sound Mute Toggle */}
         <div className="flex items-center gap-2">
+          {/* Mute/Unmute sound toggle */}
+          <button
+            onClick={toggleMute}
+            className={`p-2 rounded-xl border transition-all cursor-pointer ${
+              isMuted
+                ? "bg-slate-900/80 border-slate-700 text-slate-500"
+                : "bg-red-950/40 border-red-500/40 text-yellow-400 shadow-sm shadow-red-900/30"
+            }`}
+            title={isMuted ? "Activar efectos sonoros" : "Silenciar efectos sonoros"}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
+          </button>
+
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             <input
@@ -82,7 +114,7 @@ export function RadarHud({
               placeholder="Buscar Pokémon..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-36 sm:w-48 pl-8 pr-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs font-mono text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+              className="w-32 sm:w-44 pl-8 pr-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs font-mono text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
             />
           </div>
 
@@ -90,7 +122,7 @@ export function RadarHud({
             <select
               value={selectedType}
               onChange={(e) => onTypeChange(e.target.value)}
-              className="py-1.5 px-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 cursor-pointer capitalize"
+              className="py-1.5 px-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500 cursor-pointer capitalize"
             >
               <option value="all">Tipos (Todos)</option>
               {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => (
@@ -106,7 +138,7 @@ export function RadarHud({
       {/* Quick Biome Nav Pills */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pointer-events-auto no-scrollbar">
         <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] font-mono text-slate-400">
-          <Compass className="w-3.5 h-3.5 text-cyan-400" />
+          <Compass className="w-3.5 h-3.5 text-red-500" />
           <span>Biomas:</span>
         </span>
         {BIOMES.map((biome) => {
@@ -120,12 +152,12 @@ export function RadarHud({
               }}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? "bg-cyan-500 text-slate-950 font-bold border border-cyan-300 shadow-md shadow-cyan-500/20 scale-105"
-                  : "bg-slate-950/75 hover:bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700"
+                  ? "bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold border border-yellow-400 shadow-md shadow-red-600/40 scale-105"
+                  : "bg-slate-950/80 hover:bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
               }`}
             >
               <span
-                className="w-2 h-2 rounded-full"
+                className="w-2 h-2 rounded-full ring-1 ring-white/50"
                 style={{ backgroundColor: biome.accentColor }}
               />
               <span>{biome.name}</span>

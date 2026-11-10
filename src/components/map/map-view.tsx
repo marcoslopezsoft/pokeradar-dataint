@@ -193,22 +193,22 @@ export function MapView({
       // Tooltip pill on hover
       const tooltip = document.createElement("div");
       tooltip.className =
-        "absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-950/95 border border-cyan-500/50 text-[10px] font-mono text-cyan-200 whitespace-nowrap shadow-lg pointer-events-none z-30";
+        "absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0f1420]/95 border border-red-500/70 text-[10px] font-mono text-yellow-300 whitespace-nowrap shadow-xl pointer-events-none z-30 font-bold";
       tooltip.innerText = `${pokemon.displayName} #${pokemon.id}`;
       el.appendChild(tooltip);
 
-      // Radar pulse ring
+      // Radar pulse ring (Pokédex Red scan wave)
       const pulseRing = document.createElement("div");
       pulseRing.className =
-        "absolute inset-0 rounded-full border-2 border-cyan-400 pointer-events-none animate-radar-pulse";
+        "absolute inset-0 rounded-full border-2 border-red-500 pointer-events-none animate-radar-pulse";
       el.appendChild(pulseRing);
 
       // Marker badge wrapper
       const badge = document.createElement("div");
       badge.className = `relative w-full h-full rounded-2xl flex items-center justify-center p-1 backdrop-blur-md transition-all duration-300 transform group-hover:scale-115 ${
         isSelected
-          ? "bg-cyan-500/30 border-2 border-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.6)] scale-110"
-          : "bg-slate-950/85 border border-slate-700/80 shadow-lg group-hover:border-cyan-400"
+          ? "bg-red-950/60 border-2 border-yellow-400 shadow-[0_0_22px_rgba(239,68,68,0.7)] scale-110"
+          : "bg-[#0f1420]/90 border border-slate-700/80 shadow-lg group-hover:border-red-400"
       }`;
 
       // Pokemon sprite image
@@ -221,7 +221,7 @@ export function MapView({
       // Level pill
       const levelBadge = document.createElement("span");
       levelBadge.className =
-        "absolute -bottom-1 -right-1 bg-cyan-950 border border-cyan-400 text-[9px] font-mono font-bold text-cyan-200 px-1 py-0.2 rounded-full";
+        "absolute -bottom-1 -right-1 bg-red-950 border border-yellow-400 text-[9px] font-mono font-bold text-yellow-300 px-1 py-0.2 rounded-full shadow-sm";
       levelBadge.innerText = `L${pokemon.level}`;
       badge.appendChild(levelBadge);
 

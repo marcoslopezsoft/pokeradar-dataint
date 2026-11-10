@@ -62,13 +62,13 @@ export function DetailDrawer({
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-slate-950/95 border-l border-slate-800 backdrop-blur-2xl z-50 flex flex-col shadow-2xl overflow-y-auto"
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#0f1420]/95 backdrop-blur-md border-b-2 border-red-600/80">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-red-950/90 text-yellow-300 border border-red-600/70 shadow-sm">
                   #{String(pokemon.id).padStart(3, '0')}
                 </span>
-                <span className="text-xs font-mono text-slate-400">
-                  RADAR SCANNER
+                <span className="text-xs font-mono font-semibold text-slate-300 tracking-wider">
+                  POKÉDEX SCANNER
                 </span>
               </div>
               <button
@@ -178,7 +178,7 @@ export function DetailDrawer({
                     ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
                     : isPartyFull
                       ? 'bg-amber-950/40 border border-amber-800/50 text-amber-300 cursor-not-allowed'
-                      : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 border border-cyan-300 shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-[1.01]'
+                      : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white border border-yellow-400 shadow-lg shadow-red-600/40 hover:scale-[1.01]'
                 }`}
               >
                 {isInParty ? (
