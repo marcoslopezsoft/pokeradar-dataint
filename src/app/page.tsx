@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { usePokemonRadar } from "@/hooks/use-pokemon-radar";
 import { useExpedition } from "@/hooks/use-expedition";
 import { MapContainer } from "@/components/map/map-container";
 import { RadarHud } from "@/components/map/radar-hud";
 import { DetailDrawer } from "@/components/pokemon/detail-drawer";
 import { PartyDock } from "@/components/expedition/party-dock";
+import { WelcomeScreen } from "@/components/ui/welcome-screen";
 
 export default function HomePage() {
   const {
@@ -14,6 +15,7 @@ export default function HomePage() {
     selectBiome,
     entities,
     totalSpotted,
+    loading,
     searchTerm,
     setSearchTerm,
     selectedType,
@@ -27,8 +29,18 @@ export default function HomePage() {
   const { party, addToParty, removeFromParty, isInParty, isPartyFull } =
     useExpedition();
 
+  const [hasStarted, setHasStarted] = useState(false);
+
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
+      {/* Welcome Screen & Spinning Pokeball Loading Screen */}
+      {!hasStarted && (
+        <WelcomeScreen
+          isLoading={loading}
+          onStartAdventure={() => setHasStarted(true)}
+        />
+      )}
+
       {/* Top HUD Controls & Weather */}
       <RadarHud
         activeBiome={activeBiome}

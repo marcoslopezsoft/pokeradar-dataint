@@ -5,6 +5,7 @@ import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import type { FeatureCollection, Point } from "geojson";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
 import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_LIGHT_STYLE } from "@/lib/biomes";
+import { sfx } from "@/lib/sound-effects";
 
 // Configure MapLibre Web Worker URL for Next.js App Router & Turbopack
 if (typeof window !== "undefined") {
@@ -221,14 +222,6 @@ export function MapView({
         "absolute bottom-1 left-1/2 -translate-x-1/2 w-9 h-2.5 rounded-full bg-black/25 blur-[2px] pointer-events-none transition-transform duration-200 group-hover:scale-125";
       el.appendChild(groundShadow);
 
-      // Selected radar pulse ring on the ground
-      if (isSelected) {
-        const pulseRing = document.createElement("div");
-        pulseRing.className =
-          "absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-4 rounded-full border-2 border-red-500 animate-radar-pulse pointer-events-none";
-        el.appendChild(pulseRing);
-      }
-
       // Pokemon HD official artwork directly on terrain
       const img = document.createElement("img");
       img.src = pokemon.sprite || pokemon.animatedSprite;
@@ -242,6 +235,7 @@ export function MapView({
 
       // On click: flyTo creature & open drawer
       el.addEventListener("click", () => {
+        sfx.playDexPage();
         onSelectPokemon(pokemon);
         map.flyTo({
           center: pokemon.coordinates,

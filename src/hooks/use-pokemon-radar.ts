@@ -71,7 +71,7 @@ export function usePokemonRadar() {
     };
   }, []);
 
-  // Filter entities according to search, type and active biome for 60 FPS performance
+  // Filter entities according to search and type (all biomes always visible across the map)
   const filteredEntities = useMemo(() => {
     return entities.filter((pokemon) => {
       const matchesSearch =
@@ -84,14 +84,9 @@ export function usePokemonRadar() {
         selectedType === "all" ||
         pokemon.types.includes(selectedType.toLowerCase());
 
-      const matchesBiome =
-        searchTerm || selectedType !== "all"
-          ? true
-          : pokemon.biomeId === activeBiome.id;
-
-      return matchesSearch && matchesType && matchesBiome;
+      return matchesSearch && matchesType;
     });
-  }, [entities, searchTerm, selectedType, activeBiome.id]);
+  }, [entities, searchTerm, selectedType]);
 
   const selectPokemon = (pokemon: PokemonRadarEntity) => {
     setSelectedPokemon(pokemon);

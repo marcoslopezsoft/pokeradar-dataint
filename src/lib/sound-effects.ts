@@ -1,112 +1,112 @@
-// Native Web Audio API sound generator - No external audio files needed
+// Authentic Pokémon Red & Blue Sound Effects and Music Player
 
 class SoundEffectsEngine {
-  private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
-
-  private getContext(): AudioContext | null {
-    if (typeof window === "undefined") return null;
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
-      }
-    }
-    if (this.ctx && this.ctx.state === "suspended") {
-      this.ctx.resume();
-    }
-    return this.ctx;
-  }
+  private bgmAudio: HTMLAudioElement | null = null;
+  private isBgmPlaying: boolean = false;
 
   public setMuted(muted: boolean) {
     this.isMuted = muted;
+    if (this.bgmAudio) {
+      this.bgmAudio.muted = muted;
+    }
   }
 
   public getIsMuted(): boolean {
     return this.isMuted;
   }
 
-  // Radar ping: tactical high-pitch sonar blip
-  public playRadarPing() {
-    if (this.isMuted) return;
-    const ctx = this.getContext();
-    if (!ctx) return;
-
+  private playAudio(path: string, volume: number = 0.5) {
+    if (this.isMuted || typeof window === "undefined") return;
     try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
-      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.15); // A6
-
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.25);
-    } catch (e) {
-      console.warn("Failed to play radar ping:", e);
+      const audio = new Audio(path);
+      audio.volume = volume;
+      audio.play().catch(() => {});
+    } catch {
+      // Audio autoplay policy or decode error safety
     }
   }
 
-  // Pokéball capture success fanfare (arpeggiated chime)
+  // Authentic Pokémon Red & Blue sound effects from /public/audio/sfx:
+
+  // 1. Capture fanfare: SFX_CAUGHT_MON.wav
   public playCatchSuccess() {
-    if (this.isMuted) return;
-    const ctx = this.getContext();
-    if (!ctx) return;
-
-    try {
-      const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
-      notes.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
-
-        gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.2);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(ctx.currentTime + i * 0.08);
-        osc.stop(ctx.currentTime + i * 0.08 + 0.22);
-      });
-    } catch (e) {
-      console.warn("Failed to play capture chime:", e);
-    }
+    this.playAudio("/audio/sfx/caught.wav", 0.65);
   }
 
-  // Release whoosh sound
+  // 2. Deposit / Release sound: SFX_WITHDRAW_DEPOSIT.wav
   public playRelease() {
-    if (this.isMuted) return;
-    const ctx = this.getContext();
-    if (!ctx) return;
+    this.playAudio("/audio/sfx/release.wav", 0.55);
+  }
 
-    try {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+  // 3. Menu / Button press: SFX_PRESS_AB.wav
+  public playButtonPress() {
+    this.playAudio("/audio/sfx/press_ab.wav", 0.45);
+  }
 
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.2);
+  // 4. Switch cursor / Biome select: SFX_SWITCH.wav
+  public playSwitch() {
+    this.playAudio("/audio/sfx/switch.wav", 0.45);
+  }
 
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+  // 5. Open Start Menu / Drawer: SFX_START_MENU.wav
+  public playMenuOpen() {
+    this.playAudio("/audio/sfx/start_menu.wav", 0.5);
+  }
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+  // 6. Action Denied / Collision: SFX_COLLISION.wav
+  public playDenied() {
+    this.playAudio("/audio/sfx/denied.wav", 0.45);
+  }
 
-      osc.start();
-      osc.stop(ctx.currentTime + 0.2);
-    } catch (e) {
-      console.warn("Failed to play release sound:", e);
+  // 7. Pokédex registration: SFX_DEX_PAGE_ADDED.wav
+  public playDexPage() {
+    this.playAudio("/audio/sfx/dex_page.wav", 0.5);
+  }
+
+  // 8. Pokéball toss: SFX_BALL_TOSS.wav
+  public playBallToss() {
+    this.playAudio("/audio/sfx/ball_toss.wav", 0.5);
+  }
+
+  // Compatibility alias
+  public playRadarPing() {
+    this.playButtonPress();
+  }
+
+  // Background Music: Pokémon Red Title Screen Theme (/public/audio/pokemon-red-title.mp3)
+  public toggleBgm(): boolean {
+    if (typeof window === "undefined") return false;
+
+    if (!this.bgmAudio) {
+      this.bgmAudio = new Audio("/audio/pokemon-red-title.mp3");
+      this.bgmAudio.loop = true;
+      this.bgmAudio.volume = 0.25;
+      this.bgmAudio.onended = () => {
+        this.isBgmPlaying = false;
+      };
     }
+
+    if (this.isBgmPlaying) {
+      this.bgmAudio.pause();
+      this.isBgmPlaying = false;
+    } else {
+      this.bgmAudio.muted = this.isMuted;
+      this.bgmAudio
+        .play()
+        .then(() => {
+          this.isBgmPlaying = true;
+        })
+        .catch((e) => {
+          console.warn("BGM auto-play policy blocked:", e);
+        });
+    }
+
+    return this.isBgmPlaying;
+  }
+
+  public getIsBgmPlaying(): boolean {
+    return this.isBgmPlaying;
   }
 }
 

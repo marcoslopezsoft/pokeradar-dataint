@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import confetti from "canvas-confetti";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { Users, Trash2 } from "lucide-react";
 import { sfx } from "@/lib/sound-effects";
@@ -46,10 +45,10 @@ export function PartyDock({
                 return (
                   <div
                     key={`empty-${idx}`}
-                    className="w-12 h-12 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 flex items-center justify-center text-slate-400 text-xs font-medium transition-colors"
+                    className="w-12 h-12 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 flex items-center justify-center text-slate-400 text-xs font-semibold transition-colors"
                     title={`Ranura ${idx + 1} Vacía`}
                   >
-                    #{idx + 1}
+                    {idx + 1}
                   </div>
                 );
               }
@@ -83,8 +82,8 @@ export function PartyDock({
                         className="w-10 h-10 object-contain"
                       />
                     ) : (
-                      <span className="text-xs font-medium text-slate-400">
-                        #{pokemon.id}
+                      <span className="text-xs font-semibold text-slate-400">
+                        {pokemon.id}
                       </span>
                     )}
 

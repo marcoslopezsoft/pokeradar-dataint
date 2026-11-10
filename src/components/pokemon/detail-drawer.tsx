@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
-import confetti from "canvas-confetti";
 import Lenis from "lenis";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { StatsBars } from "./stats-bars";
@@ -173,22 +172,6 @@ export function DetailDrawer({
     }
   }, [isOpen, pokemon?.id]);
 
-  // Play Pokemon authentic cry automatically on selection
-  useEffect(() => {
-    if (!isOpen || !pokemon?.cryUrl) return;
-
-    const audio = new Audio(pokemon.cryUrl);
-    audio.volume = 0.5;
-    audio.play().catch((err) => {
-      console.warn("Auto-play cry blocked or interrupted:", err);
-    });
-
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
-    };
-  }, [isOpen, pokemon?.id, pokemon?.cryUrl]);
-
   // Fetch official Pokédex description in Spanish
   useEffect(() => {
     if (!pokemon) return;
@@ -223,7 +206,19 @@ export function DetailDrawer({
       accentColor: "#3b82f6",
     };
 
-  // Toggle party recruitment via heart icon
+  // Play Pokemon authentic cry when clicking on the Pokemon sprite
+  const handlePlayCry = () => {
+    if (!pokemon.cryUrl) return;
+    try {
+      const audio = new Audio(pokemon.cryUrl);
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+    } catch {
+      // Audio playback safety
+    }
+  };
+
+  // Toggle party recruitment via heart icon with authentic Pokemon Red/Blue SFX (No Confetti)
   const handleToggleParty = () => {
     if (!pokemon) return;
 
@@ -231,16 +226,18 @@ export function DetailDrawer({
       onRemoveFromParty(pokemon.id);
       sfx.playRelease();
     } else {
-      if (isPartyFull) return;
+      if (isPartyFull) {
+        sfx.playDenied();
+        return;
+      }
       onAddToParty(pokemon);
       sfx.playCatchSuccess();
-      confetti({
-        particleCount: 70,
-        spread: 70,
-        origin: { y: 0.7 },
-        colors: ["#38bdf8", "#eab308", "#10b981", "#ef4444"],
-      });
     }
+  };
+
+  const handleClose = () => {
+    sfx.playButtonPress();
+    onClose();
   };
 
   // Parallax and scroll progress: 0 when at top, 1 when scrolled 180px
@@ -255,7 +252,7 @@ export function DetailDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
+            onClick={handleClose}
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
           />
 
@@ -269,17 +266,17 @@ export function DetailDrawer({
             className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
             <div ref={scrollContentRef} className="relative flex flex-col min-h-full bg-white">
-              {/* Sticky Top Header Bar (Always pinned at top, keeps Habitat visible when scrolling down) */}
+              {/* Sticky Top Header Bar (Maintains Pokemon elemental background color on scroll, NEVER black) */}
               <div
-                className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-colors duration-200 ${
+                className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-all duration-200 ${
                   scrollY > 30
-                    ? `bg-slate-900/85 backdrop-blur-xl border-b border-white/10 shadow-lg text-white`
+                    ? `bg-gradient-to-r ${theme.bgGradient} shadow-md border-b border-white/20 text-white`
                     : `bg-transparent text-white`
                 }`}
               >
                 {/* Back button */}
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer z-10"
                   aria-label="Volver"
                 >
@@ -288,7 +285,12 @@ export function DetailDrawer({
 
                 {/* Habitat (Centered in the middle, no padding, just icon and text) */}
                 <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white text-xs font-semibold max-w-[55%] pointer-events-none drop-shadow-xs">
-                  <Icon icon="solar:map-point-bold" width={14} height={14} className="text-white shrink-0 drop-shadow-xs" />
+                  <Icon
+                    icon="solar:map-point-bold"
+                    width={14}
+                    height={14}
+                    className="text-white shrink-0 drop-shadow-xs"
+                  />
                   <span className="truncate leading-none">
                     {pokemon.biomeName}
                   </span>
@@ -377,23 +379,25 @@ export function DetailDrawer({
                   <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
                 </motion.svg>
 
-                {/* Centered Large Pokemon Sprite (No Bounce, Centered in Drawer, Scales slightly on scroll) */}
+                {/* Centered Large Pokemon Sprite (Click to roar authentic cry, No bounce) */}
                 <div
+                  onClick={handlePlayCry}
                   style={{
                     transform: `scale(${1 - scrollProgress * 0.15}) translateY(${scrollProgress * 20}px)`,
                     opacity: 1 - scrollProgress * 0.45,
                   }}
-                  className="relative z-20 flex flex-col items-center justify-center my-auto py-2 transition-transform ease-out duration-75"
+                  className="relative z-20 flex flex-col items-center justify-center my-auto py-2 cursor-pointer group active:scale-95 transition-transform"
+                  title={`Haz clic para escuchar el alarido de ${pokemon.displayName}`}
                 >
                   {/* Luminous Pulsing Aura Behind Pokemon */}
                   <div className="absolute w-52 h-52 rounded-full bg-white/20 blur-2xl pointer-events-none" />
 
-                  {/* Big Centered Pokemon Sprite (Static, Crisp Pixel-Art Rendering) */}
+                  {/* Big Centered Pokemon Sprite (Static, Crisp Pixel-Art Rendering, Interactive Cry) */}
                   <img
                     src={pokemon.animatedSprite || pokemon.sprite}
                     alt={pokemon.displayName}
                     style={{ imageRendering: "pixelated" }}
-                    className="w-48 h-48 object-contain filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)]"
+                    className="w-48 h-48 object-contain filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-105"
                   />
 
                   {/* Dynamic Ground Breathing Shadow */}
@@ -436,7 +440,12 @@ export function DetailDrawer({
                           key={ability}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800"
                         >
-                          <Icon icon="solar:bolt-bold" width={14} height={14} className="text-amber-500" />
+                          <Icon
+                            icon="solar:bolt-bold"
+                            width={14}
+                            height={14}
+                            className="text-amber-500"
+                          />
                           <span>{translateAbilityToSpanish(ability)}</span>
                         </span>
                       ))
@@ -462,7 +471,12 @@ export function DetailDrawer({
                 <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
-                      <Icon icon="solar:ruler-bold" width={16} height={16} className="text-cyan-600" />
+                      <Icon
+                        icon="solar:ruler-bold"
+                        width={16}
+                        height={16}
+                        className="text-cyan-600"
+                      />
                     </div>
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">
@@ -476,7 +490,12 @@ export function DetailDrawer({
 
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
-                      <Icon icon="solar:dumbbell-large-bold" width={16} height={16} className="text-amber-600" />
+                      <Icon
+                        icon="solar:dumbbell-large-bold"
+                        width={16}
+                        height={16}
+                        className="text-amber-600"
+                      />
                     </div>
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">

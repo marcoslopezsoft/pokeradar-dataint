@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion } from "@/types/pokemon";
-import { Compass, Search, Volume2, VolumeX } from "lucide-react";
+import { Search, Volume2, VolumeX } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { WeatherBadge } from "../weather/weather-badge";
 import { sfx } from "@/lib/sound-effects";
 import { translateTypeToSpanish } from "@/lib/utils";
@@ -40,6 +41,15 @@ const AVAILABLE_TYPES = [
   "dark",
 ];
 
+const BIOME_ICONS: Record<string, string> = {
+  "iguazu-rainforest": "solar:waterdrop-bold",
+  "perito-moreno-glacier": "solar:snowflake-bold",
+  "humahuaca-canyon": "tabler:mountain",
+  "buenos-aires-metropolis": "solar:buildings-bold",
+  "aconcagua-summit": "tabler:feather",
+  "valdes-peninsula": "solar:waves-bold",
+};
+
 export function RadarHud({
   activeBiome,
   onSelectBiome,
@@ -50,14 +60,20 @@ export function RadarHud({
   totalSpotted,
 }: RadarHudProps) {
   const [isMuted, setIsMuted] = useState(sfx.getIsMuted());
+  const [isBgmPlaying, setIsBgmPlaying] = useState(sfx.getIsBgmPlaying());
 
   const toggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
     sfx.setMuted(nextMuted);
     if (!nextMuted) {
-      sfx.playRadarPing();
+      sfx.playButtonPress();
     }
+  };
+
+  const toggleBgm = () => {
+    const playing = sfx.toggleBgm();
+    setIsBgmPlaying(playing);
   };
 
   return (
@@ -78,7 +94,7 @@ export function RadarHud({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold tracking-wide text-red-600">
-                POKÉRADAR{' '}
+                POKÉRADAR{" "}
                 <span className="text-slate-800 font-semibold">GEO</span>
               </h1>
             </div>
@@ -97,18 +113,43 @@ export function RadarHud({
           />
         </div>
 
-        {/* Search, Type filter & Sound Mute Toggle */}
+        {/* Audio, Search, Type filter Controls */}
         <div className="flex items-center gap-2">
-          {/* Mute/Unmute sound toggle */}
+          {/* Pokémon Red Title Screen Theme Music Toggle */}
+          <button
+            onClick={toggleBgm}
+            className={`p-2 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
+              isBgmPlaying
+                ? "bg-red-600 border-red-700 text-white shadow-sm shadow-red-500/30 scale-105"
+                : "bg-slate-100 border-slate-200 text-slate-600 hover:text-slate-900"
+            }`}
+            title={
+              isBgmPlaying
+                ? "Pausar música de Pokémon Rojo"
+                : "Reproducir tema oficial de Pokémon Rojo"
+            }
+          >
+            <Icon
+              icon={isBgmPlaying ? "solar:music-note-bold" : "solar:music-note-linear"}
+              width={16}
+              height={16}
+              className={isBgmPlaying ? "animate-pulse" : ""}
+            />
+            <span className="hidden xl:inline text-[11px] font-bold">
+              {isBgmPlaying ? "MÚSICA ON" : "MÚSICA"}
+            </span>
+          </button>
+
+          {/* Mute/Unmute sound effects toggle */}
           <button
             onClick={toggleMute}
             className={`p-2 rounded-xl border transition-all cursor-pointer ${
               isMuted
-                ? 'bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600'
-                : 'bg-red-50 border-red-200 text-red-600 shadow-xs'
+                ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
+                : "bg-red-50 border-red-200 text-red-600 shadow-xs"
             }`}
             title={
-              isMuted ? 'Activar efectos sonoros' : 'Silenciar efectos sonoros'
+              isMuted ? "Activar efectos sonoros" : "Silenciar efectos sonoros"
             }
           >
             {isMuted ? (
@@ -132,11 +173,14 @@ export function RadarHud({
           <div className="relative">
             <select
               value={selectedType}
-              onChange={(e) => onTypeChange(e.target.value)}
+              onChange={(e) => {
+                sfx.playButtonPress();
+                onTypeChange(e.target.value);
+              }}
               className="py-1.5 px-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-red-500 focus:bg-white cursor-pointer"
             >
               <option value="all">Tipos (Todos)</option>
-              {AVAILABLE_TYPES.filter((t) => t !== 'all').map((type) => (
+              {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => (
                 <option key={type} value={type}>
                   {translateTypeToSpanish(type)}
                 </option>
@@ -146,35 +190,65 @@ export function RadarHud({
         </div>
       </div>
 
-      {/* Quick Biome Nav Pills */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pointer-events-auto no-scrollbar">
-        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/90 border border-slate-200 text-[11px] font-medium text-slate-600 shadow-xs">
-          <Compass className="w-3.5 h-3.5 text-red-500" />
-          <span>Biomas:</span>
+      {/* Biome Icons Selector with Hover Tooltip */}
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-md shadow-slate-200/50 pointer-events-auto self-start">
+        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-slate-500 tracking-wide">
+          <Icon icon="solar:compass-bold" width={14} height={14} className="text-red-500" />
+          <span>BIOMAS:</span>
         </span>
+
         {BIOMES.map((biome) => {
           const isActive = biome.id === activeBiome.id;
+          const iconName = BIOME_ICONS[biome.id] || "solar:map-point-bold";
+
           return (
-            <button
-              key={biome.id}
-              onClick={() => {
-                sfx.playRadarPing();
-                onSelectBiome(biome);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold border border-yellow-400 shadow-md shadow-red-600/30 scale-105'
-                  : 'bg-white/90 hover:bg-slate-100 text-slate-700 font-medium border border-slate-200 hover:border-slate-300 shadow-xs'
-              }`}
-            >
-              <span
-                className="w-2 h-2 rounded-full ring-1 ring-slate-300"
-                style={{ backgroundColor: biome.accentColor }}
-              />
-              <span>{biome.name}</span>
-            </button>
+            <div key={biome.id} className="relative group">
+              <button
+                onClick={() => {
+                  sfx.playSwitch();
+                  onSelectBiome(biome);
+                }}
+                className={`relative p-2.5 rounded-xl transition-all flex items-center justify-center cursor-pointer ${
+                  isActive
+                    ? "bg-slate-900 text-white shadow-md scale-105"
+                    : "bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:scale-105"
+                }`}
+                style={{
+                  borderBottom: isActive ? `2px solid ${biome.accentColor}` : undefined,
+                }}
+                title={biome.name}
+                aria-label={biome.name}
+              >
+                <Icon
+                  icon={iconName}
+                  width={18}
+                  height={18}
+                  style={{ color: isActive ? "#ffffff" : biome.accentColor }}
+                />
+              </button>
+
+              {/* Tooltip on hover */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col items-center pointer-events-none z-50 whitespace-nowrap">
+                <div className="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-semibold shadow-xl border border-slate-700/50 flex items-center gap-1.5">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: biome.accentColor }}
+                  />
+                  <span>{biome.name}</span>
+                </div>
+              </div>
+            </div>
           );
         })}
+
+        {/* Active biome name displayed next to icons */}
+        <div className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-slate-800 border-l border-slate-200">
+          <span
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: activeBiome.accentColor }}
+          />
+          <span className="truncate max-w-[180px] sm:max-w-none">{activeBiome.name}</span>
+        </div>
       </div>
     </header>
   );
