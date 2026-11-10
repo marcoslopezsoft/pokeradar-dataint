@@ -180,19 +180,42 @@ export function RadarHud({
                   sfx.playSwitch();
                   onSelectBiome(biome);
                 }}
-                className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all flex items-center justify-center cursor-pointer ${
+                className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all flex items-center justify-center cursor-pointer p-0.5 ${
                   isActive
-                    ? "scale-125 shadow-md ring-2 ring-offset-2 ring-slate-800 z-10"
-                    : "hover:scale-115 opacity-75 hover:opacity-100 shadow-xs"
+                    ? "scale-125 z-10 drop-shadow-[0_4px_10px_rgba(0,0,0,0.25)]"
+                    : "opacity-65 hover:opacity-100 hover:scale-110 drop-shadow-xs"
                 }`}
-                style={{ backgroundColor: biome.accentColor }}
                 title={biome.name}
                 aria-label={biome.name}
               >
-                {/* Inner white dot for active biome */}
-                {isActive && (
-                  <span className="w-2 h-2 rounded-full bg-white shadow-xs animate-pulse" />
-                )}
+                {/* Authentic Pokéball vector icon */}
+                <svg
+                  viewBox="0 0 100 100"
+                  className="w-full h-full transition-transform duration-200"
+                >
+                  {/* Top Hemisphere dome filled with biome accent color */}
+                  <path
+                    d="M 50 10 c 19.9 0 36.3 14.7 39.4 34 H 66.2 C 63.6 34.6 57.4 30 50 30 s -13.6 4.6 -16.2 14 H 10.6 C 13.7 24.7 30.1 10 50 10 z"
+                    fill={biome.accentColor}
+                  />
+                  {/* Bottom Hemisphere dome filled with white */}
+                  <path
+                    d="M 50 90 c -19.9 0 -36.3 -14.7 -39.4 -34 h 23.2 C 36.4 65.4 42.6 70 50 70 s 13.6 -4.6 16.2 -14 h 23.2 c -3.1 19.3 -19.5 34 -39.4 34 z"
+                    fill="#ffffff"
+                  />
+                  {/* Center button circle */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="10"
+                    fill="#ffffff"
+                  />
+                  {/* Pokéball vector stencil: rim, belt and center button ring */}
+                  <path
+                    d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z"
+                    fill={isActive ? biome.accentColor : "#475569"}
+                  />
+                </svg>
               </button>
 
               {/* Active Biome Name extends HORIZONTALLY to the right */}
