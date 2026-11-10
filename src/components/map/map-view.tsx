@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
-import type { FeatureCollection, Point } from "geojson";
+import type { FeatureCollection, Polygon } from "geojson";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
 import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_LIGHT_STYLE } from "@/lib/biomes";
 import { sfx } from "@/lib/sound-effects";
@@ -15,6 +15,28 @@ if (typeof window !== "undefined") {
   } catch (e) {
     console.warn("Failed to set worker URL:", e);
   }
+}
+
+/**
+ * Generates an elliptical GeoJSON Polygon circle in geographic degrees.
+ * Bounded to true latitude/longitude coordinates on Earth so it maintains
+ * its physical geographic territory without changing size when zooming.
+ * Radius encompasses all Pokémon spawned within the biome (~0.055° max delta).
+ */
+function createGeoCirclePolygon(
+  center: [number, number],
+  radiusLng: number = 0.065,
+  radiusLat: number = 0.055,
+  points: number = 64
+): number[][][] {
+  const ring: number[][] = [];
+  for (let i = 0; i <= points; i++) {
+    const angle = (i * 2 * Math.PI) / points;
+    const lng = center[0] + radiusLng * Math.cos(angle);
+    const lat = center[1] + radiusLat * Math.sin(angle);
+    ring.push([lng, lat]);
+  }
+  return [ring];
 }
 
 interface MapViewProps {
@@ -35,8 +57,46 @@ export function MapView({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
   const markersRef = useRef<{ [key: string]: Marker }>({});
+  const biomePinsRef = useRef<{ [key: string]: Marker }>({});
+  const onSelectBiomeRef = useRef(onSelectBiome);
 
-  // 1. Initialize MapLibre GL Map & GeoJSON Biome Layers
+  useEffect(() => {
+    onSelectBiomeRef.current = onSelectBiome;
+  }, [onSelectBiome]);
+
+  // Synchronize visibility of biome pins vs pokemon markers based on zoom
+  const syncZoomVisibility = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    const zoom = map.getZoom();
+    const isZoomedOut = zoom < 9.2;
+
+    // Biome overview pins: visible when zoomed out
+    Object.values(biomePinsRef.current).forEach((pin) => {
+      const el = pin.getElement();
+      if (el) {
+        if (isZoomedOut) {
+          el.style.opacity = "1";
+          el.style.pointerEvents = "auto";
+          el.style.transform = "scale(1) translateY(0)";
+        } else {
+          el.style.opacity = "0";
+          el.style.pointerEvents = "none";
+          el.style.transform = "scale(0.85) translateY(-8px)";
+        }
+      }
+    });
+
+    // Pokemon markers: visible when zoomed in
+    Object.values(markersRef.current).forEach((marker) => {
+      const el = marker.getElement();
+      if (el) {
+        el.style.display = isZoomedOut ? "none" : "flex";
+      }
+    });
+  };
+
+  // 1. Initialize MapLibre GL Map & GeoJSON Geographic Biome Layers
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -61,7 +121,7 @@ export function MapView({
       "bottom-right"
     );
 
-    // Suppress missing style image warnings (e.g. wood-pattern, circle-11)
+    // Suppress missing style image warnings
     map.setMissingStyleImageResolver((id) => {
       if (!map.hasImage(id)) {
         map.addImage(id, {
@@ -72,7 +132,7 @@ export function MapView({
       }
     });
 
-    // Auto-fallback if style needs reset
+    // Auto-fallback if remote vector style fails
     map.on("error", (e) => {
       const msg = e?.error?.message || "";
       if (msg.includes("Failed to fetch") || msg.includes("401") || msg.includes("403")) {
@@ -82,14 +142,14 @@ export function MapView({
     });
 
     map.on("load", () => {
-      // GeoJSON Feature Collection for Biome Atmospheric Radii
-      const biomeFeatures: FeatureCollection<Point> = {
+      // True GeoJSON Geographic Polygon perimeters for each Biome
+      const biomePolygons: FeatureCollection<Polygon> = {
         type: "FeatureCollection",
         features: BIOMES.map((b) => ({
           type: "Feature",
           geometry: {
-            type: "Point",
-            coordinates: b.center,
+            type: "Polygon",
+            coordinates: createGeoCirclePolygon(b.center, 0.065, 0.055, 64),
           },
           properties: {
             id: b.id,
@@ -99,79 +159,147 @@ export function MapView({
         })),
       };
 
-      map.addSource("biomes-source", {
+      map.addSource("biomes-polygon-source", {
         type: "geojson",
-        data: biomeFeatures,
+        data: biomePolygons,
       });
 
-      // Atmospheric glowing halo
+      // Geographic zone interior fill (locked to coordinates)
       map.addLayer({
-        id: "biomes-glow-layer",
-        type: "circle",
-        source: "biomes-source",
+        id: "biomes-polygon-fill",
+        type: "fill",
+        source: "biomes-polygon-source",
         paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            3,
-            20,
-            8,
-            70,
-            13,
-            240,
-          ],
-          "circle-color": ["get", "color"],
-          "circle-opacity": 0.22,
-          "circle-blur": 0.85,
+          "fill-color": ["get", "color"],
+          "fill-opacity": 0.13,
         },
       });
 
-      // Biome perimeter boundary ring
+      // Solid inner radar perimeter
       map.addLayer({
-        id: "biomes-perimeter-layer",
-        type: "circle",
-        source: "biomes-source",
+        id: "biomes-polygon-stroke-inner",
+        type: "line",
+        source: "biomes-polygon-source",
         paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            3,
-            15,
-            8,
-            55,
-            13,
-            180,
-          ],
-          "circle-color": "transparent",
-          "circle-stroke-width": 2,
-          "circle-stroke-color": ["get", "color"],
-          "circle-stroke-opacity": 0.55,
+          "line-color": ["get", "color"],
+          "line-width": 1.2,
+          "line-opacity": 0.4,
         },
       });
 
-      // Cursor pointer and click on biome perimeter to focus
-      map.on("click", "biomes-perimeter-layer", (e) => {
+      // Dashed radar boundary line (locked to coordinates)
+      map.addLayer({
+        id: "biomes-polygon-stroke",
+        type: "line",
+        source: "biomes-polygon-source",
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": 2.2,
+          "line-opacity": 0.85,
+          "line-dasharray": [3, 2],
+        },
+      });
+
+      // Cursor pointer and click on biome polygon to focus
+      map.on("click", "biomes-polygon-fill", (e) => {
         if (!e.features || !e.features[0]) return;
         const clickedId = e.features[0].properties?.id;
         const targetBiome = BIOMES.find((b) => b.id === clickedId);
-        if (targetBiome && onSelectBiome) {
-          onSelectBiome(targetBiome);
+        if (targetBiome) {
+          sfx.playSwitch();
+          onSelectBiomeRef.current?.(targetBiome);
+          map.flyTo({
+            center: targetBiome.center,
+            zoom: targetBiome.zoom,
+            speed: 1.2,
+            pitch: 40,
+            essential: true,
+          });
         }
       });
 
-      map.on("mouseenter", "biomes-perimeter-layer", () => {
+      map.on("mouseenter", "biomes-polygon-fill", () => {
         map.getCanvas().style.cursor = "pointer";
       });
-      map.on("mouseleave", "biomes-perimeter-layer", () => {
+      map.on("mouseleave", "biomes-polygon-fill", () => {
         map.getCanvas().style.cursor = "";
       });
+
+      // Create interactive Biome Location Pins for High-Altitude Overview
+      BIOMES.forEach((b) => {
+        const pinEl = document.createElement("div");
+        pinEl.className =
+          "biome-pin-marker group cursor-pointer flex flex-col items-center select-none transition-all duration-300";
+        pinEl.style.willChange = "transform, opacity";
+
+        // Label pill with biome name
+        const labelPill = document.createElement("div");
+        labelPill.className =
+          "flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/95 text-white border shadow-2xl backdrop-blur-md mb-1.5 transition-transform duration-200 group-hover:scale-105";
+        labelPill.style.borderColor = `${b.accentColor}99`;
+        labelPill.innerHTML = `
+          <span class="w-2 h-2 rounded-full inline-block animate-pulse" style="background-color: ${b.accentColor}; box-shadow: 0 0 8px ${b.accentColor};"></span>
+          <span class="font-sans font-bold text-[11px] whitespace-nowrap tracking-wide text-slate-100">${b.name}</span>
+        `;
+        pinEl.appendChild(labelPill);
+
+        // Location Pin Beacon with SVG Icon
+        const pinIcon = document.createElement("div");
+        pinIcon.className = "relative flex items-center justify-center transition-transform duration-200 group-hover:-translate-y-1 group-hover:scale-110";
+        pinIcon.innerHTML = `
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shadow-2xl border-2 border-white" style="background: radial-gradient(circle at 30% 30%, ${b.accentColor}, #0f172a); box-shadow: 0 4px 16px ${b.accentColor}99;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          </div>
+          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px]" style="border-t-color: #0f172a;"></div>
+        `;
+        pinEl.appendChild(pinIcon);
+
+        // Ripple dot on terrain
+        const ripple = document.createElement("div");
+        ripple.className = "w-7 h-1.5 rounded-full mt-1 opacity-60 blur-[1px]";
+        ripple.style.backgroundColor = b.accentColor;
+        pinEl.appendChild(ripple);
+
+        // Click / touch handler: select biome and fly directly to zone
+        const handleSelect = (e: Event) => {
+          e.stopPropagation();
+          sfx.playSwitch();
+          onSelectBiomeRef.current?.(b);
+          map.flyTo({
+            center: b.center,
+            zoom: b.zoom,
+            speed: 1.3,
+            curve: 1.4,
+            pitch: 40,
+            essential: true,
+          });
+        };
+
+        pinEl.addEventListener("click", handleSelect);
+        pinEl.addEventListener("touchend", handleSelect);
+
+        const pinMarker = new Marker({
+          element: pinEl,
+          anchor: "bottom",
+        })
+          .setLngLat(b.center)
+          .addTo(map);
+
+        biomePinsRef.current[b.id] = pinMarker;
+      });
+
+      // Synchronize visibility on zoom events
+      map.on("zoom", syncZoomVisibility);
+      syncZoomVisibility();
     });
 
     mapRef.current = map;
 
     return () => {
+      Object.values(biomePinsRef.current).forEach((pin) => pin.remove());
+      biomePinsRef.current = {};
       map.remove();
       mapRef.current = null;
     };
@@ -190,7 +318,19 @@ export function MapView({
     });
   }, [activeBiome]);
 
-  // 3. Render and sync markers for Pokémon
+  // 3. React to selectedPokemon changes (smooth focus & close-up zoom on selected creature)
+  useEffect(() => {
+    if (!mapRef.current || !selectedPokemon) return;
+    mapRef.current.flyTo({
+      center: selectedPokemon.coordinates,
+      zoom: 14.5,
+      speed: 1.25,
+      pitch: 45,
+      essential: true,
+    });
+  }, [selectedPokemon]);
+
+  // 4. Render and sync markers for Pokémon
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -202,7 +342,7 @@ export function MapView({
     pokemonList.forEach((pokemon) => {
       const isSelected = selectedPokemon?.id === pokemon.id;
 
-      // Custom marker DOM Element (Pure sprite without bounding card box)
+      // Custom marker DOM Element
       const el = document.createElement("div");
       el.className = "pokemon-radar-marker group cursor-pointer relative select-none flex items-center justify-center";
       el.style.width = "64px";
@@ -239,9 +379,10 @@ export function MapView({
         onSelectPokemon(pokemon);
         map.flyTo({
           center: pokemon.coordinates,
-          zoom: Math.max(map.getZoom(), 13),
-          speed: 1.1,
+          zoom: 14.5,
+          speed: 1.25,
           pitch: 45,
+          essential: true,
         });
       });
 
@@ -254,6 +395,9 @@ export function MapView({
 
       markersRef.current[`${pokemon.id}-${pokemon.coordinates.join(",")}`] = marker;
     });
+
+    // Sync visibility with current zoom level immediately
+    syncZoomVisibility();
 
     return () => {
       Object.values(markersRef.current).forEach((marker) => marker.remove());

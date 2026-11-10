@@ -100,6 +100,55 @@ class SoundEffectsEngine {
     this.playAudio("/audio/sfx/start_menu.wav", 0.5);
   }
 
+  public playMenuClose() {
+    this.playAudio("/audio/sfx/start_menu.wav", 0.45);
+  }
+
+  // 6. Pop animation sound (Retro synth pop)
+  public playPop() {
+    if (this.isMuted || typeof window === "undefined") return;
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      const now = ctx.currentTime;
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(740, now + 0.09);
+      gain.gain.setValueAtTime(0.35 * (this.sfxVolume / 0.5), now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    } catch {
+      this.playMenuOpen();
+    }
+  }
+
+  // 7. Typewriter dialogue blip (Vintage RPG text sound)
+  public playTypewriterBlip() {
+    if (this.isMuted || typeof window === "undefined") return;
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      const now = ctx.currentTime;
+      osc.frequency.setValueAtTime(680, now);
+      gain.gain.setValueAtTime(0.04 * (this.sfxVolume / 0.5), now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.025);
+    } catch {
+      // AudioContext safety
+    }
+  }
+
   // 6. Action Denied / Collision: SFX_COLLISION.wav
   public playDenied() {
     this.playAudio("/audio/sfx/denied.wav", 0.45);

@@ -90,7 +90,7 @@ export function RadarHud({
     <>
       <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
         {/* Top Pokédex Navigation Bar: higher z-index (z-30) so dropdown always floats on top */}
-        <div className="relative z-30 flex items-center justify-between gap-1.5 sm:gap-2.5 p-2 sm:p-2.5 md:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
+        <div className="relative z-30 flex items-center justify-between gap-1 sm:gap-2.5 p-1.5 sm:p-2.5 md:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
           {/* Brand & Pokeball Icon */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 hover:scale-110 hover:rotate-12 cursor-pointer">
@@ -101,7 +101,7 @@ export function RadarHud({
               />
             </div>
 
-            <div>
+            <div className="hidden min-[420px]:block">
               <div className="flex items-center gap-1">
                 <h1 className="text-xs sm:text-sm font-bold tracking-wide text-red-600 leading-none">
                   POKÉRADAR{" "}
@@ -127,13 +127,13 @@ export function RadarHud({
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* 1. Buscador */}
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Buscar..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-20 xs:w-28 sm:w-44 pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all"
+                className="w-16 min-[380px]:w-20 sm:w-36 md:w-44 pl-6 sm:pl-7 pr-1.5 sm:pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all focus:w-28 min-[380px]:focus:w-32 sm:focus:w-44"
               />
             </div>
 
@@ -143,7 +143,7 @@ export function RadarHud({
                 sfx.playButtonPress();
                 setIsAudioModalOpen(true);
               }}
-              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer ${
                 isMuted
                   ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
                   : "bg-red-50 border-red-200 text-red-600 shadow-xs hover:bg-red-100"
@@ -152,9 +152,9 @@ export function RadarHud({
               aria-label="Ajustes de Sonido"
             >
               {isMuted ? (
-                <VolumeX className="w-4 h-4" />
+                <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               ) : (
-                <Volume2 className="w-4 h-4 animate-pulse" />
+                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" />
               )}
             </button>
 
@@ -165,7 +165,7 @@ export function RadarHud({
                   sfx.playButtonPress();
                   setIsTypeDropdownOpen((prev) => !prev);
                 }}
-                className={`px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer text-xs font-semibold ${
+                className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer text-xs font-semibold ${
                   selectedType !== "all"
                     ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                     : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/80"
@@ -190,8 +190,8 @@ export function RadarHud({
                 </span>
                 <Icon
                   icon="solar:alt-arrow-down-linear"
-                  width={13}
-                  height={13}
+                  width={12}
+                  height={12}
                   className={`text-slate-400 transition-transform ${
                     isTypeDropdownOpen ? "rotate-180" : ""
                   }`}
@@ -335,25 +335,14 @@ export function RadarHud({
                   </svg>
                 </button>
 
-                {/* Active Biome Name extends HORIZONTALLY to the right (hidden when type dropdown is open to prevent visual clutter) */}
-                {isActive && !isTypeDropdownOpen ? (
-                  <div className="absolute left-full ml-2.5 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-semibold shadow-xl border border-slate-700/60 flex items-center gap-1.5 whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200 z-20 pointer-events-none">
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0 animate-ping"
-                      style={{ backgroundColor: biome.accentColor }}
-                    />
-                    <span className="leading-none">{biome.name}</span>
-                  </div>
-                ) : (
-                  /* Hover tooltip extends HORIZONTALLY to the right */
-                  <div className="absolute left-full ml-2.5 px-2 py-0.5 rounded-md bg-slate-900/90 text-white text-[10px] font-medium shadow-md hidden group-hover:flex items-center gap-1 whitespace-nowrap z-20 pointer-events-none">
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ backgroundColor: biome.accentColor }}
-                    />
-                    <span>{biome.name}</span>
-                  </div>
-                )}
+                {/* Desktop hover tooltip extends to the right without persistent badge */}
+                <div className="absolute left-full ml-2.5 px-2.5 py-1 rounded-lg bg-slate-900/95 text-white text-[10px] font-medium shadow-md border border-slate-700/50 hidden group-hover:flex items-center gap-1.5 whitespace-nowrap z-20 pointer-events-none">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: biome.accentColor }}
+                  />
+                  <span>{biome.name}</span>
+                </div>
               </div>
             );
           })}

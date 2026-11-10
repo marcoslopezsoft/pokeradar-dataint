@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { usePokemonRadar } from "@/hooks/use-pokemon-radar";
 import { useExpedition } from "@/hooks/use-expedition";
 import { MapContainer } from "@/components/map/map-container";
@@ -9,6 +10,7 @@ import { DetailDrawer } from "@/components/pokemon/detail-drawer";
 import { PartyDock } from "@/components/expedition/party-dock";
 import { TeamAnalysisModal } from "@/components/expedition/team-analysis-modal";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
+import { ProfessorOakDialog } from "@/components/ui/professor-oak-dialog";
 
 export default function HomePage() {
   const {
@@ -32,6 +34,7 @@ export default function HomePage() {
 
   const [hasStarted, setHasStarted] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [showOakDialog, setShowOakDialog] = useState(false);
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
@@ -39,9 +42,19 @@ export default function HomePage() {
       {!hasStarted && (
         <WelcomeScreen
           isLoading={loading}
-          onStartAdventure={() => setHasStarted(true)}
+          onStartAdventure={() => {
+            setHasStarted(true);
+            setShowOakDialog(true);
+          }}
         />
       )}
+
+      {/* Professor Oak Welcoming Dialog */}
+      <AnimatePresence>
+        {hasStarted && showOakDialog && (
+          <ProfessorOakDialog onClose={() => setShowOakDialog(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Top HUD Controls & Weather */}
       <RadarHud
