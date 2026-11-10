@@ -85,12 +85,6 @@ export function WelcomeScreen({ onStartAdventure, isLoading }: WelcomeScreenProp
               transition={{ delay: 0.15, duration: 0.4 }}
               className="space-y-2 mb-8"
             >
-              <div className="flex items-center justify-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-600 text-[11px] font-bold tracking-wider uppercase">
-                  DataInt Engineering
-                </span>
-              </div>
-
               <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 font-sans">
                 POKÉRADAR <span className="text-red-600">GEO</span>
               </h1>
