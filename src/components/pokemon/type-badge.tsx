@@ -11,7 +11,7 @@ interface TypeStyle {
   icon: string;
 }
 
-const TYPE_CONFIG: Record<string, TypeStyle> = {
+export const TYPE_CONFIG: Record<string, TypeStyle> = {
   normal: {
     label: "Normal",
     bg: "bg-stone-100",

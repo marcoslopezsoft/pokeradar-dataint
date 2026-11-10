@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion, PokemonRadarEntity } from "@/types/pokemon";
 import { Search, Volume2, VolumeX } from "lucide-react";
@@ -9,7 +9,7 @@ import { WeatherBadge } from "../weather/weather-badge";
 import { sfx } from "@/lib/sound-effects";
 import { translateTypeToSpanish } from "@/lib/utils";
 import { AudioSettingsModal } from "../audio/audio-settings-modal";
-import { TypeFilterModal } from "../pokemon/type-filter-modal";
+import { TYPE_CONFIG } from "../pokemon/type-badge";
 
 interface RadarHudProps {
   activeBiome: BiomeRegion;
@@ -22,6 +22,28 @@ interface RadarHudProps {
   party?: PokemonRadarEntity[];
   onOpenTeamAnalysis?: () => void;
 }
+
+const AVAILABLE_TYPES: string[] = [
+  "all",
+  "water",
+  "fire",
+  "grass",
+  "electric",
+  "ice",
+  "rock",
+  "ground",
+  "flying",
+  "dragon",
+  "normal",
+  "fighting",
+  "poison",
+  "psychic",
+  "bug",
+  "ghost",
+  "steel",
+  "fairy",
+  "dark",
+];
 
 export function RadarHud({
   activeBiome,
@@ -36,13 +58,28 @@ export function RadarHud({
 }: RadarHudProps) {
   const [isMuted, setIsMuted] = useState(sfx.getIsMuted());
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
-  const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const typeDropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const unsubscribe = sfx.subscribeVolume(() => {
       setIsMuted(sfx.getIsMuted());
     });
     return unsubscribe;
+  }, []);
+
+  // Close type dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        typeDropdownRef.current &&
+        !typeDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsTypeDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -136,30 +173,107 @@ export function RadarHud({
               />
             </div>
 
-            {/* Type Filter Button (Opens Type Filter Modal) */}
-            <button
-              onClick={() => {
-                sfx.playButtonPress();
-                setIsTypeModalOpen(true);
-              }}
-              className={`px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer text-xs font-semibold ${
-                selectedType !== "all"
-                  ? "bg-slate-900 text-white border-slate-900 shadow-xs ring-1 ring-red-500"
-                  : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/80"
-              }`}
-              title="Filtrar por Tipo"
-              aria-label="Filtrar por Tipo"
-            >
-              <Icon
-                icon="solar:filter-bold"
-                width={15}
-                height={15}
-                className={selectedType !== "all" ? "text-red-400" : "text-slate-500"}
-              />
-              <span className="hidden sm:inline">
-                {selectedType === "all" ? "Tipos" : translateTypeToSpanish(selectedType)}
-              </span>
-            </button>
+            {/* Custom Type Filter Dropdown with Icons */}
+            <div className="relative" ref={typeDropdownRef}>
+              <button
+                onClick={() => {
+                  sfx.playButtonPress();
+                  setIsTypeDropdownOpen((prev) => !prev);
+                }}
+                className={`px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer text-xs font-semibold ${
+                  selectedType !== "all"
+                    ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                    : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/80"
+                }`}
+                title="Filtrar por Tipo"
+                aria-expanded={isTypeDropdownOpen}
+              >
+                <Icon
+                  icon={
+                    selectedType === "all"
+                      ? "solar:filter-bold"
+                      : TYPE_CONFIG[selectedType]?.icon || "solar:filter-bold"
+                  }
+                  width={15}
+                  height={15}
+                  className={selectedType !== "all" ? "text-red-400" : "text-slate-500"}
+                />
+                <span className="hidden sm:inline">
+                  {selectedType === "all"
+                    ? "Tipos"
+                    : TYPE_CONFIG[selectedType]?.label || translateTypeToSpanish(selectedType)}
+                </span>
+                <Icon
+                  icon="solar:alt-arrow-down-linear"
+                  width={13}
+                  height={13}
+                  className={`text-slate-400 transition-transform ${
+                    isTypeDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isTypeDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <button
+                    onClick={() => {
+                      sfx.playButtonPress();
+                      onTypeChange("all");
+                      setIsTypeDropdownOpen(false);
+                    }}
+                    className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                      selectedType === "all"
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon icon="solar:globus-bold" width={15} height={15} className="text-slate-500" />
+                      <span>Todos los tipos</span>
+                    </div>
+                    {selectedType === "all" && (
+                      <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
+                    )}
+                  </button>
+
+                  <div className="my-1 border-t border-slate-100" />
+
+                  {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => {
+                    const cfg = TYPE_CONFIG[type];
+                    const isSelected = selectedType === type;
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          sfx.playButtonPress();
+                          onTypeChange(type);
+                          setIsTypeDropdownOpen(false);
+                        }}
+                        className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-slate-900 text-white"
+                            : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            icon={cfg?.icon || "solar:record-circle-bold"}
+                            width={15}
+                            height={15}
+                            className={isSelected ? "text-white" : cfg?.text || "text-slate-600"}
+                          />
+                          <span>{cfg?.label || translateTypeToSpanish(type)}</span>
+                        </div>
+                        {isSelected && (
+                          <Icon icon="solar:check-circle-bold" width={14} height={14} className="text-emerald-400" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -246,14 +360,6 @@ export function RadarHud({
       <AudioSettingsModal
         isOpen={isAudioModalOpen}
         onClose={() => setIsAudioModalOpen(false)}
-      />
-
-      {/* Type Filter Modal */}
-      <TypeFilterModal
-        isOpen={isTypeModalOpen}
-        onClose={() => setIsTypeModalOpen(false)}
-        selectedType={selectedType}
-        onSelectType={onTypeChange}
       />
     </>
   );
