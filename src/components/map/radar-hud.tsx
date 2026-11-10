@@ -132,7 +132,7 @@ export function RadarHud({
                 placeholder="Buscar..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-24 xs:w-32 sm:w-44 pl-7 sm:pl-8 pr-2.5 sm:pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all"
+                className="w-20 xs:w-28 sm:w-44 pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all"
               />
             </div>
 
@@ -142,7 +142,7 @@ export function RadarHud({
                 sfx.playButtonPress();
                 setIsTypeModalOpen(true);
               }}
-              className={`px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer text-xs font-semibold ${
+              className={`px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer text-xs font-semibold ${
                 selectedType !== "all"
                   ? "bg-slate-900 text-white border-slate-900 shadow-xs ring-1 ring-red-500"
                   : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/80"
@@ -162,85 +162,85 @@ export function RadarHud({
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Vertical Biomes Distribution (Name appears horizontally next to touched/active ball) */}
-      <div className="fixed left-3 top-20 sm:top-24 z-30 flex flex-col items-center gap-2.5 p-2 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
-        <span className="text-[9px] font-extrabold text-slate-400 tracking-wider text-center uppercase">
-          Biomas
-        </span>
+        {/* Vertical Biomes Selector: Sits naturally below navbar, never overlaps on mobile or desktop */}
+        <div className="self-start pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
+          <span className="text-[8px] font-extrabold text-slate-400 tracking-wider text-center uppercase leading-none pt-0.5">
+            Biomas
+          </span>
 
-        {BIOMES.map((biome) => {
-          const isActive = biome.id === activeBiome.id;
+          {BIOMES.map((biome) => {
+            const isActive = biome.id === activeBiome.id;
 
-          return (
-            <div key={biome.id} className="relative flex items-center group">
-              <button
-                onClick={() => {
-                  sfx.playSwitch();
-                  onSelectBiome(biome);
-                }}
-                className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all flex items-center justify-center cursor-pointer p-0.5 ${
-                  isActive
-                    ? "scale-125 z-10 drop-shadow-[0_4px_10px_rgba(0,0,0,0.25)]"
-                    : "opacity-65 hover:opacity-100 hover:scale-110 drop-shadow-xs"
-                }`}
-                title={biome.name}
-                aria-label={biome.name}
-              >
-                {/* Authentic Pokéball vector icon */}
-                <svg
-                  viewBox="0 0 100 100"
-                  className="w-full h-full transition-transform duration-200"
+            return (
+              <div key={biome.id} className="relative flex items-center group">
+                <button
+                  onClick={() => {
+                    sfx.playSwitch();
+                    onSelectBiome(biome);
+                  }}
+                  className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-full transition-all flex items-center justify-center cursor-pointer p-0.5 ${
+                    isActive
+                      ? "scale-115 z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
+                      : "opacity-65 hover:opacity-100 hover:scale-110 drop-shadow-xs"
+                  }`}
+                  title={biome.name}
+                  aria-label={biome.name}
                 >
-                  {/* Top Hemisphere dome filled with biome accent color */}
-                  <path
-                    d="M 50 10 c 19.9 0 36.3 14.7 39.4 34 H 66.2 C 63.6 34.6 57.4 30 50 30 s -13.6 4.6 -16.2 14 H 10.6 C 13.7 24.7 30.1 10 50 10 z"
-                    fill={biome.accentColor}
-                  />
-                  {/* Bottom Hemisphere dome filled with white */}
-                  <path
-                    d="M 50 90 c -19.9 0 -36.3 -14.7 -39.4 -34 h 23.2 C 36.4 65.4 42.6 70 50 70 s 13.6 -4.6 16.2 -14 h 23.2 c -3.1 19.3 -19.5 34 -39.4 34 z"
-                    fill="#ffffff"
-                  />
-                  {/* Center button circle */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="10"
-                    fill="#ffffff"
-                  />
-                  {/* Pokéball vector stencil: rim, belt and center button ring */}
-                  <path
-                    d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z"
-                    fill={isActive ? biome.accentColor : "#475569"}
-                  />
-                </svg>
-              </button>
+                  {/* Authentic compact Pokéball vector icon */}
+                  <svg
+                    viewBox="0 0 100 100"
+                    className="w-full h-full transition-transform duration-200"
+                  >
+                    {/* Top Hemisphere dome filled with biome accent color */}
+                    <path
+                      d="M 50 10 c 19.9 0 36.3 14.7 39.4 34 H 66.2 C 63.6 34.6 57.4 30 50 30 s -13.6 4.6 -16.2 14 H 10.6 C 13.7 24.7 30.1 10 50 10 z"
+                      fill={biome.accentColor}
+                    />
+                    {/* Bottom Hemisphere dome filled with white */}
+                    <path
+                      d="M 50 90 c -19.9 0 -36.3 -14.7 -39.4 -34 h 23.2 C 36.4 65.4 42.6 70 50 70 s 13.6 -4.6 16.2 -14 h 23.2 c -3.1 19.3 -19.5 34 -39.4 34 z"
+                      fill="#ffffff"
+                    />
+                    {/* Center button circle */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="10"
+                      fill="#ffffff"
+                    />
+                    {/* Pokéball vector stencil: rim, belt and center button ring */}
+                    <path
+                      d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z"
+                      fill={isActive ? biome.accentColor : "#475569"}
+                    />
+                  </svg>
+                </button>
 
-              {/* Active Biome Name extends HORIZONTALLY to the right */}
-              {isActive ? (
-                <div className="absolute left-full ml-3 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-xl border border-slate-700/60 flex items-center gap-2 whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200 z-20 pointer-events-none">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0 animate-ping"
-                    style={{ backgroundColor: biome.accentColor }}
-                  />
-                  <span className="leading-none">{biome.name}</span>
-                </div>
-              ) : (
-                /* Hover tooltip extends HORIZONTALLY to the right */
-                <div className="absolute left-full ml-3 px-2.5 py-1 rounded-lg bg-slate-900/90 text-white text-[11px] font-medium shadow-lg hidden group-hover:flex items-center gap-1.5 whitespace-nowrap z-20 pointer-events-none">
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ backgroundColor: biome.accentColor }}
-                  />
-                  <span>{biome.name}</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {/* Active Biome Name extends HORIZONTALLY to the right */}
+                {isActive ? (
+                  <div className="absolute left-full ml-2.5 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-semibold shadow-xl border border-slate-700/60 flex items-center gap-1.5 whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200 z-20 pointer-events-none">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0 animate-ping"
+                      style={{ backgroundColor: biome.accentColor }}
+                    />
+                    <span className="leading-none">{biome.name}</span>
+                  </div>
+                ) : (
+                  /* Hover tooltip extends HORIZONTALLY to the right */
+                  <div className="absolute left-full ml-2.5 px-2 py-0.5 rounded-md bg-slate-900/90 text-white text-[10px] font-medium shadow-md hidden group-hover:flex items-center gap-1 whitespace-nowrap z-20 pointer-events-none">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ backgroundColor: biome.accentColor }}
+                    />
+                    <span>{biome.name}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </header>
 
       {/* Audio Settings Modal */}
       <AudioSettingsModal
