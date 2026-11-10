@@ -35,6 +35,19 @@ export default function HomePage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [showOakDialog, setShowOakDialog] = useState(false);
+  const [showTeamTutorialDialog, setShowTeamTutorialDialog] = useState(false);
+  const [hasShownTeamTutorial, setHasShownTeamTutorial] = useState(false);
+  const [firstRecruitedPokemon, setFirstRecruitedPokemon] = useState<string | null>(null);
+
+  const handleAddToParty = (pokemon: Parameters<typeof addToParty>[0]) => {
+    const isFirstPokemon = party.length === 0;
+    const added = addToParty(pokemon);
+    if (added && isFirstPokemon && !hasShownTeamTutorial) {
+      setFirstRecruitedPokemon(pokemon.displayName);
+      setHasShownTeamTutorial(true);
+      setShowTeamTutorialDialog(true);
+    }
+  };
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
@@ -49,10 +62,32 @@ export default function HomePage() {
         />
       )}
 
-      {/* Professor Oak Welcoming Dialog */}
+      {/* Professor Oak Welcoming Dialog (Intro on Start Adventure) */}
       <AnimatePresence>
         {hasStarted && showOakDialog && (
           <ProfessorOakDialog onClose={() => setShowOakDialog(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Professor Oak Explaining Team Button Dialog (Triggered on 1st Pokemon recruited) */}
+      <AnimatePresence>
+        {hasStarted && showTeamTutorialDialog && (
+          <ProfessorOakDialog
+            imageSrc="/images/professor-oak-explaining.png"
+            title="Profesor Oak · ¡Primer Pokémon!"
+            speech={
+              `¡Magnífica elección, explorador!\n\n` +
+              `Has reclutado a ${firstRecruitedPokemon || "tu primer Pokémon"} para la expedición. ¿Notaste que en la barra superior se acaba de habilitar el botón «EQUIPO»?\n\n` +
+              `Al pulsarlo podrás consultar el Diagnóstico Táctico en tiempo real: balance elemental, coberturas, debilidades y fortalezas ante otros tipos.\n\n` +
+              `¡Puedes formar un equipo de hasta 6 Pokémon! ¡Continúa investigando los biomas!`
+            }
+            actionButtonText="Ver Equipo"
+            onAction={() => {
+              setShowTeamTutorialDialog(false);
+              setIsTeamModalOpen(true);
+            }}
+            onClose={() => setShowTeamTutorialDialog(false)}
+          />
         )}
       </AnimatePresence>
 
@@ -91,7 +126,7 @@ export default function HomePage() {
         pokemon={selectedPokemon}
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
-        onAddToParty={addToParty}
+        onAddToParty={handleAddToParty}
         onRemoveFromParty={removeFromParty}
         isInParty={selectedPokemon ? isInParty(selectedPokemon.id) : false}
         isPartyFull={isPartyFull}

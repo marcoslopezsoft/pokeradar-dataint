@@ -6,16 +6,28 @@ import { Icon } from "@iconify/react";
 import { sfx } from "@/lib/sound-effects";
 
 interface ProfessorOakDialogProps {
+  imageSrc?: string;
+  title?: string;
+  speech?: string;
+  actionButtonText?: string;
+  onAction?: () => void;
   onClose: () => void;
 }
 
-const WELCOME_SPEECH =
+const DEFAULT_WELCOME_SPEECH =
   "¡Hola, explorador! ¡Te doy la bienvenida al mundo de POKÉMON!\n\n" +
   "Mi nombre es OAK, aunque todos me conocen como el PROFESOR POKÉMON. " +
   "He sintonizado este PokéRadar Geoespacial para rastrear especies en tiempo real en los biomas de Argentina.\n\n" +
   "¡Explora las zonas del mapa, analiza el clima y forma un equipo legendario de hasta 6 compañeros! ¡Tu aventura comienza ahora!";
 
-export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
+export function ProfessorOakDialog({
+  imageSrc = "/images/professor-oak.png",
+  title = "Profesor Oak",
+  speech = DEFAULT_WELCOME_SPEECH,
+  actionButtonText = "¡Entendido!",
+  onAction,
+  onClose,
+}: ProfessorOakDialogProps) {
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   const textIndexRef = useRef(0);
@@ -32,13 +44,13 @@ export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
     setIsTyping(true);
 
     const interval = setInterval(() => {
-      if (textIndexRef.current < WELCOME_SPEECH.length) {
+      if (textIndexRef.current < speech.length) {
         textIndexRef.current += 1;
-        const currentSlice = WELCOME_SPEECH.slice(0, textIndexRef.current);
+        const currentSlice = speech.slice(0, textIndexRef.current);
         setDisplayedText(currentSlice);
 
         // Subtle vintage typewriter blip every 3 characters (excluding spaces/newlines)
-        const char = WELCOME_SPEECH[textIndexRef.current - 1];
+        const char = speech[textIndexRef.current - 1];
         if (textIndexRef.current % 3 === 0 && char !== " " && char !== "\n") {
           sfx.playTypewriterBlip();
         }
@@ -49,12 +61,12 @@ export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
     }, 20);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [speech]);
 
   // Skip typing if clicked on the speech text
   const handleBubbleClick = () => {
     if (isTyping) {
-      setDisplayedText(WELCOME_SPEECH);
+      setDisplayedText(speech);
       setIsTyping(false);
       sfx.playButtonPress();
     }
@@ -63,6 +75,15 @@ export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
   const handleClose = () => {
     sfx.playMenuClose();
     onClose();
+  };
+
+  const handleAction = () => {
+    sfx.playButtonPress();
+    if (onAction) {
+      onAction();
+    } else {
+      onClose();
+    }
   };
 
   return (
@@ -83,9 +104,9 @@ export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
           {/* Subtle glow behind Oak */}
           <div className="absolute -inset-2 bg-gradient-to-t from-red-500/20 to-amber-500/20 blur-xl rounded-full pointer-events-none" />
 
-          {/* Professor Oak Official Artwork */}
+          {/* Professor Oak Artwork */}
           <img
-            src="/images/professor-oak.png"
+            src={imageSrc}
             alt="Profesor Oak"
             className="w-28 sm:w-44 md:w-52 h-auto object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)] select-none pointer-events-none"
           />
@@ -119,7 +140,7 @@ export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
                 />
               </span>
               <span className="font-sans font-extrabold text-xs sm:text-sm tracking-wider text-slate-900 uppercase">
-                Profesor Oak
+                {title}
               </span>
             </div>
 
@@ -152,11 +173,11 @@ export function ProfessorOakDialog({ onClose }: ProfessorOakDialogProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleClose();
+                handleAction();
               }}
               className="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] shadow-xs hover:shadow transition-all cursor-pointer flex items-center gap-1 active:scale-95"
             >
-              <span>¡Entendido!</span>
+              <span>{actionButtonText}</span>
               <Icon icon="solar:arrow-right-linear" width={13} height={13} />
             </button>
           </div>

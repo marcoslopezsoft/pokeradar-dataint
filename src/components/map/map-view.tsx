@@ -200,31 +200,6 @@ export function MapView({
         },
       });
 
-      // Cursor pointer and click on biome polygon to focus
-      map.on("click", "biomes-polygon-fill", (e) => {
-        if (!e.features || !e.features[0]) return;
-        const clickedId = e.features[0].properties?.id;
-        const targetBiome = BIOMES.find((b) => b.id === clickedId);
-        if (targetBiome) {
-          sfx.playSwitch();
-          onSelectBiomeRef.current?.(targetBiome);
-          map.flyTo({
-            center: targetBiome.center,
-            zoom: targetBiome.zoom,
-            speed: 1.2,
-            pitch: 40,
-            essential: true,
-          });
-        }
-      });
-
-      map.on("mouseenter", "biomes-polygon-fill", () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", "biomes-polygon-fill", () => {
-        map.getCanvas().style.cursor = "";
-      });
-
       // Create interactive Biome Location Pins for High-Altitude Overview
       BIOMES.forEach((b) => {
         const pinEl = document.createElement("div");
@@ -323,8 +298,8 @@ export function MapView({
     if (!mapRef.current || !selectedPokemon) return;
     mapRef.current.flyTo({
       center: selectedPokemon.coordinates,
-      zoom: 14.5,
-      speed: 1.25,
+      zoom: 15.5,
+      speed: 1.35,
       pitch: 45,
       essential: true,
     });
@@ -373,18 +348,22 @@ export function MapView({
       }`;
       el.appendChild(img);
 
-      // On click: flyTo creature & open drawer
-      el.addEventListener("click", () => {
+      // On click or touch: flyTo creature & open drawer
+      const handleMarkerSelect = (e: Event) => {
+        e.stopPropagation();
         sfx.playDexPage();
         onSelectPokemon(pokemon);
         map.flyTo({
           center: pokemon.coordinates,
-          zoom: 14.5,
-          speed: 1.25,
+          zoom: 15.5,
+          speed: 1.35,
           pitch: 45,
           essential: true,
         });
-      });
+      };
+
+      el.addEventListener("click", handleMarkerSelect);
+      el.addEventListener("touchend", handleMarkerSelect);
 
       const marker = new Marker({
         element: el,
