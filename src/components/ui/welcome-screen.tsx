@@ -15,6 +15,7 @@ export function WelcomeScreen({ onStartAdventure, isLoading }: WelcomeScreenProp
 
   const handleStart = () => {
     sfx.playMenuOpen();
+    sfx.startBgm();
     setHasStarted(true);
     onStartAdventure();
   };

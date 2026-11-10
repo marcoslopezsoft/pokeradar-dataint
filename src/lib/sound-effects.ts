@@ -4,6 +4,17 @@ class SoundEffectsEngine {
   private isMuted: boolean = false;
   private bgmAudio: HTMLAudioElement | null = null;
   private isBgmPlaying: boolean = false;
+  private bgmListeners: Set<(playing: boolean) => void> = new Set();
+
+  public subscribeBgm(callback: (playing: boolean) => void): () => void {
+    this.bgmListeners.add(callback);
+    callback(this.isBgmPlaying);
+    return () => this.bgmListeners.delete(callback);
+  }
+
+  private notifyBgmListeners() {
+    this.bgmListeners.forEach((fn) => fn(this.isBgmPlaying));
+  }
 
   public setMuted(muted: boolean) {
     this.isMuted = muted;
@@ -75,27 +86,51 @@ class SoundEffectsEngine {
   }
 
   // Background Music: Pokémon Red Title Screen Theme (/public/audio/pokemon-red-title.mp3)
-  public toggleBgm(): boolean {
-    if (typeof window === "undefined") return false;
-
-    if (!this.bgmAudio) {
+  private initBgm() {
+    if (!this.bgmAudio && typeof window !== "undefined") {
       this.bgmAudio = new Audio("/audio/pokemon-red-title.mp3");
       this.bgmAudio.loop = true;
       this.bgmAudio.volume = 0.25;
       this.bgmAudio.onended = () => {
         this.isBgmPlaying = false;
+        this.notifyBgmListeners();
       };
     }
+  }
+
+  public startBgm() {
+    if (typeof window === "undefined" || this.isBgmPlaying) return;
+    this.initBgm();
+    if (!this.bgmAudio) return;
+
+    this.bgmAudio.muted = this.isMuted;
+    this.bgmAudio
+      .play()
+      .then(() => {
+        this.isBgmPlaying = true;
+        this.notifyBgmListeners();
+      })
+      .catch((e) => {
+        console.warn("BGM auto-play policy blocked:", e);
+      });
+  }
+
+  public toggleBgm(): boolean {
+    if (typeof window === "undefined") return false;
+    this.initBgm();
+    if (!this.bgmAudio) return false;
 
     if (this.isBgmPlaying) {
       this.bgmAudio.pause();
       this.isBgmPlaying = false;
+      this.notifyBgmListeners();
     } else {
       this.bgmAudio.muted = this.isMuted;
       this.bgmAudio
         .play()
         .then(() => {
           this.isBgmPlaying = true;
+          this.notifyBgmListeners();
         })
         .catch((e) => {
           console.warn("BGM auto-play policy blocked:", e);

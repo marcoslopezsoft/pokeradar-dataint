@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion } from "@/types/pokemon";
 import { Search, Volume2, VolumeX } from "lucide-react";
@@ -41,15 +41,6 @@ const AVAILABLE_TYPES = [
   "dark",
 ];
 
-const BIOME_ICONS: Record<string, string> = {
-  "iguazu-rainforest": "solar:waterdrop-bold",
-  "perito-moreno-glacier": "solar:snowflake-bold",
-  "humahuaca-canyon": "tabler:mountain",
-  "buenos-aires-metropolis": "solar:buildings-bold",
-  "aconcagua-summit": "tabler:feather",
-  "valdes-peninsula": "solar:waves-bold",
-};
-
 export function RadarHud({
   activeBiome,
   onSelectBiome,
@@ -62,6 +53,14 @@ export function RadarHud({
   const [isMuted, setIsMuted] = useState(sfx.getIsMuted());
   const [isBgmPlaying, setIsBgmPlaying] = useState(sfx.getIsBgmPlaying());
 
+  // Keep BGM playback state synchronized with SoundEffectsEngine
+  useEffect(() => {
+    const unsubscribe = sfx.subscribeBgm((playing) => {
+      setIsBgmPlaying(playing);
+    });
+    return unsubscribe;
+  }, []);
+
   const toggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
@@ -72,8 +71,7 @@ export function RadarHud({
   };
 
   const toggleBgm = () => {
-    const playing = sfx.toggleBgm();
-    setIsBgmPlaying(playing);
+    sfx.toggleBgm();
   };
 
   return (
@@ -190,64 +188,63 @@ export function RadarHud({
         </div>
       </div>
 
-      {/* Biome Icons Selector with Hover Tooltip */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-md shadow-slate-200/50 pointer-events-auto self-start">
-        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-slate-500 tracking-wide">
-          <Icon icon="solar:compass-bold" width={14} height={14} className="text-red-500" />
-          <span>BIOMAS:</span>
+      {/* Biome Colors Selector with Hover Tooltip */}
+      <div className="flex items-center gap-2 p-1.5 px-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-md shadow-slate-200/50 pointer-events-auto self-start">
+        <span className="hidden sm:inline text-[11px] font-bold text-slate-500 tracking-wider">
+          BIOMAS:
         </span>
 
-        {BIOMES.map((biome) => {
-          const isActive = biome.id === activeBiome.id;
-          const iconName = BIOME_ICONS[biome.id] || "solar:map-point-bold";
+        {/* Thematic Chromatic Palette Dots */}
+        <div className="flex items-center gap-2">
+          {BIOMES.map((biome) => {
+            const isActive = biome.id === activeBiome.id;
 
-          return (
-            <div key={biome.id} className="relative group">
-              <button
-                onClick={() => {
-                  sfx.playSwitch();
-                  onSelectBiome(biome);
-                }}
-                className={`relative p-2.5 rounded-xl transition-all flex items-center justify-center cursor-pointer ${
-                  isActive
-                    ? "bg-slate-900 text-white shadow-md scale-105"
-                    : "bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:scale-105"
-                }`}
-                style={{
-                  borderBottom: isActive ? `2px solid ${biome.accentColor}` : undefined,
-                }}
-                title={biome.name}
-                aria-label={biome.name}
-              >
-                <Icon
-                  icon={iconName}
-                  width={18}
-                  height={18}
-                  style={{ color: isActive ? "#ffffff" : biome.accentColor }}
-                />
-              </button>
+            return (
+              <div key={biome.id} className="relative group flex items-center">
+                <button
+                  onClick={() => {
+                    sfx.playSwitch();
+                    onSelectBiome(biome);
+                  }}
+                  className={`relative w-6 h-6 rounded-full transition-all flex items-center justify-center cursor-pointer ${
+                    isActive
+                      ? "scale-125 shadow-md ring-2 ring-offset-2 ring-slate-800"
+                      : "hover:scale-115 opacity-80 hover:opacity-100 shadow-xs"
+                  }`}
+                  style={{
+                    backgroundColor: biome.accentColor,
+                  }}
+                  title={biome.name}
+                  aria-label={biome.name}
+                >
+                  {/* Subtle inner white dot for active biome */}
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shadow-xs animate-pulse" />
+                  )}
+                </button>
 
-              {/* Tooltip on hover */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:flex flex-col items-center pointer-events-none z-50 whitespace-nowrap">
-                <div className="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-semibold shadow-xl border border-slate-700/50 flex items-center gap-1.5">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: biome.accentColor }}
-                  />
-                  <span>{biome.name}</span>
+                {/* Tooltip on hover showing Biome Name */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center pointer-events-none z-50 whitespace-nowrap">
+                  <div className="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-semibold shadow-xl border border-slate-700/50 flex items-center gap-1.5">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: biome.accentColor }}
+                    />
+                    <span>{biome.name}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
 
-        {/* Active biome name displayed next to icons */}
-        <div className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-slate-800 border-l border-slate-200">
+        {/* Active biome name displayed next to the color dots */}
+        <div className="flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-semibold text-slate-800 border-l border-slate-200 ml-1">
           <span
             className="w-2 h-2 rounded-full shrink-0"
             style={{ backgroundColor: activeBiome.accentColor }}
           />
-          <span className="truncate max-w-[180px] sm:max-w-none">{activeBiome.name}</span>
+          <span className="truncate max-w-[170px] sm:max-w-none">{activeBiome.name}</span>
         </div>
       </div>
     </header>
