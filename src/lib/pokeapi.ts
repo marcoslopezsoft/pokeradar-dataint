@@ -5,6 +5,35 @@ import {
 } from "@/types/pokemon";
 
 const POKEMON_CACHE = new Map<number, RawPokeApiResponse>();
+const DESCRIPTION_CACHE = new Map<number, string>();
+
+export async function fetchPokemonDescription(id: number): Promise<string> {
+  if (DESCRIPTION_CACHE.has(id)) {
+    return DESCRIPTION_CACHE.get(id)!;
+  }
+
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`, {
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) throw new Error("Description fetch failed");
+    const data = await res.json();
+    const esEntry = data.flavor_text_entries?.find(
+      (entry: { language: { name: string }; flavor_text: string }) =>
+        entry.language.name === "es"
+    );
+
+    const description = esEntry
+      ? esEntry.flavor_text.replace(/[\n\f\r]/g, " ")
+      : data.flavor_text_entries?.[0]?.flavor_text?.replace(/[\n\f\r]/g, " ") ||
+        "Registro de especie catalogado en el radar de expedición.";
+
+    DESCRIPTION_CACHE.set(id, description);
+    return description;
+  } catch {
+    return "Especie detectada y catalogada por los sensores satelitales del radar de expedición.";
+  }
+}
 
 export async function fetchPokemonData(id: number): Promise<RawPokeApiResponse | null> {
   if (POKEMON_CACHE.has(id)) {
@@ -75,6 +104,7 @@ export function transformToRadarEntity(
     biomeId,
     biomeName,
     level: Math.floor(Math.random() * 50) + 10,
+    abilities: raw.abilities?.map((a) => a.ability?.name || "").filter(Boolean) || [],
   };
 }
 

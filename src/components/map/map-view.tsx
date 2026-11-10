@@ -229,11 +229,11 @@ export function MapView({
         el.appendChild(pulseRing);
       }
 
-      // Pokemon sprite directly on terrain
+      // Pokemon HD official artwork directly on terrain
       const img = document.createElement("img");
-      img.src = pokemon.animatedSprite || pokemon.sprite;
+      img.src = pokemon.sprite || pokemon.animatedSprite;
       img.alt = pokemon.displayName;
-      img.className = `w-14 h-14 object-contain pixelated pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
+      img.className = `w-14 h-14 object-contain pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
         isSelected
           ? "scale-125 -translate-y-2 drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
           : "drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"

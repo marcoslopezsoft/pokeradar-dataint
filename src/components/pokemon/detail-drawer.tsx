@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -10,16 +10,17 @@ import {
   Ruler,
   Weight,
   ShieldCheck,
-  Volume2,
-  Film,
-  Image as ImageIcon,
+  Zap,
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import Lenis from "lenis";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { StatsBars } from "./stats-bars";
 import { CryPlayer } from "./cry-player";
+import { TypeBadge } from "./type-badge";
 import { sfx } from "@/lib/sound-effects";
-import { translateTypeToSpanish } from "@/lib/utils";
+import { translateAbilityToSpanish } from "@/lib/utils";
+import { fetchPokemonDescription } from "@/lib/pokeapi";
 
 interface DetailDrawerProps {
   pokemon: PokemonRadarEntity | null;
@@ -129,8 +130,59 @@ export function DetailDrawer({
   isInParty,
   isPartyFull,
 }: DetailDrawerProps) {
-  const [activeTab, setActiveTab] = useState<'about' | 'stats'>('about');
-  const [spriteMode, setSpriteMode] = useState<"animated" | "artwork">("animated");
+  const [description, setDescription] = useState<string>("");
+  const [isLoadingDesc, setIsLoadingDesc] = useState(false);
+
+  const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
+  const scrollContentRef = useRef<HTMLDivElement | null>(null);
+
+  // Initialize Lenis smooth scroll on drawer container
+  useEffect(() => {
+    if (!isOpen || !scrollWrapperRef.current) return;
+
+    const lenis = new Lenis({
+      wrapper: scrollWrapperRef.current,
+      content: scrollContentRef.current || undefined,
+      smoothWheel: true,
+      lerp: 0.1,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, [isOpen]);
+
+  // Fetch official Pokédex description in Spanish
+  useEffect(() => {
+    if (!pokemon) return;
+    let isMounted = true;
+    setIsLoadingDesc(true);
+
+    fetchPokemonDescription(pokemon.id)
+      .then((desc) => {
+        if (isMounted) {
+          setDescription(desc);
+          setIsLoadingDesc(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsLoadingDesc(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pokemon?.id]);
 
   if (!pokemon) return null;
 
@@ -166,58 +218,59 @@ export function DetailDrawer({
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
           />
 
-          {/* Behance Pokédex Sheet Drawer */}
+          {/* Behance Pokédex Sheet Drawer with Lenis Smooth Scrolling */}
           <motion.aside
-            initial={{ x: '100%', opacity: 0.8 }}
+            ref={scrollWrapperRef}
+            initial={{ x: "100%", opacity: 0.8 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+            exit={{ x: "100%", opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
-            {/* Top Color Card with Animated Pokéball & Elemental Background */}
-            <div
-              className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-8 flex flex-col justify-between min-h-[350px]`}
-            >
-              {/* Floating Ambient Atmosphere Particles */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-2 h-2 rounded-full bg-white/20"
-                    initial={{
-                      x: `${10 + i * 16}%`,
-                      y: "110%",
-                      scale: 0.6 + (i % 3) * 0.3,
-                      opacity: 0.1,
-                    }}
-                    animate={{
-                      y: ["110%", "-20%"],
-                      opacity: [0.1, 0.45, 0],
-                    }}
-                    transition={{
-                      duration: 4.5 + (i % 3) * 2,
-                      repeat: Infinity,
-                      delay: i * 0.7,
-                      ease: "linear",
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Pokéball Background Watermark with slow rotation */}
-              <motion.svg
-                viewBox="0 0 100 100"
-                className="absolute -right-8 -bottom-8 w-60 h-60 text-white/15 pointer-events-none"
-                fill="currentColor"
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
+            <div ref={scrollContentRef} className="flex flex-col min-h-full">
+              {/* Top Color Card with Animated Pokéball, Sprite (Left) & Habitat/Cry (Right) */}
+              <div
+                className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-8 flex flex-col justify-between`}
               >
-                <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
-              </motion.svg>
+                {/* Floating Ambient Atmosphere Particles */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-2 h-2 rounded-full bg-white/20"
+                      initial={{
+                        x: `${10 + i * 16}%`,
+                        y: "110%",
+                        scale: 0.6 + (i % 3) * 0.3,
+                        opacity: 0.1,
+                      }}
+                      animate={{
+                        y: ["110%", "-20%"],
+                        opacity: [0.1, 0.45, 0],
+                      }}
+                      transition={{
+                        duration: 4.5 + (i % 3) * 2,
+                        repeat: Infinity,
+                        delay: i * 0.7,
+                        ease: "linear",
+                      }}
+                    />
+                  ))}
+                </div>
 
-              {/* Top Navigation & Title Section */}
-              <div>
-                <div className="relative z-10 flex items-center justify-between">
+                {/* Pokéball Background Watermark with slow rotation */}
+                <motion.svg
+                  viewBox="0 0 100 100"
+                  className="absolute -right-8 -bottom-8 w-60 h-60 text-white/15 pointer-events-none"
+                  fill="currentColor"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
+                >
+                  <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
+                </motion.svg>
+
+                {/* Top Navigation & Action Bar */}
+                <div className="relative z-10 flex items-center justify-between mb-3">
                   <button
                     onClick={onClose}
                     className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
@@ -233,260 +286,207 @@ export function DetailDrawer({
                       onClick={handleCapture}
                       disabled={isInParty || isPartyFull}
                       className="p-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
-                      title={isInParty ? 'En el equipo' : 'Capturar'}
+                      title={isInParty ? "En el equipo" : "Capturar"}
                     >
                       <Heart
                         className={`w-5 h-5 ${
-                          isInParty ? 'fill-white text-white' : ''
+                          isInParty ? "fill-white text-white" : ""
                         }`}
                       />
                     </button>
                   </div>
                 </div>
 
-                {/* Pokemon Title & #ID */}
-                <div className="relative z-10 mt-2 flex items-start justify-between">
-                  <div>
-                    <h2 className="text-3xl font-extrabold capitalize tracking-tight font-sans">
-                      {pokemon.displayName}
-                    </h2>
-                    {/* Type Pills (In Spanish) */}
-                    <div className="flex items-center gap-2 mt-2">
-                      {pokemon.types.map((type) => (
-                        <span
-                          key={type}
-                          className="px-3.5 py-1 rounded-full text-xs font-semibold bg-white/25 backdrop-blur-md shadow-xs uppercase tracking-wide"
-                        >
-                          {translateTypeToSpanish(type)}
-                        </span>
-                      ))}
-                    </div>
+                {/* Main Hero Showcase: Left = Sprite, Right = Habitat + Cry */}
+                <div className="relative z-20 grid grid-cols-2 gap-4 items-center py-2">
+                  {/* Left Column: Crisp Animated Sprite with Ground Shadow */}
+                  <div className="relative flex flex-col items-center justify-center">
+                    {/* Luminous Pulsing Aura Behind Pokemon */}
+                    <motion.div
+                      className="absolute w-32 h-32 rounded-full bg-white/25 blur-xl pointer-events-none"
+                      animate={{
+                        scale: [0.9, 1.25, 0.9],
+                        opacity: [0.2, 0.5, 0.2],
+                      }}
+                      transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                    />
+
+                    {/* Bobbing Sprite (Crisp Pixel-Art Rendering) */}
+                    <motion.div
+                      animate={{ y: [0, -8, 0] }}
+                      transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
+                      className="relative z-10 flex items-center justify-center min-h-[130px]"
+                    >
+                      <img
+                        src={pokemon.animatedSprite || pokemon.sprite}
+                        alt={pokemon.displayName}
+                        style={{ imageRendering: "pixelated" }}
+                        className="w-32 h-32 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
+                      />
+                    </motion.div>
+
+                    {/* Dynamic Ground Breathing Shadow */}
+                    <motion.div
+                      className="w-24 h-2.5 rounded-full bg-black/25 blur-xs mx-auto -mt-1"
+                      animate={{
+                        scaleX: [1, 0.75, 1],
+                        opacity: [0.35, 0.15, 0.35],
+                      }}
+                      transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
+                    />
                   </div>
 
-                  <span className="text-xl font-bold text-white/80 font-sans tracking-wider">
-                    #{String(pokemon.id).padStart(3, '0')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Center Sprite Showcase with Floating Animation & Breathing Shadow */}
-              <div className="relative z-20 flex flex-col items-center justify-center my-auto py-3">
-                {/* Luminous Pulsing Aura Behind Pokemon */}
-                <motion.div
-                  className="absolute w-44 h-44 rounded-full bg-white/20 blur-2xl pointer-events-none"
-                  animate={{
-                    scale: [0.95, 1.25, 0.95],
-                    opacity: [0.25, 0.55, 0.25],
-                  }}
-                  transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}
-                />
-
-                {/* Floating Bobbing Pokemon Sprite */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="relative flex items-center justify-center min-h-[160px]"
-                >
-                  <img
-                    src={
-                      spriteMode === "animated" && pokemon.animatedSprite
-                        ? pokemon.animatedSprite
-                        : pokemon.sprite || pokemon.animatedSprite
-                    }
-                    alt={pokemon.displayName}
-                    className="w-40 h-40 object-contain pixelated filter drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
-                  />
-                </motion.div>
-
-                {/* Dynamic Ground Breathing Shadow */}
-                <motion.div
-                  className="w-28 h-3.5 rounded-full bg-black/25 blur-xs mx-auto -mt-2"
-                  animate={{
-                    scaleX: [1, 0.8, 1],
-                    opacity: [0.35, 0.18, 0.35],
-                  }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                />
-
-                {/* View Mode Switcher Pill (Animated vs HD Artwork) */}
-                <div className="flex items-center gap-1 mt-3 px-1.5 py-1 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-[10px] font-semibold text-white/90">
-                  <button
-                    onClick={() => setSpriteMode("animated")}
-                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
-                      spriteMode === "animated"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-white/80 hover:text-white"
-                    }`}
-                  >
-                    <Film className="w-3 h-3" />
-                    <span>Animado</span>
-                  </button>
-                  <button
-                    onClick={() => setSpriteMode("artwork")}
-                    className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
-                      spriteMode === "artwork"
-                        ? "bg-white text-slate-900 shadow-xs"
-                        : "text-white/80 hover:text-white"
-                    }`}
-                  >
-                    <ImageIcon className="w-3 h-3" />
-                    <span>Arte HD</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Sheet Card (Behance Rounded Tabs & Stats) */}
-            <div className="flex-1 rounded-t-[32px] bg-white p-6 flex flex-col justify-between space-y-6 -mt-4 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)]">
-              {/* Tab Navigators: Acerca de / Estadísticas Base */}
-              <div>
-                <div className="flex items-center justify-around border-b border-slate-100 pb-3 mb-5">
-                  <button
-                    onClick={() => setActiveTab('about')}
-                    className={`font-sans text-sm font-semibold transition-all relative pb-2 cursor-pointer ${
-                      activeTab === 'about'
-                        ? 'text-slate-900 font-bold'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    <span>Acerca de</span>
-                    {activeTab === 'about' && (
-                      <motion.div
-                        layoutId="active-tab-line"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500 to-rose-500 rounded-full"
-                      />
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('stats')}
-                    className={`font-sans text-sm font-semibold transition-all relative pb-2 cursor-pointer ${
-                      activeTab === 'stats'
-                        ? 'text-slate-900 font-bold'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    <span>Estadísticas Base</span>
-                    {activeTab === 'stats' && (
-                      <motion.div
-                        layoutId="active-tab-line"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500 to-rose-500 rounded-full"
-                      />
-                    )}
-                  </button>
-                </div>
-
-                {/* Tab Content: About */}
-                {activeTab === 'about' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="space-y-4"
-                  >
-                    {/* Physical Specs Card */}
-                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
-                          <Ruler className="w-4 h-4 text-cyan-600" />
-                        </div>
-                        <div>
-                          <div className="text-[11px] font-medium text-slate-400">
-                            Altura
-                          </div>
-                          <div className="text-sm font-bold text-slate-800">
-                            {pokemon.height} m
-                          </div>
-                        </div>
+                  {/* Right Column: Habitat & Cry Player */}
+                  <div className="flex flex-col gap-2.5">
+                    {/* Habitat & Detection Card */}
+                    <div className="p-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-white space-y-1 shadow-sm">
+                      <div className="text-[11px] font-semibold flex items-center gap-1.5 text-white/90">
+                        <MapPin className="w-3.5 h-3.5 text-white shrink-0" />
+                        <span>Avistado en</span>
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
-                          <Weight className="w-4 h-4 text-amber-600" />
-                        </div>
-                        <div>
-                          <div className="text-[11px] font-medium text-slate-400">
-                            Peso
-                          </div>
-                          <div className="text-sm font-bold text-slate-800">
-                            {pokemon.weight} kg
-                          </div>
-                        </div>
+                      <div className="text-xs font-bold leading-snug line-clamp-2">
+                        {pokemon.biomeName}
+                      </div>
+                      <div className="text-[10px] text-white/75 font-mono">
+                        {pokemon.coordinates[1].toFixed(3)}° S, {pokemon.coordinates[0].toFixed(3)}° O
                       </div>
                     </div>
 
-                    {/* Biome Origin Info */}
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
-                      <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-red-500" />
-                        <span>Hábitat y Detección</span>
-                      </div>
-                      <div className="text-xs font-medium text-slate-700">
-                        Avistado en{' '}
-                        <strong className="text-slate-900 font-bold">
-                          {pokemon.biomeName}
-                        </strong>
-                      </div>
-                      <div className="text-[11px] text-slate-400">
-                        Coordenadas: {pokemon.coordinates[1].toFixed(3)}° S,{' '}
-                        {pokemon.coordinates[0].toFixed(3)}° O
-                      </div>
-                    </div>
-
-                    {/* Audio Cry Player */}
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                        <Volume2 className="w-4 h-4 text-red-500" />
-                        <span>Alarido de PokéAPI</span>
-                      </div>
+                    {/* Cry Audio Player */}
+                    <div>
                       <CryPlayer
                         cryUrl={pokemon.cryUrl}
                         name={pokemon.displayName}
+                        variant="glass"
                       />
                     </div>
-                  </motion.div>
-                )}
-
-                {/* Tab Content: Base Stats */}
-                {activeTab === 'stats' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="p-4 rounded-2xl bg-slate-50 border border-slate-100"
-                  >
-                    <StatsBars stats={pokemon.stats} />
-                  </motion.div>
-                )}
+                  </div>
+                </div>
               </div>
 
-              {/* Bottom Reclutar Action Button */}
-              <div className="pt-2">
-                <button
-                  onClick={handleCapture}
-                  disabled={isInParty || isPartyFull}
-                  className={`w-full py-3.5 px-4 rounded-2xl font-sans text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
-                    isInParty
-                      ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                      : isPartyFull
-                        ? 'bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/30 hover:scale-[1.01]'
-                  }`}
-                >
-                  {isInParty ? (
-                    <>
-                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                      <span>EN TU EQUIPO DE EXPEDICIÓN</span>
-                    </>
-                  ) : isPartyFull ? (
-                    <span>EQUIPO COMPLETO (6/6)</span>
-                  ) : (
-                    <>
-                      <PlusCircle className="w-4 h-4" />
-                      <span>RECLUTAR AL EQUIPO DE EXPEDICIÓN</span>
-                    </>
-                  )}
-                </button>
+              {/* Bottom White Container: Sequential Details */}
+              <div className="flex-1 rounded-t-[32px] bg-white p-6 -mt-4 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)] space-y-5">
+                {/* 1. Nombre */}
+                <div>
+                  <h2 className="text-3xl font-extrabold capitalize text-slate-900 tracking-tight font-sans">
+                    {pokemon.displayName}
+                  </h2>
+                  {/* 2. Número abajo del nombre tipo gris */}
+                  <div className="text-sm font-bold text-slate-400 font-sans tracking-wider mt-0.5">
+                    #{String(pokemon.id).padStart(3, "0")}
+                  </div>
+                </div>
+
+                {/* 3. Tipo abajo del número con su icono correspondiente */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {pokemon.types.map((type) => (
+                    <TypeBadge key={type} type={type} size="md" showIcon={true} />
+                  ))}
+                </div>
+
+                {/* 4. Habilidad */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Habilidad
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {pokemon.abilities && pokemon.abilities.length > 0 ? (
+                      pokemon.abilities.map((ability) => (
+                        <span
+                          key={ability}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800"
+                        >
+                          <Zap className="w-3.5 h-3.5 text-amber-500" />
+                          <span>{translateAbilityToSpanish(ability)}</span>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-500">Habilidad estándar</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 5. Descripción de la Pokédex */}
+                <div className="space-y-1.5">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Descripción Pokédex
+                  </div>
+                  <p className="text-xs leading-relaxed text-slate-600 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 italic">
+                    {isLoadingDesc
+                      ? "Consultando registro Pokédex..."
+                      : `"${description}"`}
+                  </p>
+                </div>
+
+                {/* 6. Peso y Altura */}
+                <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
+                      <Ruler className="w-4 h-4 text-cyan-600" />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-400">
+                        Altura
+                      </div>
+                      <div className="text-sm font-bold text-slate-800">
+                        {pokemon.height} m
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
+                      <Weight className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-400">
+                        Peso
+                      </div>
+                      <div className="text-sm font-bold text-slate-800">
+                        {pokemon.weight} kg
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 7. Estadísticas Base */}
+                <div className="space-y-2">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Estadísticas Base
+                  </div>
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                    <StatsBars stats={pokemon.stats} />
+                  </div>
+                </div>
+
+                {/* 8. Botón Reclutar al Equipo */}
+                <div className="pt-2 pb-4">
+                  <button
+                    onClick={handleCapture}
+                    disabled={isInParty || isPartyFull}
+                    className={`w-full py-3.5 px-4 rounded-2xl font-sans text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
+                      isInParty
+                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                        : isPartyFull
+                          ? "bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed"
+                          : "bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/30 hover:scale-[1.01]"
+                    }`}
+                  >
+                    {isInParty ? (
+                      <>
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        <span>EN TU EQUIPO DE EXPEDICIÓN</span>
+                      </>
+                    ) : isPartyFull ? (
+                      <span>EQUIPO COMPLETO (6/6)</span>
+                    ) : (
+                      <>
+                        <PlusCircle className="w-4 h-4" />
+                        <span>RECLUTAR AL EQUIPO DE EXPEDICIÓN</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </motion.aside>

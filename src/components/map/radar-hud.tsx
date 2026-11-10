@@ -78,11 +78,9 @@ export function RadarHud({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold tracking-wide text-red-600">
-                POKÉRADAR <span className="text-slate-800 font-semibold">GEO</span>
+                POKÉRADAR{' '}
+                <span className="text-slate-800 font-semibold">GEO</span>
               </h1>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-600 text-white shadow-sm shadow-red-600/30">
-                DATAINT
-              </span>
             </div>
             <div className="text-[11px] font-medium text-slate-500">
               {totalSpotted} especímenes en radar
@@ -106,12 +104,18 @@ export function RadarHud({
             onClick={toggleMute}
             className={`p-2 rounded-xl border transition-all cursor-pointer ${
               isMuted
-                ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
-                : "bg-red-50 border-red-200 text-red-600 shadow-xs"
+                ? 'bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600'
+                : 'bg-red-50 border-red-200 text-red-600 shadow-xs'
             }`}
-            title={isMuted ? "Activar efectos sonoros" : "Silenciar efectos sonoros"}
+            title={
+              isMuted ? 'Activar efectos sonoros' : 'Silenciar efectos sonoros'
+            }
           >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 animate-pulse" />}
+            {isMuted ? (
+              <VolumeX className="w-4 h-4" />
+            ) : (
+              <Volume2 className="w-4 h-4 animate-pulse" />
+            )}
           </button>
 
           <div className="relative">
@@ -132,7 +136,7 @@ export function RadarHud({
               className="py-1.5 px-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-red-500 focus:bg-white cursor-pointer"
             >
               <option value="all">Tipos (Todos)</option>
-              {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => (
+              {AVAILABLE_TYPES.filter((t) => t !== 'all').map((type) => (
                 <option key={type} value={type}>
                   {translateTypeToSpanish(type)}
                 </option>
@@ -159,8 +163,8 @@ export function RadarHud({
               }}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? "bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold border border-yellow-400 shadow-md shadow-red-600/30 scale-105"
-                  : "bg-white/90 hover:bg-slate-100 text-slate-700 font-medium border border-slate-200 hover:border-slate-300 shadow-xs"
+                  ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold border border-yellow-400 shadow-md shadow-red-600/30 scale-105'
+                  : 'bg-white/90 hover:bg-slate-100 text-slate-700 font-medium border border-slate-200 hover:border-slate-300 shadow-xs'
               }`}
             >
               <span

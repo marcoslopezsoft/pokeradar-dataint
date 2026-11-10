@@ -1,16 +1,43 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import {
+  Flame,
+  Droplets,
+  Leaf,
+  Zap,
+  Snowflake,
+  Swords,
+  Skull,
+  Mountain,
+  Feather,
+  Eye,
+  Bug,
+  Ghost,
+  Shield,
+  Moon,
+  Heart,
+  Circle,
+  Gem,
+  LucideIcon,
+} from "lucide-react";
 
-const TYPE_CONFIG: Record<
-  string,
-  { label: string; bg: string; border: string; text: string; glow: string }
-> = {
+interface TypeStyle {
+  label: string;
+  bg: string;
+  border: string;
+  text: string;
+  glow: string;
+  icon: LucideIcon;
+}
+
+const TYPE_CONFIG: Record<string, TypeStyle> = {
   normal: {
     label: "Normal",
     bg: "bg-stone-100",
     border: "border-stone-300",
     text: "text-stone-700",
     glow: "shadow-xs",
+    icon: Circle,
   },
   fire: {
     label: "Fuego",
@@ -18,6 +45,7 @@ const TYPE_CONFIG: Record<
     border: "border-orange-300",
     text: "text-orange-700",
     glow: "shadow-orange-500/15",
+    icon: Flame,
   },
   water: {
     label: "Agua",
@@ -25,6 +53,7 @@ const TYPE_CONFIG: Record<
     border: "border-blue-300",
     text: "text-blue-700",
     glow: "shadow-blue-500/15",
+    icon: Droplets,
   },
   grass: {
     label: "Planta",
@@ -32,6 +61,7 @@ const TYPE_CONFIG: Record<
     border: "border-emerald-300",
     text: "text-emerald-700",
     glow: "shadow-emerald-500/15",
+    icon: Leaf,
   },
   electric: {
     label: "Eléctrico",
@@ -39,6 +69,7 @@ const TYPE_CONFIG: Record<
     border: "border-amber-300",
     text: "text-amber-800",
     glow: "shadow-amber-500/15",
+    icon: Zap,
   },
   ice: {
     label: "Hielo",
@@ -46,6 +77,7 @@ const TYPE_CONFIG: Record<
     border: "border-cyan-300",
     text: "text-cyan-800",
     glow: "shadow-cyan-400/15",
+    icon: Snowflake,
   },
   fighting: {
     label: "Lucha",
@@ -53,6 +85,7 @@ const TYPE_CONFIG: Record<
     border: "border-red-300",
     text: "text-red-700",
     glow: "shadow-red-600/15",
+    icon: Swords,
   },
   poison: {
     label: "Veneno",
@@ -60,6 +93,7 @@ const TYPE_CONFIG: Record<
     border: "border-purple-300",
     text: "text-purple-700",
     glow: "shadow-purple-600/15",
+    icon: Skull,
   },
   ground: {
     label: "Tierra",
@@ -67,6 +101,7 @@ const TYPE_CONFIG: Record<
     border: "border-amber-400",
     text: "text-amber-900",
     glow: "shadow-amber-600/15",
+    icon: Mountain,
   },
   flying: {
     label: "Volador",
@@ -74,6 +109,7 @@ const TYPE_CONFIG: Record<
     border: "border-indigo-300",
     text: "text-indigo-700",
     glow: "shadow-indigo-400/15",
+    icon: Feather,
   },
   psychic: {
     label: "Psíquico",
@@ -81,6 +117,7 @@ const TYPE_CONFIG: Record<
     border: "border-pink-300",
     text: "text-pink-700",
     glow: "shadow-pink-500/15",
+    icon: Eye,
   },
   bug: {
     label: "Bicho",
@@ -88,6 +125,7 @@ const TYPE_CONFIG: Record<
     border: "border-lime-300",
     text: "text-lime-800",
     glow: "shadow-lime-500/15",
+    icon: Bug,
   },
   rock: {
     label: "Roca",
@@ -95,6 +133,7 @@ const TYPE_CONFIG: Record<
     border: "border-yellow-400",
     text: "text-yellow-900",
     glow: "shadow-yellow-800/15",
+    icon: Gem,
   },
   ghost: {
     label: "Fantasma",
@@ -102,6 +141,7 @@ const TYPE_CONFIG: Record<
     border: "border-violet-300",
     text: "text-violet-800",
     glow: "shadow-violet-800/15",
+    icon: Ghost,
   },
   dragon: {
     label: "Dragón",
@@ -109,6 +149,7 @@ const TYPE_CONFIG: Record<
     border: "border-purple-400",
     text: "text-purple-900",
     glow: "shadow-purple-600/15",
+    icon: Flame,
   },
   dark: {
     label: "Siniestro",
@@ -116,6 +157,7 @@ const TYPE_CONFIG: Record<
     border: "border-zinc-300",
     text: "text-zinc-800",
     glow: "shadow-zinc-700/15",
+    icon: Moon,
   },
   steel: {
     label: "Acero",
@@ -123,6 +165,7 @@ const TYPE_CONFIG: Record<
     border: "border-slate-300",
     text: "text-slate-700",
     glow: "shadow-slate-400/15",
+    icon: Shield,
   },
   fairy: {
     label: "Hada",
@@ -130,15 +173,23 @@ const TYPE_CONFIG: Record<
     border: "border-rose-300",
     text: "text-rose-700",
     glow: "shadow-rose-400/15",
+    icon: Heart,
   },
 };
 
 interface TypeBadgeProps {
   type: string;
   size?: "sm" | "md" | "lg";
+  showIcon?: boolean;
+  className?: string;
 }
 
-export function TypeBadge({ type, size = "md" }: TypeBadgeProps) {
+export function TypeBadge({
+  type,
+  size = "md",
+  showIcon = true,
+  className,
+}: TypeBadgeProps) {
   const normalized = type.toLowerCase();
   const config = TYPE_CONFIG[normalized] || {
     label: type,
@@ -146,12 +197,21 @@ export function TypeBadge({ type, size = "md" }: TypeBadgeProps) {
     border: "border-slate-700",
     text: "text-slate-300",
     glow: "shadow-none",
+    icon: Circle,
   };
 
+  const Icon = config.icon;
+
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-xs font-medium tracking-wide",
-    md: "px-2.5 py-1 text-xs font-semibold tracking-wider uppercase",
-    lg: "px-3.5 py-1.5 text-sm font-bold tracking-wider uppercase",
+    sm: "px-2 py-0.5 text-xs font-medium gap-1",
+    md: "px-2.5 py-1 text-xs font-semibold tracking-wider uppercase gap-1.5",
+    lg: "px-3.5 py-1.5 text-sm font-bold tracking-wider uppercase gap-2",
+  };
+
+  const iconSizes = {
+    sm: "w-3 h-3",
+    md: "w-3.5 h-3.5",
+    lg: "w-4 h-4",
   };
 
   return (
@@ -162,10 +222,12 @@ export function TypeBadge({ type, size = "md" }: TypeBadgeProps) {
         config.border,
         config.text,
         config.glow,
-        sizeClasses[size]
+        sizeClasses[size],
+        className
       )}
     >
-      {config.label}
+      {showIcon && <Icon className={iconSizes[size]} />}
+      <span>{config.label}</span>
     </span>
   );
 }

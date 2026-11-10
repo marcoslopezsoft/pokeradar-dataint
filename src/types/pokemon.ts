@@ -41,6 +41,15 @@ export interface PokemonCriesRef {
   legacy: string | null;
 }
 
+export interface PokemonAbilityRef {
+  is_hidden: boolean;
+  slot: number;
+  ability: {
+    name: string;
+    url: string;
+  } | null;
+}
+
 export interface RawPokeApiResponse {
   id: number;
   name: string;
@@ -51,6 +60,7 @@ export interface RawPokeApiResponse {
   stats: PokemonStatRef[];
   sprites: PokemonSpritesRef;
   cries?: PokemonCriesRef;
+  abilities?: PokemonAbilityRef[];
 }
 
 export interface PokemonRadarEntity {
@@ -68,6 +78,7 @@ export interface PokemonRadarEntity {
   biomeId: string;
   biomeName: string;
   level: number;
+  abilities: string[];
 }
 
 export interface BiomeRegion {
