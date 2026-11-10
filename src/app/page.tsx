@@ -46,6 +46,7 @@ export default function HomePage() {
         activeBiome={activeBiome}
         selectedPokemon={selectedPokemon}
         onSelectPokemon={selectPokemon}
+        onSelectBiome={selectBiome}
       />
 
       {/* Expedition Party Dock (Floating Bottom) */}

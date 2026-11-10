@@ -9,6 +9,7 @@ interface MapContainerProps {
   activeBiome: BiomeRegion;
   selectedPokemon: PokemonRadarEntity | null;
   onSelectPokemon: (pokemon: PokemonRadarEntity) => void;
+  onSelectBiome?: (biome: BiomeRegion) => void;
 }
 
 const DynamicMapView = dynamic(
