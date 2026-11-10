@@ -5,6 +5,7 @@ import confetti from "canvas-confetti";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { Sparkles, Trash2, ShieldAlert } from "lucide-react";
 import Image from "next/image";
+import { sfx } from "@/lib/sound-effects";
 
 interface PartyDockProps {
   party: PokemonRadarEntity[];
@@ -99,6 +100,7 @@ export function PartyDock({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    sfx.playRelease();
                     onReleasePokemon(pokemon.id);
                   }}
                   className="absolute -bottom-1 -right-1 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-600/90 text-white hover:bg-red-500 transition-all shadow-md cursor-pointer"

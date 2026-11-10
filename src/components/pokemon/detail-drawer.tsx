@@ -8,6 +8,7 @@ import { PokemonRadarEntity } from "@/types/pokemon";
 import { TypeBadge } from "./type-badge";
 import { StatsBars } from "./stats-bars";
 import { CryPlayer } from "./cry-player";
+import { sfx } from '@/lib/sound-effects';
 
 interface DetailDrawerProps {
   pokemon: PokemonRadarEntity | null;
@@ -30,6 +31,7 @@ export function DetailDrawer({
 
   const handleCapture = () => {
     onAddToParty(pokemon);
+    sfx.playCatchSuccess();
     confetti({
       particleCount: 70,
       spread: 70,
@@ -53,17 +55,17 @@ export function DetailDrawer({
 
           {/* Drawer container */}
           <motion.aside
-            initial={{ x: "100%", opacity: 0.5 }}
+            initial={{ x: '100%', opacity: 0.5 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            exit={{ x: '100%', opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-slate-950/95 border-l border-slate-800 backdrop-blur-2xl z-50 flex flex-col shadow-2xl overflow-y-auto"
           >
             {/* Header */}
             <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono px-2 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
-                  #{String(pokemon.id).padStart(3, "0")}
+                  #{String(pokemon.id).padStart(3, '0')}
                 </span>
                 <span className="text-xs font-mono text-slate-400">
                   RADAR SCANNER
@@ -91,14 +93,19 @@ export function DetailDrawer({
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
                   <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Avistado en: <strong className="text-slate-300">{pokemon.biomeName}</strong></span>
+                  <span>
+                    Avistado en:{' '}
+                    <strong className="text-slate-300">
+                      {pokemon.biomeName}
+                    </strong>
+                  </span>
                 </div>
               </div>
 
               {/* Sprite Showcase with Radar Glow */}
-              <div className="relative flex items-center justify-center p-6 rounded-2xl bg-gradient-to-b from-slate-900/60 to-slate-950/80 border border-slate-800/80 overflow-hidden">
+              <div className="relative flex items-center justify-center p-6 rounded-2xl bg-linear-to-b from-slate-900/60 to-slate-950/80 border border-slate-800/80 overflow-hidden">
                 <div className="absolute inset-0 bg-radial from-cyan-500/10 to-transparent pointer-events-none" />
-                
+
                 {pokemon.animatedSprite ? (
                   <img
                     src={pokemon.animatedSprite}
@@ -168,10 +175,10 @@ export function DetailDrawer({
                 disabled={isInParty || isPartyFull}
                 className={`w-full py-3 px-4 rounded-xl font-mono text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
                   isInParty
-                    ? "bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed"
+                    ? 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed'
                     : isPartyFull
-                    ? "bg-amber-950/40 border border-amber-800/50 text-amber-300 cursor-not-allowed"
-                    : "bg-cyan-500 hover:bg-cyan-400 text-slate-950 border border-cyan-300 shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-[1.01]"
+                      ? 'bg-amber-950/40 border border-amber-800/50 text-amber-300 cursor-not-allowed'
+                      : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 border border-cyan-300 shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-[1.01]'
                 }`}
               >
                 {isInParty ? (

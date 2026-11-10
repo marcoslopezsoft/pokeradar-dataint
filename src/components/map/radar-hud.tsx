@@ -5,6 +5,7 @@ import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion } from "@/types/pokemon";
 import { Compass, Search, Filter, Radio } from "lucide-react";
 import { WeatherBadge } from "../weather/weather-badge";
+import { sfx } from "@/lib/sound-effects";
 
 interface RadarHudProps {
   activeBiome: BiomeRegion;
@@ -113,7 +114,10 @@ export function RadarHud({
           return (
             <button
               key={biome.id}
-              onClick={() => onSelectBiome(biome)}
+              onClick={() => {
+                sfx.playRadarPing();
+                onSelectBiome(biome);
+              }}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? "bg-cyan-500 text-slate-950 font-bold border border-cyan-300 shadow-md shadow-cyan-500/20 scale-105"
