@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
-import { INITIAL_MAP_CONFIG, BIOMES, OSM_DARK_FALLBACK_STYLE } from "@/lib/biomes";
+import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_DARK_STYLE } from "@/lib/biomes";
 
 // Configure MapLibre Web Worker URL for Next.js App Router & Turbopack
 if (typeof window !== "undefined") {
@@ -68,12 +68,12 @@ export function MapView({
       };
     });
 
-    // Auto-fallback to OSM dark tiles if OpenFreeMap is blocked or unavailable
+    // Auto-fallback if style needs reset
     map.on("error", (e) => {
       const msg = e?.error?.message || "";
       if (msg.includes("Failed to fetch") || msg.includes("401") || msg.includes("403")) {
-        console.warn("Switching to OSM dark fallback style:", msg);
-        map.setStyle(OSM_DARK_FALLBACK_STYLE);
+        console.warn("Switching to high performance dark style:", msg);
+        map.setStyle(HIGH_PERF_DARK_STYLE);
       }
     });
 
@@ -200,9 +200,10 @@ export function MapView({
 
       // Custom marker DOM Element
       const el = document.createElement("div");
-      el.className = "pokemon-radar-marker group cursor-pointer relative";
+      el.className = "pokemon-radar-marker group cursor-pointer relative select-none";
       el.style.width = "54px";
       el.style.height = "54px";
+      el.style.willChange = "transform";
 
       // Tooltip pill on hover
       const tooltip = document.createElement("div");
@@ -211,18 +212,21 @@ export function MapView({
       tooltip.innerText = `${pokemon.displayName} #${pokemon.id}`;
       el.appendChild(tooltip);
 
-      // Radar pulse ring (Pokédex Red scan wave)
+      // Radar pulse ring (hardware accelerated on hover or selection)
       const pulseRing = document.createElement("div");
-      pulseRing.className =
-        "absolute inset-0 rounded-full border-2 border-red-500 pointer-events-none animate-radar-pulse";
+      pulseRing.className = `absolute inset-0 rounded-full pointer-events-none transition-all ${
+        isSelected
+          ? "border-2 border-yellow-400 animate-radar-pulse shadow-[0_0_15px_#facc15]"
+          : "border border-red-500/25 group-hover:border-2 group-hover:border-red-400 group-hover:animate-radar-pulse"
+      }`;
       el.appendChild(pulseRing);
 
       // Marker badge wrapper
       const badge = document.createElement("div");
-      badge.className = `relative w-full h-full rounded-2xl flex items-center justify-center p-1 backdrop-blur-md transition-all duration-300 transform group-hover:scale-115 ${
+      badge.className = `relative w-full h-full rounded-2xl flex items-center justify-center p-1 backdrop-blur-md transition-transform duration-200 group-hover:scale-110 ${
         isSelected
-          ? "bg-red-950/60 border-2 border-yellow-400 shadow-[0_0_22px_rgba(239,68,68,0.7)] scale-110"
-          : "bg-[#0f1420]/90 border border-slate-700/80 shadow-lg group-hover:border-red-400"
+          ? "bg-red-950/70 border-2 border-yellow-400 shadow-[0_0_22px_rgba(239,68,68,0.7)] scale-110"
+          : "bg-[#0f1420]/90 border border-slate-700/80 shadow-md group-hover:border-red-400"
       }`;
 
       // Pokemon sprite image

@@ -70,14 +70,11 @@ export const BIOMES: BiomeRegion[] = [
   }
 ];
 
-// OpenFreeMap vector dark style recommended in challenge (100% free, zero api keys, zero watermarks)
-export const OPENFREEMAP_DARK_STYLE = "https://tiles.openfreemap.org/styles/dark";
-
-// Ultra-reliable OpenStreetMap dark raster style fallback
-export const OSM_DARK_FALLBACK_STYLE: StyleSpecification = {
+// Ultra-fast 60 FPS Dark Raster style: Zero CPU vector parsing, zero watermarks, zero missing sprite errors
+export const HIGH_PERF_DARK_STYLE: StyleSpecification = {
   version: 8,
   sources: {
-    "osm-tiles": {
+    "osm-raster-tiles": {
       type: "raster",
       tiles: [
         "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -91,22 +88,23 @@ export const OSM_DARK_FALLBACK_STYLE: StyleSpecification = {
     {
       id: "osm-dark-base",
       type: "raster",
-      source: "osm-tiles",
+      source: "osm-raster-tiles",
       minzoom: 0,
       maxzoom: 19,
       paint: {
         "raster-saturation": -0.85,
         "raster-contrast": 0.25,
-        "raster-brightness-max": 0.4
+        "raster-brightness-max": 0.38,
+        "raster-fade-duration": 100
       }
     }
   ]
 };
 
 export const INITIAL_MAP_CONFIG = {
-  center: [-64.0, -38.4161] as [number, number], // Vista general Argentina
+  center: [-64.0, -38.4161] as [number, number],
   zoom: 4.2,
   minZoom: 3,
   maxZoom: 18,
-  style: OPENFREEMAP_DARK_STYLE
+  style: HIGH_PERF_DARK_STYLE
 };

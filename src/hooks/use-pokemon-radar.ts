@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { BIOMES } from "@/lib/biomes";
 import { fetchPokemonData, transformToRadarEntity } from "@/lib/pokeapi";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
+import { sfx } from "@/lib/sound-effects";
 
 // Pseudo-random deterministic offset based on ID so markers stay stable
 function getStableOffset(id: number, seed: number): [number, number] {
   const angle = ((id * 47 + seed * 83) % 360) * (Math.PI / 180);
-  const radius = 0.015 + (((id * 31 + seed * 17) % 100) / 100) * 0.04; // ~1 to 5 km scatter
+  const radius = 0.015 + (((id * 31 + seed * 17) % 100) / 100) * 0.04;
   const deltaLng = radius * Math.cos(angle);
   const deltaLat = radius * Math.sin(angle) * 0.85;
   return [deltaLng, deltaLat];
@@ -22,6 +23,8 @@ export function usePokemonRadar() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedPokemon, setSelectedPokemon] = useState<PokemonRadarEntity | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
 
   // Load Pokemon for all biomes on initial mount
   useEffect(() => {
@@ -32,7 +35,6 @@ export function usePokemonRadar() {
       const allSpawned: PokemonRadarEntity[] = [];
 
       for (const biome of BIOMES) {
-        // Pick first 8 from pool for immediate fast load and rich variety
         const spawnIds = biome.pokemonPool.slice(0, 8);
 
         for (let i = 0; i < spawnIds.length; i++) {
@@ -69,7 +71,7 @@ export function usePokemonRadar() {
     };
   }, []);
 
-  // Filter entities according to search and type
+  // Filter entities according to search, type and active biome for 60 FPS performance
   const filteredEntities = useMemo(() => {
     return entities.filter((pokemon) => {
       const matchesSearch =
@@ -82,9 +84,14 @@ export function usePokemonRadar() {
         selectedType === "all" ||
         pokemon.types.includes(selectedType.toLowerCase());
 
-      return matchesSearch && matchesType;
+      const matchesBiome =
+        searchTerm || selectedType !== "all"
+          ? true
+          : pokemon.biomeId === activeBiome.id;
+
+      return matchesSearch && matchesType && matchesBiome;
     });
-  }, [entities, searchTerm, selectedType]);
+  }, [entities, searchTerm, selectedType, activeBiome.id]);
 
   const selectPokemon = (pokemon: PokemonRadarEntity) => {
     setSelectedPokemon(pokemon);
@@ -98,6 +105,21 @@ export function usePokemonRadar() {
   const selectBiome = (biome: BiomeRegion) => {
     setActiveBiome(biome);
   };
+
+  const scanCurrentBiome = useCallback(() => {
+    if (isScanning) return;
+    setIsScanning(true);
+    sfx.playRadarPing();
+    setScanMessage(`Sonar emitido: ${activeBiome.name} sincronizado.`);
+
+    setTimeout(() => {
+      setIsScanning(false);
+    }, 2000);
+
+    setTimeout(() => {
+      setScanMessage(null);
+    }, 4500);
+  }, [activeBiome, isScanning]);
 
   return {
     activeBiome,
@@ -113,5 +135,8 @@ export function usePokemonRadar() {
     selectPokemon,
     isDrawerOpen,
     closeDrawer,
+    isScanning,
+    scanMessage,
+    scanCurrentBiome,
   };
 }
