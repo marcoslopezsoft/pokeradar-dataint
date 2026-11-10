@@ -1,9 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { Map, Marker, NavigationControl } from "maplibre-gl";
+import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
 import { INITIAL_MAP_CONFIG, BIOMES } from "@/lib/biomes";
+
+// Configure MapLibre Web Worker URL for Next.js App Router & Turbopack
+if (typeof window !== "undefined") {
+  setWorkerUrl("/maplibre-gl-worker.mjs");
+}
 
 interface MapViewProps {
   pokemonList: PokemonRadarEntity[];
