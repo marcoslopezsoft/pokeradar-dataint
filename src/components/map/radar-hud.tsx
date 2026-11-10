@@ -90,9 +90,9 @@ export function RadarHud({
     <>
       <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
         {/* Top Pokédex Navigation Bar: higher z-index (z-30) so dropdown always floats on top */}
-        <div className="relative z-30 flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
+        <div className="relative z-30 flex items-center justify-between gap-1.5 sm:gap-2.5 p-2 sm:p-2.5 md:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
           {/* Brand & Pokeball Icon */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 hover:scale-110 hover:rotate-12 cursor-pointer">
               <img
                 src="/pokeball-icon.webp"
@@ -102,20 +102,20 @@ export function RadarHud({
             </div>
 
             <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-xs sm:text-sm font-bold tracking-wide text-red-600">
+              <div className="flex items-center gap-1">
+                <h1 className="text-xs sm:text-sm font-bold tracking-wide text-red-600 leading-none">
                   POKÉRADAR{" "}
                   <span className="text-slate-800 font-semibold">GEO</span>
                 </h1>
               </div>
-              <div className="text-[10px] sm:text-[11px] font-medium text-slate-500">
+              <div className="hidden sm:block text-[10px] sm:text-[11px] font-medium text-slate-500 leading-none mt-0.5">
                 {totalSpotted} especímenes en radar
               </div>
             </div>
           </div>
 
-          {/* Live Weather Widget for active biome (Hidden on mobile) */}
-          <div className="hidden lg:flex items-center">
+          {/* Live Weather Widget for active biome (Responsive on mobile and desktop) */}
+          <div className="flex items-center shrink-0">
             <WeatherBadge
               lat={activeBiome.center[1]}
               lng={activeBiome.center[0]}
@@ -123,8 +123,8 @@ export function RadarHud({
             />
           </div>
 
-          {/* Controls: Team Button (if party > 0), Audio Modal, Search, Type Filter Modal */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Controls: Team Button (if party > 0), 1. Buscador, 2. Configuración de Sonido, 3. Tipos */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Team analysis button in navbar, ONLY visible if user has Pokémon in party */}
             {party.length > 0 && onOpenTeamAnalysis && (
               <button
@@ -132,7 +132,7 @@ export function RadarHud({
                   sfx.playMenuOpen();
                   onOpenTeamAnalysis();
                 }}
-                className="px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-red-500/25 transition-all cursor-pointer animate-in fade-in duration-200"
+                className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-red-500/25 transition-all cursor-pointer animate-in fade-in duration-200"
                 title="Abrir diagnóstico del equipo"
                 aria-label="Diagnóstico del equipo"
               >
@@ -144,7 +144,19 @@ export function RadarHud({
               </button>
             )}
 
-            {/* Audio Settings Icon Button */}
+            {/* 1. Buscador */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-20 xs:w-28 sm:w-44 pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all"
+              />
+            </div>
+
+            {/* 2. Configuración de Sonido */}
             <button
               onClick={() => {
                 sfx.playButtonPress();
@@ -165,19 +177,7 @@ export function RadarHud({
               )}
             </button>
 
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Buscar..."
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-20 xs:w-28 sm:w-44 pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all"
-              />
-            </div>
-
-            {/* Custom Type Filter Dropdown with Icons */}
+            {/* 3. Tipos (Custom Type Filter Dropdown with Icons) */}
             <div className="relative" ref={typeDropdownRef}>
               <button
                 onClick={() => {
