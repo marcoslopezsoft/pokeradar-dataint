@@ -156,28 +156,7 @@ export function RadarHud({
               />
             </div>
 
-            {/* 2. Configuración de Sonido */}
-            <button
-              onClick={() => {
-                sfx.playButtonPress();
-                setIsAudioModalOpen(true);
-              }}
-              className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                isMuted
-                  ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
-                  : "bg-red-50 border-red-200 text-red-600 shadow-xs hover:bg-red-100"
-              }`}
-              title="Ajustes de Sonido y Música"
-              aria-label="Ajustes de Sonido"
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
-              ) : (
-                <Volume2 className="w-4 h-4 animate-pulse" />
-              )}
-            </button>
-
-            {/* 3. Tipos (Custom Type Filter Dropdown with Icons) */}
+            {/* 2. Tipos (Custom Type Filter Dropdown with Icons) */}
             <div className="relative" ref={typeDropdownRef}>
               <button
                 onClick={() => {
@@ -286,6 +265,27 @@ export function RadarHud({
                 </>
               )}
             </div>
+
+            {/* 3. Configuración de Sonido */}
+            <button
+              onClick={() => {
+                sfx.playButtonPress();
+                setIsAudioModalOpen(true);
+              }}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                isMuted
+                  ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
+                  : "bg-red-50 border-red-200 text-red-600 shadow-xs hover:bg-red-100"
+              }`}
+              title="Ajustes de Sonido y Música"
+              aria-label="Ajustes de Sonido"
+            >
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4 animate-pulse" />
+              )}
+            </button>
           </div>
         </div>
 
