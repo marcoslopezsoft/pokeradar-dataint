@@ -201,52 +201,44 @@ export function MapView({
     pokemonList.forEach((pokemon) => {
       const isSelected = selectedPokemon?.id === pokemon.id;
 
-      // Custom marker DOM Element
+      // Custom marker DOM Element (Pure sprite without bounding card box)
       const el = document.createElement("div");
-      el.className = "pokemon-radar-marker group cursor-pointer relative select-none";
-      el.style.width = "54px";
-      el.style.height = "54px";
+      el.className = "pokemon-radar-marker group cursor-pointer relative select-none flex items-center justify-center";
+      el.style.width = "64px";
+      el.style.height = "64px";
       el.style.willChange = "transform";
 
       // Tooltip pill on hover
       const tooltip = document.createElement("div");
       tooltip.className =
         "absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white/95 border border-slate-200 text-[10px] font-sans text-slate-800 whitespace-nowrap shadow-lg pointer-events-none z-30 font-bold";
-      tooltip.innerText = `${pokemon.displayName} #${pokemon.id}`;
+      tooltip.innerText = `${pokemon.displayName} · Nv.${pokemon.level}`;
       el.appendChild(tooltip);
 
-      // Radar pulse ring (hardware accelerated on hover or selection)
-      const pulseRing = document.createElement("div");
-      pulseRing.className = `absolute inset-0 rounded-full pointer-events-none transition-all ${
-        isSelected
-          ? "border-2 border-red-500 animate-radar-pulse shadow-[0_0_15px_#ef4444]"
-          : "border border-red-400/40 group-hover:border-2 group-hover:border-red-500 group-hover:animate-radar-pulse"
-      }`;
-      el.appendChild(pulseRing);
+      // Subtle ground contact shadow
+      const groundShadow = document.createElement("div");
+      groundShadow.className =
+        "absolute bottom-1 left-1/2 -translate-x-1/2 w-9 h-2.5 rounded-full bg-black/25 blur-[2px] pointer-events-none transition-transform duration-200 group-hover:scale-125";
+      el.appendChild(groundShadow);
 
-      // Marker badge wrapper
-      const badge = document.createElement("div");
-      badge.className = `relative w-full h-full rounded-2xl flex items-center justify-center p-1 backdrop-blur-md transition-transform duration-200 group-hover:scale-110 ${
-        isSelected
-          ? "bg-red-50/95 border-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.35)] scale-110"
-          : "bg-white/95 border border-slate-200/90 shadow-md group-hover:border-red-400 group-hover:shadow-lg"
-      }`;
+      // Selected radar pulse ring on the ground
+      if (isSelected) {
+        const pulseRing = document.createElement("div");
+        pulseRing.className =
+          "absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-4 rounded-full border-2 border-red-500 animate-radar-pulse pointer-events-none";
+        el.appendChild(pulseRing);
+      }
 
-      // Pokemon sprite image
+      // Pokemon sprite directly on terrain
       const img = document.createElement("img");
       img.src = pokemon.animatedSprite || pokemon.sprite;
       img.alt = pokemon.displayName;
-      img.className = "w-11 h-11 object-contain pixelated pointer-events-none";
-      badge.appendChild(img);
-
-      // Level pill
-      const levelBadge = document.createElement("span");
-      levelBadge.className =
-        "absolute -bottom-1 -right-1 bg-red-600 border border-white text-[9px] font-sans font-bold text-white px-1.5 py-0.2 rounded-full shadow-xs";
-      levelBadge.innerText = `L${pokemon.level}`;
-      badge.appendChild(levelBadge);
-
-      el.appendChild(badge);
+      img.className = `w-14 h-14 object-contain pixelated pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
+        isSelected
+          ? "scale-125 -translate-y-2 drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
+          : "drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
+      }`;
+      el.appendChild(img);
 
       // On click: flyTo creature & open drawer
       el.addEventListener("click", () => {
@@ -261,7 +253,7 @@ export function MapView({
 
       const marker = new Marker({
         element: el,
-        anchor: "center",
+        anchor: "bottom",
       })
         .setLngLat(pokemon.coordinates)
         .addTo(map);
