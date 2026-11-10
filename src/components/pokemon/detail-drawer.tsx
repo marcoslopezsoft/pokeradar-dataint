@@ -273,10 +273,9 @@ export function DetailDrawer({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            style={{ backgroundColor: theme.accentColor }}
-            className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
+            className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
-            <div ref={scrollContentRef} className="relative flex flex-col min-h-full">
+            <div ref={scrollContentRef} className="relative flex flex-col min-h-full bg-white">
               {/* Sticky Top Header Bar (Always pinned at top, keeps Habitat visible when scrolling down) */}
               <div
                 className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-colors duration-200 ${
@@ -288,22 +287,22 @@ export function DetailDrawer({
                 {/* Back button */}
                 <button
                   onClick={onClose}
-                  className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
+                  className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer z-10"
                   aria-label="Volver"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
 
-                {/* Habitat Badge (Always pinned at top when scrolling down) */}
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-xs max-w-[210px]">
+                {/* Habitat (Centered in the middle, no padding, just icon and text) */}
+                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white text-xs font-semibold max-w-[55%] pointer-events-none drop-shadow-xs">
                   <MapPin className="w-3.5 h-3.5 text-white shrink-0" />
-                  <span className="text-xs font-semibold truncate leading-none">
+                  <span className="truncate leading-none">
                     {pokemon.biomeName}
                   </span>
                 </div>
 
                 {/* Right Actions: Level & Heart Party Toggle */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 z-10">
                   <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md">
                     Nv. {pokemon.level}
                   </span>
@@ -407,7 +406,7 @@ export function DetailDrawer({
               </div>
 
               {/* Sliding White Sheet: Glides UP and smoothly covers the sticky hero when scrolling down */}
-              <div className="relative z-30 rounded-t-[36px] bg-white p-6 -mt-4 shadow-[0_-16px_36px_rgba(0,0,0,0.14)] space-y-5 pb-28 min-h-[calc(100vh-80px)]">
+              <div className="relative z-30 flex-1 w-full rounded-t-[36px] bg-white p-6 -mt-4 shadow-[0_-16px_36px_rgba(0,0,0,0.14)] space-y-5 pb-36 min-h-screen">
                 {/* Subtle Sheet Indicator Pill */}
                 <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto -mt-2 mb-2" />
 
