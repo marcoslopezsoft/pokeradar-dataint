@@ -70,8 +70,8 @@ export const BIOMES: BiomeRegion[] = [
   }
 ];
 
-// Ultra-fast 60 FPS Dark Raster style: Zero CPU vector parsing, zero watermarks, zero missing sprite errors
-export const HIGH_PERF_DARK_STYLE: StyleSpecification = {
+// Ultra-fast 60 FPS Light Raster style: Clean white aesthetic, zero CPU vector parsing, zero watermarks
+export const HIGH_PERF_LIGHT_STYLE: StyleSpecification = {
   version: 8,
   sources: {
     "osm-raster-tiles": {
@@ -86,15 +86,15 @@ export const HIGH_PERF_DARK_STYLE: StyleSpecification = {
   },
   layers: [
     {
-      id: "osm-dark-base",
+      id: "osm-light-base",
       type: "raster",
       source: "osm-raster-tiles",
       minzoom: 0,
       maxzoom: 19,
       paint: {
-        "raster-saturation": -0.85,
-        "raster-contrast": 0.25,
-        "raster-brightness-max": 0.38,
+        "raster-saturation": -0.1,
+        "raster-contrast": 0.05,
+        "raster-brightness-min": 0.08,
         "raster-fade-duration": 100
       }
     }
@@ -106,5 +106,5 @@ export const INITIAL_MAP_CONFIG = {
   zoom: 4.2,
   minZoom: 3,
   maxZoom: 18,
-  style: HIGH_PERF_DARK_STYLE
+  style: HIGH_PERF_LIGHT_STYLE
 };

@@ -45,8 +45,8 @@ export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-slate-400 animate-pulse font-mono">
-        <Wind className="w-3.5 h-3.5" />
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/90 border border-slate-200 text-xs text-slate-500 animate-pulse font-sans font-medium">
+        <Wind className="w-3.5 h-3.5 text-slate-400" />
         <span>Sondeando atmósfera...</span>
       </div>
     );
@@ -55,16 +55,16 @@ export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
   if (!weather) return null;
 
   return (
-    <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/60 shadow-lg text-xs font-mono">
-      <div className="p-1 rounded-md bg-slate-800/80">
+    <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-md border border-slate-200/90 shadow-sm text-xs font-sans font-medium">
+      <div className="p-1 rounded-md bg-slate-100">
         {getWeatherIcon(weather.weatherCode)}
       </div>
       <div>
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-slate-100">{weather.temperature}°C</span>
-          <span className="text-slate-400 text-[10px]">· {weather.conditionDescription}</span>
+          <span className="font-bold text-slate-800">{weather.temperature}°C</span>
+          <span className="text-slate-500 text-[10px]">· {weather.conditionDescription}</span>
         </div>
-        <div className="text-[10px] text-slate-500">
+        <div className="text-[10px] text-slate-400">
           Viento: {weather.windSpeed} km/h · {biomeName}
         </div>
       </div>

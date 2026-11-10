@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Heart,
-  Sparkles,
+  PlusCircle,
   MapPin,
   Ruler,
   Weight,
@@ -159,7 +159,7 @@ export function DetailDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
           />
 
           {/* Behance Pokédex Sheet Drawer */}
@@ -168,7 +168,7 @@ export function DetailDrawer({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-[#0d121d] z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
+            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
             {/* Top Color Card with Pokéball Watermark (Behance Layout) */}
             <div
@@ -230,7 +230,7 @@ export function DetailDrawer({
                   </div>
                 </div>
 
-                <span className="text-xl font-bold text-white/80 font-mono tracking-wider">
+                <span className="text-xl font-bold text-white/80 font-sans tracking-wider">
                   #{String(pokemon.id).padStart(3, "0")}
                 </span>
               </div>
@@ -261,16 +261,16 @@ export function DetailDrawer({
             </div>
 
             {/* Bottom Sheet Card (Behance Rounded Tabs & Stats) */}
-            <div className="flex-1 rounded-t-[32px] bg-[#121824] pt-14 p-6 flex flex-col justify-between space-y-6 border-t border-slate-800/80">
+            <div className="flex-1 rounded-t-[32px] bg-white pt-14 p-6 flex flex-col justify-between space-y-6 -mt-8 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)]">
               {/* Tab Navigators: Acerca de / Estadísticas Base */}
               <div>
-                <div className="flex items-center justify-around border-b border-slate-800 pb-3 mb-5">
+                <div className="flex items-center justify-around border-b border-slate-100 pb-3 mb-5">
                   <button
                     onClick={() => setActiveTab("about")}
                     className={`font-sans text-sm font-semibold transition-all relative pb-2 cursor-pointer ${
                       activeTab === "about"
-                        ? "text-white"
-                        : "text-slate-500 hover:text-slate-400"
+                        ? "text-slate-900 font-bold"
+                        : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
                     <span>Acerca de</span>
@@ -286,8 +286,8 @@ export function DetailDrawer({
                     onClick={() => setActiveTab("stats")}
                     className={`font-sans text-sm font-semibold transition-all relative pb-2 cursor-pointer ${
                       activeTab === "stats"
-                        ? "text-white"
-                        : "text-slate-500 hover:text-slate-400"
+                        ? "text-slate-900 font-bold"
+                        : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
                     <span>Estadísticas Base</span>
@@ -309,30 +309,30 @@ export function DetailDrawer({
                     className="space-y-4"
                   >
                     {/* Physical Specs Card */}
-                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/60">
+                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
                       <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-slate-800 text-slate-300">
-                          <Ruler className="w-4 h-4 text-cyan-400" />
+                        <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
+                          <Ruler className="w-4 h-4 text-cyan-600" />
                         </div>
                         <div>
                           <div className="text-[11px] font-medium text-slate-400">
                             Altura
                           </div>
-                          <div className="text-sm font-bold text-slate-100">
+                          <div className="text-sm font-bold text-slate-800">
                             {pokemon.height} m
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-slate-800 text-slate-300">
-                          <Weight className="w-4 h-4 text-amber-400" />
+                        <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
+                          <Weight className="w-4 h-4 text-amber-600" />
                         </div>
                         <div>
                           <div className="text-[11px] font-medium text-slate-400">
                             Peso
                           </div>
-                          <div className="text-sm font-bold text-slate-100">
+                          <div className="text-sm font-bold text-slate-800">
                             {pokemon.weight} kg
                           </div>
                         </div>
@@ -340,14 +340,14 @@ export function DetailDrawer({
                     </div>
 
                     {/* Biome Origin Info */}
-                    <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-2">
-                      <div className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+                      <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-red-500" />
                         <span>Hábitat y Detección</span>
                       </div>
-                      <div className="text-xs font-medium text-slate-200">
+                      <div className="text-xs font-medium text-slate-700">
                         Avistado en{" "}
-                        <strong className="text-white font-bold">
+                        <strong className="text-slate-900 font-bold">
                           {pokemon.biomeName}
                         </strong>
                       </div>
@@ -358,9 +358,9 @@ export function DetailDrawer({
                     </div>
 
                     {/* Audio Cry Player */}
-                    <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/60 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                        <Volume2 className="w-4 h-4 text-red-400" />
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                        <Volume2 className="w-4 h-4 text-red-500" />
                         <span>Alarido de PokéAPI</span>
                       </div>
                       <CryPlayer cryUrl={pokemon.cryUrl} name={pokemon.displayName} />
@@ -374,7 +374,7 @@ export function DetailDrawer({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}
-                    className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/60"
+                    className="p-4 rounded-2xl bg-slate-50 border border-slate-100"
                   >
                     <StatsBars stats={pokemon.stats} />
                   </motion.div>
@@ -388,25 +388,22 @@ export function DetailDrawer({
                   disabled={isInParty || isPartyFull}
                   className={`w-full py-3.5 px-4 rounded-2xl font-sans text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
                     isInParty
-                      ? "bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed"
+                      ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
                       : isPartyFull
-                      ? "bg-amber-950/40 border border-amber-800/50 text-amber-300 cursor-not-allowed"
-                      : "bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white border border-yellow-400/80 shadow-red-600/40 hover:scale-[1.01]"
+                      ? "bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed"
+                      : "bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/30 hover:scale-[1.01]"
                   }`}
                 >
                   {isInParty ? (
                     <>
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       <span>EN TU EQUIPO DE EXPEDICIÓN</span>
                     </>
                   ) : isPartyFull ? (
-                    <>
-                      <Sparkles className="w-4 h-4" />
-                      <span>EQUIPO COMPLETO (6/6)</span>
-                    </>
+                    <span>EQUIPO COMPLETO (6/6)</span>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <PlusCircle className="w-4 h-4" />
                       <span>RECLUTAR AL EQUIPO DE EXPEDICIÓN</span>
                     </>
                   )}

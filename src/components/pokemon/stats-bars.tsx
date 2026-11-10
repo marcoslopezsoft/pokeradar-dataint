@@ -52,13 +52,13 @@ export function StatsBars({ stats }: StatsBarsProps) {
 
           return (
             <div key={key} className="flex items-center text-xs">
-              <span className="w-20 text-slate-400 font-medium tracking-wide">
+              <span className="w-20 text-slate-500 font-medium tracking-wide">
                 {config.label}
               </span>
-              <span className="w-10 text-slate-100 font-semibold text-right pr-3">
+              <span className="w-10 text-slate-800 font-semibold text-right pr-3">
                 {val}
               </span>
-              <div className="flex-1 h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                 <motion.div
                   className={`h-full rounded-full ${barColor}`}
                   initial={{ width: 0 }}
@@ -71,16 +71,16 @@ export function StatsBars({ stats }: StatsBarsProps) {
         })}
 
         {/* Total Stat Row */}
-        <div className="flex items-center text-xs pt-1 border-t border-slate-800/70">
-          <span className="w-20 text-slate-300 font-semibold tracking-wide">
+        <div className="flex items-center text-xs pt-1 border-t border-slate-200">
+          <span className="w-20 text-slate-700 font-bold tracking-wide">
             Total
           </span>
-          <span className="w-10 text-[#ffcb05] font-bold text-right pr-3">
+          <span className="w-10 text-red-600 font-bold text-right pr-3">
             {total}
           </span>
-          <div className="flex-1 h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-amber-500"
+              className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-600"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, Math.round((total / 720) * 100))}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}

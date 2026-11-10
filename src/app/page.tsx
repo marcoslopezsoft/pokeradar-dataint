@@ -28,7 +28,7 @@ export default function HomePage() {
     useExpedition();
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans select-none">
+    <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
       {/* Top HUD Controls & Weather */}
       <RadarHud
         activeBiome={activeBiome}

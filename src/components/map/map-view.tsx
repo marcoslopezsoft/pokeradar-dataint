@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
-import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_DARK_STYLE } from "@/lib/biomes";
+import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_LIGHT_STYLE } from "@/lib/biomes";
 
 // Configure MapLibre Web Worker URL for Next.js App Router & Turbopack
 if (typeof window !== "undefined") {
@@ -60,20 +60,22 @@ export function MapView({
     );
 
     // Suppress missing style image warnings (e.g. wood-pattern, circle-11)
-    map.setMissingStyleImageResolver(() => {
-      return {
-        width: 1,
-        height: 1,
-        data: new Uint8Array([0, 0, 0, 0]),
-      };
+    map.setMissingStyleImageResolver((id) => {
+      if (!map.hasImage(id)) {
+        map.addImage(id, {
+          width: 1,
+          height: 1,
+          data: new Uint8Array([0, 0, 0, 0]),
+        });
+      }
     });
 
     // Auto-fallback if style needs reset
     map.on("error", (e) => {
       const msg = e?.error?.message || "";
       if (msg.includes("Failed to fetch") || msg.includes("401") || msg.includes("403")) {
-        console.warn("Switching to high performance dark style:", msg);
-        map.setStyle(HIGH_PERF_DARK_STYLE);
+        console.warn("Switching to high performance light style:", msg);
+        map.setStyle(HIGH_PERF_LIGHT_STYLE);
       }
     });
 
@@ -118,7 +120,7 @@ export function MapView({
             240,
           ],
           "circle-color": ["get", "color"],
-          "circle-opacity": 0.15,
+          "circle-opacity": 0.22,
           "circle-blur": 0.85,
         },
       });
@@ -141,9 +143,9 @@ export function MapView({
             180,
           ],
           "circle-color": "transparent",
-          "circle-stroke-width": 1.5,
+          "circle-stroke-width": 2,
           "circle-stroke-color": ["get", "color"],
-          "circle-stroke-opacity": 0.4,
+          "circle-stroke-opacity": 0.55,
         },
       });
 
@@ -208,7 +210,7 @@ export function MapView({
       // Tooltip pill on hover
       const tooltip = document.createElement("div");
       tooltip.className =
-        "absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0f1420]/95 border border-red-500/70 text-[10px] font-mono text-yellow-300 whitespace-nowrap shadow-xl pointer-events-none z-30 font-bold";
+        "absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white/95 border border-slate-200 text-[10px] font-sans text-slate-800 whitespace-nowrap shadow-lg pointer-events-none z-30 font-bold";
       tooltip.innerText = `${pokemon.displayName} #${pokemon.id}`;
       el.appendChild(tooltip);
 
@@ -216,8 +218,8 @@ export function MapView({
       const pulseRing = document.createElement("div");
       pulseRing.className = `absolute inset-0 rounded-full pointer-events-none transition-all ${
         isSelected
-          ? "border-2 border-yellow-400 animate-radar-pulse shadow-[0_0_15px_#facc15]"
-          : "border border-red-500/25 group-hover:border-2 group-hover:border-red-400 group-hover:animate-radar-pulse"
+          ? "border-2 border-red-500 animate-radar-pulse shadow-[0_0_15px_#ef4444]"
+          : "border border-red-400/40 group-hover:border-2 group-hover:border-red-500 group-hover:animate-radar-pulse"
       }`;
       el.appendChild(pulseRing);
 
@@ -225,8 +227,8 @@ export function MapView({
       const badge = document.createElement("div");
       badge.className = `relative w-full h-full rounded-2xl flex items-center justify-center p-1 backdrop-blur-md transition-transform duration-200 group-hover:scale-110 ${
         isSelected
-          ? "bg-red-950/70 border-2 border-yellow-400 shadow-[0_0_22px_rgba(239,68,68,0.7)] scale-110"
-          : "bg-[#0f1420]/90 border border-slate-700/80 shadow-md group-hover:border-red-400"
+          ? "bg-red-50/95 border-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.35)] scale-110"
+          : "bg-white/95 border border-slate-200/90 shadow-md group-hover:border-red-400 group-hover:shadow-lg"
       }`;
 
       // Pokemon sprite image
@@ -239,7 +241,7 @@ export function MapView({
       // Level pill
       const levelBadge = document.createElement("span");
       levelBadge.className =
-        "absolute -bottom-1 -right-1 bg-red-950 border border-yellow-400 text-[9px] font-mono font-bold text-yellow-300 px-1 py-0.2 rounded-full shadow-sm";
+        "absolute -bottom-1 -right-1 bg-red-600 border border-white text-[9px] font-sans font-bold text-white px-1.5 py-0.2 rounded-full shadow-xs";
       levelBadge.innerText = `L${pokemon.level}`;
       badge.appendChild(levelBadge);
 

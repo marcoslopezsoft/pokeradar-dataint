@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion } from "@/types/pokemon";
-import { Compass, Search, Volume2, VolumeX, Sparkles } from "lucide-react";
+import { Compass, Search, Volume2, VolumeX } from "lucide-react";
 import { WeatherBadge } from "../weather/weather-badge";
 import { sfx } from "@/lib/sound-effects";
 
@@ -53,7 +53,7 @@ export function RadarHud({
   return (
     <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
       {/* Top Pokédex Navigation Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#0f1420]/90 backdrop-blur-xl border border-red-500/30 shadow-2xl shadow-red-950/40 pointer-events-auto">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
         {/* Brand & Pokédex Sensor Lights */}
         <div className="flex items-center gap-3">
           {/* Main Blue Sensor + 3 LEDs (Classic Pokédex) */}
@@ -70,14 +70,14 @@ export function RadarHud({
 
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm font-extrabold font-mono tracking-wider text-[#ffcb05] drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                POKÉRADAR <span className="text-white font-normal">GEO</span>
+              <h1 className="text-sm font-bold tracking-wide text-red-600">
+                POKÉRADAR <span className="text-slate-800 font-semibold">GEO</span>
               </h1>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-red-600 text-white shadow-sm shadow-red-600/50">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-600 text-white shadow-sm shadow-red-600/30">
                 DATAINT
               </span>
             </div>
-            <div className="text-[11px] font-mono text-slate-400">
+            <div className="text-[11px] font-medium text-slate-500">
               {totalSpotted} especímenes en radar
             </div>
           </div>
@@ -99,8 +99,8 @@ export function RadarHud({
             onClick={toggleMute}
             className={`p-2 rounded-xl border transition-all cursor-pointer ${
               isMuted
-                ? "bg-slate-900/80 border-slate-700 text-slate-500"
-                : "bg-red-950/40 border-red-500/40 text-yellow-400 shadow-sm shadow-red-900/30"
+                ? "bg-slate-100 border-slate-200 text-slate-400 hover:text-slate-600"
+                : "bg-red-50 border-red-200 text-red-600 shadow-xs"
             }`}
             title={isMuted ? "Activar efectos sonoros" : "Silenciar efectos sonoros"}
           >
@@ -114,7 +114,7 @@ export function RadarHud({
               placeholder="Buscar Pokémon..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-32 sm:w-44 pl-8 pr-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs font-mono text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
+              className="w-32 sm:w-44 pl-8 pr-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-red-500 focus:bg-white focus:ring-1 focus:ring-red-500 transition-all"
             />
           </div>
 
@@ -122,7 +122,7 @@ export function RadarHud({
             <select
               value={selectedType}
               onChange={(e) => onTypeChange(e.target.value)}
-              className="py-1.5 px-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500 cursor-pointer capitalize"
+              className="py-1.5 px-2.5 rounded-xl bg-slate-100/90 border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-red-500 focus:bg-white cursor-pointer capitalize"
             >
               <option value="all">Tipos (Todos)</option>
               {AVAILABLE_TYPES.filter((t) => t !== "all").map((type) => (
@@ -137,7 +137,7 @@ export function RadarHud({
 
       {/* Quick Biome Nav Pills */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pointer-events-auto no-scrollbar">
-        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] font-mono text-slate-400">
+        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/90 border border-slate-200 text-[11px] font-medium text-slate-600 shadow-xs">
           <Compass className="w-3.5 h-3.5 text-red-500" />
           <span>Biomas:</span>
         </span>
@@ -150,14 +150,14 @@ export function RadarHud({
                 sfx.playRadarPing();
                 onSelectBiome(biome);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? "bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold border border-yellow-400 shadow-md shadow-red-600/40 scale-105"
-                  : "bg-slate-950/80 hover:bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
+                  ? "bg-gradient-to-r from-red-600 to-rose-600 text-white font-semibold border border-yellow-400 shadow-md shadow-red-600/30 scale-105"
+                  : "bg-white/90 hover:bg-slate-100 text-slate-700 font-medium border border-slate-200 hover:border-slate-300 shadow-xs"
               }`}
             >
               <span
-                className="w-2 h-2 rounded-full ring-1 ring-white/50"
+                className="w-2 h-2 rounded-full ring-1 ring-slate-300"
                 style={{ backgroundColor: biome.accentColor }}
               />
               <span>{biome.name}</span>

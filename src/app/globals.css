@@ -2,12 +2,13 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 
 @theme {
-  --font-sans: var(--font-poppins), sans-serif;
+  --font-sans: var(--font-poppins), 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-poppins), 'Poppins', sans-serif;
 }
 
 :root {
-  --background: #0d121d;
-  --foreground: #f8fafc;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --poke-red: #dc0a2d;
   --poke-red-dark: #8b0000;
   --poke-blue: #2a75bb;
@@ -15,8 +16,14 @@
   --poke-gold: #ffde00;
 }
 
+*,
+*::before,
+*::after {
+  font-family: var(--font-poppins), 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
 body {
-  font-family: var(--font-poppins), sans-serif;
+  font-family: var(--font-poppins), 'Poppins', sans-serif !important;
   background-color: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
@@ -61,18 +68,18 @@ body {
   animation: pokedex-sensor-glow 2.5s ease-in-out infinite;
 }
 
-/* MapLibre custom control styles with Pokédex dark theme */
+/* MapLibre custom control styles with Pokédex light theme */
 .maplibregl-ctrl-group {
-  background: rgba(18, 23, 34, 0.9) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(220, 10, 45, 0.35) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
   border-radius: 0.75rem !important;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
 }
 
 .maplibregl-ctrl-group button {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
 }
 
 .maplibregl-ctrl-group button:last-child {
@@ -80,7 +87,7 @@ body {
 }
 
 .maplibregl-ctrl-icon {
-  filter: invert(1) hue-rotate(180deg);
+  filter: none;
 }
 
 /* Custom scrollbar styled like a Pokédex track */
@@ -90,14 +97,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(13, 18, 29, 0.8);
+  background: rgba(241, 245, 249, 0.9);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(220, 10, 45, 0.5);
+  background: rgba(220, 10, 45, 0.4);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(220, 10, 45, 0.8);
+  background: rgba(220, 10, 45, 0.7);
 }
