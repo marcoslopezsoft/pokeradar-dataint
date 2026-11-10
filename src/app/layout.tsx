@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
@@ -27,11 +23,11 @@ export default function RootLayout({
     <html
       lang="es"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full dark`}
+      className={`${poppins.variable} h-full dark`}
     >
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500 selection:text-slate-950"
+        className="min-h-full flex flex-col bg-[#0f1420] text-slate-100 font-sans antialiased selection:bg-[#ffcb05] selection:text-slate-950"
       >
         {children}
       </body>

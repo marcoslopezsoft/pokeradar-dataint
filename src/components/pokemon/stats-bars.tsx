@@ -9,22 +9,14 @@ interface StatsBarsProps {
 
 const STAT_CONFIG: Record<
   string,
-  { label: string; color: string; max: number }
+  { label: string; max: number }
 > = {
-  hp: { label: "HP", color: "from-emerald-500 to-green-400", max: 255 },
-  attack: { label: "Ataque", color: "from-red-500 to-amber-500", max: 190 },
-  defense: { label: "Defensa", color: "from-blue-500 to-cyan-400", max: 230 },
-  "special-attack": {
-    label: "Atq. Esp.",
-    color: "from-purple-500 to-pink-500",
-    max: 194,
-  },
-  "special-defense": {
-    label: "Def. Esp.",
-    color: "from-indigo-500 to-blue-400",
-    max: 230,
-  },
-  speed: { label: "Velocidad", color: "from-amber-400 to-yellow-300", max: 200 },
+  hp: { label: "HP", max: 255 },
+  attack: { label: "Ataque", max: 190 },
+  defense: { label: "Defensa", max: 230 },
+  "special-attack": { label: "Atq. Esp.", max: 194 },
+  "special-defense": { label: "Def. Esp.", max: 230 },
+  speed: { label: "Velocidad", max: 200 },
 };
 
 export function StatsBars({ stats }: StatsBarsProps) {
@@ -40,39 +32,61 @@ export function StatsBars({ stats }: StatsBarsProps) {
   const total = statKeys.reduce((acc, key) => acc + (stats[key] || 0), 0);
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-        <span>ESTADÍSTICAS BASE</span>
-        <span className="text-cyan-400 font-semibold">TOTAL: {total}</span>
-      </div>
-
-      <div className="space-y-2">
+    <div className="space-y-3.5">
+      <div className="space-y-3">
         {statKeys.map((key) => {
           const config = STAT_CONFIG[key] || {
             label: key,
-            color: "from-cyan-500 to-blue-500",
             max: 200,
           };
           const val = stats[key] || 0;
           const percentage = Math.min(100, Math.round((val / config.max) * 100));
 
+          // Behance Pokédex color logic: >= 50 teal/green, < 50 warm coral/red
+          const barColor =
+            val >= 100
+              ? "bg-[#48d0b0]"
+              : val >= 60
+              ? "bg-[#6890f0]"
+              : "bg-[#fb6c6c]";
+
           return (
-            <div key={key} className="space-y-1">
-              <div className="flex justify-between text-xs font-mono">
-                <span className="text-slate-300">{config.label}</span>
-                <span className="text-slate-200 font-bold">{val}</span>
-              </div>
-              <div className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden border border-slate-700/50">
+            <div key={key} className="flex items-center text-xs">
+              <span className="w-20 text-slate-400 font-medium tracking-wide">
+                {config.label}
+              </span>
+              <span className="w-10 text-slate-100 font-semibold text-right pr-3">
+                {val}
+              </span>
+              <div className="flex-1 h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
                 <motion.div
-                  className={`h-full rounded-full bg-gradient-to-r ${config.color}`}
+                  className={`h-full rounded-full ${barColor}`}
                   initial={{ width: 0 }}
                   animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
                 />
               </div>
             </div>
           );
         })}
+
+        {/* Total Stat Row */}
+        <div className="flex items-center text-xs pt-1 border-t border-slate-800/70">
+          <span className="w-20 text-slate-300 font-semibold tracking-wide">
+            Total
+          </span>
+          <span className="w-10 text-[#ffcb05] font-bold text-right pr-3">
+            {total}
+          </span>
+          <div className="flex-1 h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-amber-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.round((total / 720) * 100))}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
