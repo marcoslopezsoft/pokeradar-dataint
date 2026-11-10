@@ -93,11 +93,11 @@ Si contáramos con una semana adicional de desarrollo:
 git clone <URL_DEL_REPO>
 cd pokeradar-dataint
 
-# 2. Instalar dependencias
-npm install
+# 2. Instalar dependencias con pnpm
+pnpm install
 
 # 3. Iniciar el servidor de desarrollo
-npm run dev
+pnpm dev
 
 # 4. Abrir en el navegador
 # http://localhost:3000
