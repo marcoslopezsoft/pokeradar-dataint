@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
+import type { FeatureCollection, Point } from "geojson";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
 import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_LIGHT_STYLE } from "@/lib/biomes";
 
@@ -81,7 +82,7 @@ export function MapView({
 
     map.on("load", () => {
       // GeoJSON Feature Collection for Biome Atmospheric Radii
-      const biomeFeatures: GeoJSON.FeatureCollection<GeoJSON.Point> = {
+      const biomeFeatures: FeatureCollection<Point> = {
         type: "FeatureCollection",
         features: BIOMES.map((b) => ({
           type: "Feature",
