@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import confetti from "canvas-confetti";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { Sparkles, Trash2, ShieldAlert } from "lucide-react";
 import Image from "next/image";
 import { sfx } from "@/lib/sound-effects";
+import { TeamAnalysisModal } from "./team-analysis-modal";
 
 interface PartyDockProps {
   party: PokemonRadarEntity[];
@@ -20,6 +21,7 @@ export function PartyDock({
   onReleasePokemon,
   selectedId,
 }: PartyDockProps) {
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const maxPartySize = 6;
   const slots = Array.from({ length: maxPartySize }, (_, i) => party[i] || null);
 
@@ -33,15 +35,20 @@ export function PartyDock({
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-full px-4">
-      <div className="flex items-center gap-2 p-2 rounded-2xl bg-slate-950/85 backdrop-blur-xl border border-cyan-500/30 shadow-2xl shadow-cyan-950/50">
-        <div className="hidden sm:flex flex-col items-center justify-center px-3 border-r border-slate-800 text-[10px] font-mono text-cyan-400">
-          <Sparkles className="w-4 h-4 mb-0.5 text-cyan-400 animate-pulse" />
-          <span className="font-bold">EQUIPO</span>
-          <span className="text-slate-400">
-            {party.length}/{maxPartySize}
-          </span>
-        </div>
+    <>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-full px-4">
+        <div className="flex items-center gap-2 p-2 rounded-2xl bg-slate-950/85 backdrop-blur-xl border border-cyan-500/30 shadow-2xl shadow-cyan-950/50">
+          <button
+            onClick={() => setIsAnalysisOpen(true)}
+            className="hidden sm:flex flex-col items-center justify-center px-3 border-r border-slate-800 text-[10px] font-mono text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer group"
+            title="Abrir diagnóstico táctico del equipo"
+          >
+            <Sparkles className="w-4 h-4 mb-0.5 text-cyan-400 group-hover:scale-115 transition-transform" />
+            <span className="font-bold underline decoration-cyan-500/40">EQUIPO</span>
+            <span className="text-slate-400">
+              {party.length}/{maxPartySize}
+            </span>
+          </button>
 
         <div className="flex items-center gap-2 overflow-x-auto py-1">
           {slots.map((pokemon, idx) => {
@@ -114,5 +121,12 @@ export function PartyDock({
         </div>
       </div>
     </div>
+
+    <TeamAnalysisModal
+        isOpen={isAnalysisOpen}
+        onClose={() => setIsAnalysisOpen(false)}
+        party={party}
+      />
+    </>
   );
 }
