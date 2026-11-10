@@ -132,12 +132,13 @@ export function DetailDrawer({
 }: DetailDrawerProps) {
   const [description, setDescription] = useState<string>("");
   const [isLoadingDesc, setIsLoadingDesc] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollContentRef = useRef<HTMLDivElement | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
 
-  // Initialize Lenis smooth scroll on drawer container
+  // Initialize Lenis smooth scroll with scroll position tracking
   useEffect(() => {
     if (!isOpen || !scrollWrapperRef.current) return;
 
@@ -148,6 +149,10 @@ export function DetailDrawer({
       lerp: 0.1,
     });
     lenisRef.current = lenis;
+
+    lenis.on("scroll", (e: { scroll: number }) => {
+      setScrollY(e.scroll);
+    });
 
     let rafId: number;
     function raf(time: number) {
@@ -163,9 +168,10 @@ export function DetailDrawer({
     };
   }, [isOpen]);
 
-  // Always scroll to top when opening or switching pokemon
+  // Always reset scroll to top when opening or switching pokemon
   useEffect(() => {
     if (isOpen) {
+      setScrollY(0);
       if (scrollWrapperRef.current) {
         scrollWrapperRef.current.scrollTop = 0;
       }
@@ -229,6 +235,9 @@ export function DetailDrawer({
     }
   };
 
+  // Parallax and scroll progress: 0 when at top, 1 when scrolled 180px
+  const scrollProgress = Math.min(1, Math.max(0, scrollY / 180));
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -251,10 +260,73 @@ export function DetailDrawer({
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
-            <div ref={scrollContentRef} className="flex flex-col min-h-full">
-              {/* Top Color Card with Animated Pokéball, Sprite (Left) & Habitat/Cry (Right) */}
+            <div ref={scrollContentRef} className="relative flex flex-col min-h-full">
+              {/* Sticky Top Header Bar (Always accessible, blends on scroll) */}
               <div
-                className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-8 flex flex-col justify-between shrink-0 min-h-[300px]`}
+                className={`sticky top-0 z-40 flex items-center justify-between px-5 py-3.5 transition-all duration-300 ${
+                  scrollY > 60
+                    ? `bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg text-white`
+                    : `bg-transparent text-white`
+                }`}
+              >
+                <button
+                  onClick={onClose}
+                  className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
+                  aria-label="Volver"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+
+                <div className="flex items-center gap-2.5">
+                  {/* Subtle name badge fading in when scrolled past hero */}
+                  <span
+                    className={`text-xs font-bold text-white transition-opacity duration-300 capitalize ${
+                      scrollY > 120 ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    {pokemon.displayName}
+                  </span>
+
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                    Nv. {pokemon.level}
+                  </span>
+
+                  {/* Heart Button: Toggle recruit / remove from party */}
+                  <button
+                    onClick={handleToggleParty}
+                    disabled={!isInParty && isPartyFull}
+                    className={`p-2 rounded-full transition-all cursor-pointer ${
+                      isInParty
+                        ? "bg-white/30 text-white shadow-md scale-105"
+                        : isPartyFull
+                          ? "opacity-50 cursor-not-allowed hover:bg-transparent"
+                          : "hover:bg-white/20 text-white"
+                    }`}
+                    title={
+                      isInParty
+                        ? "Quitar del equipo de expedición"
+                        : isPartyFull
+                          ? "Equipo completo (6/6)"
+                          : "Reclutar al equipo"
+                    }
+                    aria-label={
+                      isInParty
+                        ? "Quitar del equipo"
+                        : "Reclutar al equipo"
+                    }
+                  >
+                    <Heart
+                      className={`w-5 h-5 transition-transform ${
+                        isInParty ? "fill-red-500 text-red-500 scale-110" : "text-white"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sticky Hero Container (Pokemon + Background stays pinned as the white sheet slides over it) */}
+              <div
+                className={`sticky top-0 z-10 -mt-14 pt-14 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-[300px] flex flex-col justify-between`}
               >
                 {/* Floating Ambient Atmosphere Particles */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -293,54 +365,14 @@ export function DetailDrawer({
                   <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
                 </motion.svg>
 
-                {/* Top Navigation & Action Bar */}
-                <div className="relative z-10 flex items-center justify-between mb-3">
-                  <button
-                    onClick={onClose}
-                    className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
-                    aria-label="Volver"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
-                      Nv. {pokemon.level}
-                    </span>
-                    {/* Heart Button: Toggle recruit / remove from party */}
-                    <button
-                      onClick={handleToggleParty}
-                      disabled={!isInParty && isPartyFull}
-                      className={`p-2 rounded-full transition-all cursor-pointer ${
-                        isInParty
-                          ? "bg-white/30 text-white shadow-md scale-105"
-                          : isPartyFull
-                            ? "opacity-50 cursor-not-allowed hover:bg-transparent"
-                            : "hover:bg-white/20 text-white"
-                      }`}
-                      title={
-                        isInParty
-                          ? "Quitar del equipo de expedición"
-                          : isPartyFull
-                            ? "Equipo completo (6/6)"
-                            : "Reclutar al equipo"
-                      }
-                      aria-label={
-                        isInParty
-                          ? "Quitar del equipo"
-                          : "Reclutar al equipo"
-                      }
-                    >
-                      <Heart
-                        className={`w-5 h-5 transition-transform ${
-                          isInParty ? "fill-red-500 text-red-500 scale-110" : "text-white"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Main Hero Showcase: Left = Sprite, Right = Habitat + Cry */}
-                <div className="relative z-20 grid grid-cols-2 gap-4 items-center py-2">
+                {/* Animated Showcase: Shrinks and fades slightly as white sheet glides over it */}
+                <div
+                  style={{
+                    transform: `scale(${1 - scrollProgress * 0.15}) translateY(${scrollProgress * 24}px)`,
+                    opacity: 1 - scrollProgress * 0.4,
+                  }}
+                  className="relative z-20 grid grid-cols-2 gap-4 items-center px-6 py-3 transition-transform ease-out duration-75"
+                >
                   {/* Left Column: Crisp Animated Sprite with Ground Shadow */}
                   <div className="relative flex flex-col items-center justify-center">
                     {/* Luminous Pulsing Aura Behind Pokemon */}
@@ -406,8 +438,11 @@ export function DetailDrawer({
                 </div>
               </div>
 
-              {/* Bottom White Container: Sequential Details */}
-              <div className="flex-1 rounded-t-[32px] bg-white p-6 -mt-4 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)] space-y-5 pb-10">
+              {/* Sliding White Sheet: Glides UP and covers the sticky hero when scrolling */}
+              <div className="relative z-30 rounded-t-[36px] bg-white p-6 -mt-3 shadow-[0_-16px_36px_rgba(0,0,0,0.14)] space-y-5 pb-16 min-h-[calc(100vh-100px)]">
+                {/* Subtle Sheet Indicator Pill */}
+                <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto -mt-2 mb-2" />
+
                 {/* 1. Nombre */}
                 <div>
                   <h2 className="text-3xl font-extrabold capitalize text-slate-900 tracking-tight font-sans">
