@@ -64,14 +64,14 @@ export function RadarHud({
     <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
       {/* Top Pokédex Navigation Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
-        {/* Brand & PokéRadar Device Icon */}
+        {/* Brand & Pokeball Icon */}
         <div className="flex items-center gap-2.5">
-          {/* Authentic PokéRadar Device Icon */}
-          <div className="relative flex items-center justify-center w-8 h-8 transition-transform hover:scale-110">
+          {/* Authentic Pokeball Icon */}
+          <div className="relative flex items-center justify-center w-8 h-8 transition-transform duration-300 hover:scale-110 hover:rotate-12 cursor-pointer">
             <img
-              src="/pokeradar-device.png"
-              alt="PokéRadar"
-              className="w-full h-full object-contain filter drop-shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+              src="/pokeball-icon.webp"
+              alt="PokéRadar Pokeball"
+              className="w-full h-full object-contain filter drop-shadow-[0_2px_6px_rgba(220,10,45,0.25)]"
             />
           </div>
 
