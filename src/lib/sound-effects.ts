@@ -4,7 +4,10 @@ class SoundEffectsEngine {
   private isMuted: boolean = false;
   private bgmAudio: HTMLAudioElement | null = null;
   private isBgmPlaying: boolean = false;
+  private bgmVolume: number = 0.3;
+  private sfxVolume: number = 0.5;
   private bgmListeners: Set<(playing: boolean) => void> = new Set();
+  private volumeListeners: Set<() => void> = new Set();
 
   public subscribeBgm(callback: (playing: boolean) => void): () => void {
     this.bgmListeners.add(callback);
@@ -12,8 +15,18 @@ class SoundEffectsEngine {
     return () => this.bgmListeners.delete(callback);
   }
 
+  public subscribeVolume(callback: () => void): () => void {
+    this.volumeListeners.add(callback);
+    callback();
+    return () => this.volumeListeners.delete(callback);
+  }
+
   private notifyBgmListeners() {
     this.bgmListeners.forEach((fn) => fn(this.isBgmPlaying));
+  }
+
+  private notifyVolumeListeners() {
+    this.volumeListeners.forEach((fn) => fn());
   }
 
   public setMuted(muted: boolean) {
@@ -21,17 +34,39 @@ class SoundEffectsEngine {
     if (this.bgmAudio) {
       this.bgmAudio.muted = muted;
     }
+    this.notifyVolumeListeners();
   }
 
   public getIsMuted(): boolean {
     return this.isMuted;
   }
 
-  private playAudio(path: string, volume: number = 0.5) {
+  public setBgmVolume(vol: number) {
+    this.bgmVolume = Math.max(0, Math.min(1, vol));
+    if (this.bgmAudio) {
+      this.bgmAudio.volume = this.bgmVolume;
+    }
+    this.notifyVolumeListeners();
+  }
+
+  public getBgmVolume(): number {
+    return this.bgmVolume;
+  }
+
+  public setSfxVolume(vol: number) {
+    this.sfxVolume = Math.max(0, Math.min(1, vol));
+    this.notifyVolumeListeners();
+  }
+
+  public getSfxVolume(): number {
+    return this.sfxVolume;
+  }
+
+  private playAudio(path: string, baseVolume: number = 0.5) {
     if (this.isMuted || typeof window === "undefined") return;
     try {
       const audio = new Audio(path);
-      audio.volume = volume;
+      audio.volume = baseVolume * (this.sfxVolume / 0.5);
       audio.play().catch(() => {});
     } catch {
       // Audio autoplay policy or decode error safety
@@ -90,7 +125,7 @@ class SoundEffectsEngine {
     if (!this.bgmAudio && typeof window !== "undefined") {
       this.bgmAudio = new Audio("/audio/pokemon-red-title.mp3");
       this.bgmAudio.loop = true;
-      this.bgmAudio.volume = 0.25;
+      this.bgmAudio.volume = this.bgmVolume;
       this.bgmAudio.onended = () => {
         this.isBgmPlaying = false;
         this.notifyBgmListeners();

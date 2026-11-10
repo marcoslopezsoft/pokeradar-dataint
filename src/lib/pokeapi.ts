@@ -6,6 +6,34 @@ import {
 
 const POKEMON_CACHE = new Map<number, RawPokeApiResponse>();
 const DESCRIPTION_CACHE = new Map<number, string>();
+const ABILITY_CACHE = new Map<string, string>();
+
+export async function fetchAbilitySpanishName(nameOrSlug: string): Promise<string> {
+  const normalized = nameOrSlug.toLowerCase().trim();
+  if (ABILITY_CACHE.has(normalized)) {
+    return ABILITY_CACHE.get(normalized)!;
+  }
+
+  try {
+    const res = await fetch(`https://pokeapi.co/api/v2/ability/${normalized}`, {
+      next: { revalidate: 86400 * 7 },
+    });
+    if (!res.ok) throw new Error("Ability fetch failed");
+    const data = await res.json();
+    const esName = data.names?.find(
+      (n: { language: { name: string }; name: string }) => n.language?.name === "es"
+    )?.name;
+
+    if (esName) {
+      ABILITY_CACHE.set(normalized, esName);
+      return esName;
+    }
+  } catch {
+    // Fallback to formatted slug
+  }
+
+  return "";
+}
 
 export async function fetchPokemonDescription(id: number): Promise<string> {
   if (DESCRIPTION_CACHE.has(id)) {

@@ -9,7 +9,7 @@ import { StatsBars } from "./stats-bars";
 import { TypeBadge } from "./type-badge";
 import { sfx } from "@/lib/sound-effects";
 import { translateAbilityToSpanish } from "@/lib/utils";
-import { fetchPokemonDescription } from "@/lib/pokeapi";
+import { fetchPokemonDescription, fetchAbilitySpanishName } from "@/lib/pokeapi";
 
 interface DetailDrawerProps {
   pokemon: PokemonRadarEntity | null;
@@ -123,6 +123,7 @@ export function DetailDrawer({
 }: DetailDrawerProps) {
   const [description, setDescription] = useState<string>("");
   const [isLoadingDesc, setIsLoadingDesc] = useState(false);
+  const [abilityTranslations, setAbilityTranslations] = useState<Record<string, string>>({});
   const [scrollY, setScrollY] = useState(0);
 
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -195,6 +196,27 @@ export function DetailDrawer({
       isMounted = false;
     };
   }, [pokemon?.id]);
+
+  // Fetch official PokéAPI Spanish ability names
+  useEffect(() => {
+    if (!pokemon?.abilities || pokemon.abilities.length === 0) return;
+    let isMounted = true;
+
+    pokemon.abilities.forEach((ability) => {
+      fetchAbilitySpanishName(ability).then((esName) => {
+        if (isMounted && esName) {
+          setAbilityTranslations((prev) => ({
+            ...prev,
+            [ability]: esName,
+          }));
+        }
+      });
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pokemon?.id, pokemon?.abilities]);
 
   if (!pokemon) return null;
 
@@ -274,26 +296,28 @@ export function DetailDrawer({
                     : `bg-transparent text-white`
                 }`}
               >
-                {/* Back button */}
-                <button
-                  onClick={handleClose}
-                  className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer z-10"
-                  aria-label="Volver"
-                >
-                  <Icon icon="solar:arrow-left-linear" width={20} height={20} />
-                </button>
+                {/* Left: Back button + Habitat location aligned to the left */}
+                <div className="flex items-center gap-1.5 z-10 max-w-[60%]">
+                  <button
+                    onClick={handleClose}
+                    className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer shrink-0"
+                    aria-label="Volver"
+                  >
+                    <Icon icon="solar:arrow-left-linear" width={20} height={20} />
+                  </button>
 
-                {/* Habitat (Centered in the middle, no padding, just icon and text) */}
-                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white text-xs font-semibold max-w-[55%] pointer-events-none drop-shadow-xs">
-                  <Icon
-                    icon="solar:map-point-bold"
-                    width={14}
-                    height={14}
-                    className="text-white shrink-0 drop-shadow-xs"
-                  />
-                  <span className="truncate leading-none">
-                    {pokemon.biomeName}
-                  </span>
+                  {/* Habitat aligned to the left next to back arrow */}
+                  <div className="flex items-center gap-1.5 text-white text-xs font-semibold truncate drop-shadow-xs">
+                    <Icon
+                      icon="solar:map-point-bold"
+                      width={14}
+                      height={14}
+                      className="text-white shrink-0 drop-shadow-xs"
+                    />
+                    <span className="truncate leading-none">
+                      {pokemon.biomeName}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Right Actions: Level & Heart Party Toggle */}
@@ -446,7 +470,9 @@ export function DetailDrawer({
                             height={14}
                             className="text-amber-500"
                           />
-                          <span>{translateAbilityToSpanish(ability)}</span>
+                          <span>
+                            {abilityTranslations[ability] || translateAbilityToSpanish(ability)}
+                          </span>
                         </span>
                       ))
                     ) : (

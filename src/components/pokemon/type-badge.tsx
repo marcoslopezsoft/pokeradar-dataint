@@ -66,7 +66,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-red-300",
     text: "text-red-700",
     glow: "shadow-red-600/15",
-    icon: "solar:fist-bold",
+    icon: "lucide:swords",
   },
   poison: {
     label: "Veneno",
@@ -74,7 +74,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-purple-300",
     text: "text-purple-700",
     glow: "shadow-purple-600/15",
-    icon: "solar:skull-bold",
+    icon: "lucide:skull",
   },
   ground: {
     label: "Tierra",
@@ -90,7 +90,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-indigo-300",
     text: "text-indigo-700",
     glow: "shadow-indigo-400/15",
-    icon: "solar:wing-bold",
+    icon: "lucide:feather",
   },
   psychic: {
     label: "Psíquico",
@@ -114,7 +114,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-yellow-400",
     text: "text-yellow-900",
     glow: "shadow-yellow-800/15",
-    icon: "solar:gem-bold",
+    icon: "lucide:gem",
   },
   ghost: {
     label: "Fantasma",
@@ -154,7 +154,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-rose-300",
     text: "text-rose-700",
     glow: "shadow-rose-400/15",
-    icon: "solar:magic-stick-3-bold",
+    icon: "solar:stars-minimalistic-bold",
   },
 };
 

@@ -7,6 +7,7 @@ import { MapContainer } from "@/components/map/map-container";
 import { RadarHud } from "@/components/map/radar-hud";
 import { DetailDrawer } from "@/components/pokemon/detail-drawer";
 import { PartyDock } from "@/components/expedition/party-dock";
+import { TeamAnalysisModal } from "@/components/expedition/team-analysis-modal";
 import { WelcomeScreen } from "@/components/ui/welcome-screen";
 
 export default function HomePage() {
@@ -30,6 +31,7 @@ export default function HomePage() {
     useExpedition();
 
   const [hasStarted, setHasStarted] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
@@ -50,6 +52,8 @@ export default function HomePage() {
         selectedType={selectedType}
         onTypeChange={setSelectedType}
         totalSpotted={totalSpotted}
+        party={party}
+        onOpenTeamAnalysis={() => setIsTeamModalOpen(true)}
       />
 
       {/* Main Geospatial Map Engine */}
@@ -78,6 +82,13 @@ export default function HomePage() {
         onRemoveFromParty={removeFromParty}
         isInParty={selectedPokemon ? isInParty(selectedPokemon.id) : false}
         isPartyFull={isPartyFull}
+      />
+
+      {/* Team Diagnosis and Analysis Modal */}
+      <TeamAnalysisModal
+        isOpen={isTeamModalOpen}
+        onClose={() => setIsTeamModalOpen(false)}
+        party={party}
       />
     </main>
   );
