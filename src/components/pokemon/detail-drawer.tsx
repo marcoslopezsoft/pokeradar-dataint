@@ -14,7 +14,6 @@ import confetti from "canvas-confetti";
 import Lenis from "lenis";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { StatsBars } from "./stats-bars";
-import { CryPlayer } from "./cry-player";
 import { TypeBadge } from "./type-badge";
 import { sfx } from "@/lib/sound-effects";
 import { translateAbilityToSpanish } from "@/lib/utils";
@@ -181,6 +180,22 @@ export function DetailDrawer({
     }
   }, [isOpen, pokemon?.id]);
 
+  // Play Pokemon authentic cry automatically on selection
+  useEffect(() => {
+    if (!isOpen || !pokemon?.cryUrl) return;
+
+    const audio = new Audio(pokemon.cryUrl);
+    audio.volume = 0.5;
+    audio.play().catch((err) => {
+      console.warn("Auto-play cry blocked or interrupted:", err);
+    });
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [isOpen, pokemon?.id, pokemon?.cryUrl]);
+
   // Fetch official Pokédex description in Spanish
   useEffect(() => {
     if (!pokemon) return;
@@ -258,40 +273,41 @@ export function DetailDrawer({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
+            style={{ backgroundColor: theme.accentColor }}
+            className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
             <div ref={scrollContentRef} className="relative flex flex-col min-h-full">
-              {/* Sticky Top Header Bar (Always accessible, blends on scroll) */}
+              {/* Sticky Top Header Bar (Always pinned at top, keeps Habitat visible when scrolling down) */}
               <div
-                className={`sticky top-0 z-40 flex items-center justify-between px-5 py-3.5 transition-all duration-300 ${
-                  scrollY > 60
-                    ? `bg-slate-900/80 backdrop-blur-xl border-b border-white/10 shadow-lg text-white`
+                className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-colors duration-200 ${
+                  scrollY > 30
+                    ? `bg-slate-900/85 backdrop-blur-xl border-b border-white/10 shadow-lg text-white`
                     : `bg-transparent text-white`
                 }`}
               >
+                {/* Back button */}
                 <button
                   onClick={onClose}
-                  className="p-2 -ml-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
+                  className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
                   aria-label="Volver"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
 
-                <div className="flex items-center gap-2.5">
-                  {/* Subtle name badge fading in when scrolled past hero */}
-                  <span
-                    className={`text-xs font-bold text-white transition-opacity duration-300 capitalize ${
-                      scrollY > 120 ? "opacity-100" : "opacity-0 pointer-events-none"
-                    }`}
-                  >
-                    {pokemon.displayName}
+                {/* Habitat Badge (Always pinned at top when scrolling down) */}
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-xs max-w-[210px]">
+                  <MapPin className="w-3.5 h-3.5 text-white shrink-0" />
+                  <span className="text-xs font-semibold truncate leading-none">
+                    {pokemon.biomeName}
                   </span>
+                </div>
 
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                {/* Right Actions: Level & Heart Party Toggle */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md">
                     Nv. {pokemon.level}
                   </span>
 
-                  {/* Heart Button: Toggle recruit / remove from party */}
                   <button
                     onClick={handleToggleParty}
                     disabled={!isInParty && isPartyFull}
@@ -324,9 +340,10 @@ export function DetailDrawer({
                 </div>
               </div>
 
-              {/* Sticky Hero Container (Pokemon + Background stays pinned as the white sheet slides over it) */}
+              {/* Sticky Hero Container: Seamlessly connects to header with exact 56px offset, zero gaps */}
               <div
-                className={`sticky top-0 z-10 -mt-14 pt-14 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-[300px] flex flex-col justify-between`}
+                style={{ marginTop: "-56px", paddingTop: "56px" }}
+                className={`sticky top-0 z-10 w-full bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-[340px] flex flex-col justify-center items-center`}
               >
                 {/* Floating Ambient Atmosphere Particles */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -357,7 +374,7 @@ export function DetailDrawer({
                 {/* Pokéball Background Watermark with slow rotation */}
                 <motion.svg
                   viewBox="0 0 100 100"
-                  className="absolute -right-8 -bottom-8 w-60 h-60 text-white/15 pointer-events-none"
+                  className="absolute -right-8 -bottom-8 w-64 h-64 text-white/15 pointer-events-none"
                   fill="currentColor"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
@@ -365,81 +382,32 @@ export function DetailDrawer({
                   <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
                 </motion.svg>
 
-                {/* Animated Showcase: Shrinks and fades slightly as white sheet glides over it */}
+                {/* Centered Large Pokemon Sprite (No Bounce, Centered in Drawer, Scales slightly on scroll) */}
                 <div
                   style={{
-                    transform: `scale(${1 - scrollProgress * 0.15}) translateY(${scrollProgress * 24}px)`,
-                    opacity: 1 - scrollProgress * 0.4,
+                    transform: `scale(${1 - scrollProgress * 0.15}) translateY(${scrollProgress * 20}px)`,
+                    opacity: 1 - scrollProgress * 0.45,
                   }}
-                  className="relative z-20 grid grid-cols-2 gap-4 items-center px-6 py-3 transition-transform ease-out duration-75"
+                  className="relative z-20 flex flex-col items-center justify-center my-auto py-2 transition-transform ease-out duration-75"
                 >
-                  {/* Left Column: Crisp Animated Sprite with Ground Shadow */}
-                  <div className="relative flex flex-col items-center justify-center">
-                    {/* Luminous Pulsing Aura Behind Pokemon */}
-                    <motion.div
-                      className="absolute w-32 h-32 rounded-full bg-white/25 blur-xl pointer-events-none"
-                      animate={{
-                        scale: [0.9, 1.25, 0.9],
-                        opacity: [0.2, 0.5, 0.2],
-                      }}
-                      transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                    />
+                  {/* Luminous Pulsing Aura Behind Pokemon */}
+                  <div className="absolute w-52 h-52 rounded-full bg-white/20 blur-2xl pointer-events-none" />
 
-                    {/* Bobbing Sprite (Crisp Pixel-Art Rendering) */}
-                    <motion.div
-                      animate={{ y: [0, -8, 0] }}
-                      transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
-                      className="relative z-10 flex items-center justify-center min-h-[130px]"
-                    >
-                      <img
-                        src={pokemon.animatedSprite || pokemon.sprite}
-                        alt={pokemon.displayName}
-                        style={{ imageRendering: "pixelated" }}
-                        className="w-32 h-32 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]"
-                      />
-                    </motion.div>
+                  {/* Big Centered Pokemon Sprite (Static, Crisp Pixel-Art Rendering) */}
+                  <img
+                    src={pokemon.animatedSprite || pokemon.sprite}
+                    alt={pokemon.displayName}
+                    style={{ imageRendering: "pixelated" }}
+                    className="w-48 h-48 object-contain filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)]"
+                  />
 
-                    {/* Dynamic Ground Breathing Shadow */}
-                    <motion.div
-                      className="w-24 h-2.5 rounded-full bg-black/25 blur-xs mx-auto -mt-1"
-                      animate={{
-                        scaleX: [1, 0.75, 1],
-                        opacity: [0.35, 0.15, 0.35],
-                      }}
-                      transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
-                    />
-                  </div>
-
-                  {/* Right Column: Habitat & Cry Player */}
-                  <div className="flex flex-col gap-2.5">
-                    {/* Habitat & Detection Card */}
-                    <div className="p-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-white space-y-1 shadow-sm">
-                      <div className="text-[11px] font-semibold flex items-center gap-1.5 text-white/90">
-                        <MapPin className="w-3.5 h-3.5 text-white shrink-0" />
-                        <span>Avistado en</span>
-                      </div>
-                      <div className="text-xs font-bold leading-snug line-clamp-2">
-                        {pokemon.biomeName}
-                      </div>
-                      <div className="text-[10px] text-white/75 font-mono">
-                        {pokemon.coordinates[1].toFixed(3)}° S, {pokemon.coordinates[0].toFixed(3)}° O
-                      </div>
-                    </div>
-
-                    {/* Cry Audio Player */}
-                    <div>
-                      <CryPlayer
-                        cryUrl={pokemon.cryUrl}
-                        name={pokemon.displayName}
-                        variant="glass"
-                      />
-                    </div>
-                  </div>
+                  {/* Dynamic Ground Breathing Shadow */}
+                  <div className="w-32 h-3 rounded-full bg-black/25 blur-xs mx-auto -mt-2" />
                 </div>
               </div>
 
-              {/* Sliding White Sheet: Glides UP and covers the sticky hero when scrolling */}
-              <div className="relative z-30 rounded-t-[36px] bg-white p-6 -mt-3 shadow-[0_-16px_36px_rgba(0,0,0,0.14)] space-y-5 pb-16 min-h-[calc(100vh-100px)]">
+              {/* Sliding White Sheet: Glides UP and smoothly covers the sticky hero when scrolling down */}
+              <div className="relative z-30 rounded-t-[36px] bg-white p-6 -mt-4 shadow-[0_-16px_36px_rgba(0,0,0,0.14)] space-y-5 pb-28 min-h-[calc(100vh-80px)]">
                 {/* Subtle Sheet Indicator Pill */}
                 <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto -mt-2 mb-2" />
 
@@ -450,7 +418,7 @@ export function DetailDrawer({
                   </h2>
                   {/* 2. Número abajo del nombre tipo gris */}
                   <div className="text-sm font-bold text-slate-400 font-sans tracking-wider mt-0.5">
-                    #{String(pokemon.id).padStart(3, "0")}
+                    N° {String(pokemon.id).padStart(3, "0")}
                   </div>
                 </div>
 
