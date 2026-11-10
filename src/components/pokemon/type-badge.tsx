@@ -1,25 +1,6 @@
 import React from "react";
+import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
-import {
-  Flame,
-  Droplets,
-  Leaf,
-  Zap,
-  Snowflake,
-  Swords,
-  Skull,
-  Mountain,
-  Feather,
-  Eye,
-  Bug,
-  Ghost,
-  Shield,
-  Moon,
-  Heart,
-  Circle,
-  Gem,
-  LucideIcon,
-} from "lucide-react";
 
 interface TypeStyle {
   label: string;
@@ -27,7 +8,7 @@ interface TypeStyle {
   border: string;
   text: string;
   glow: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
 const TYPE_CONFIG: Record<string, TypeStyle> = {
@@ -37,7 +18,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-stone-300",
     text: "text-stone-700",
     glow: "shadow-xs",
-    icon: Circle,
+    icon: "solar:record-circle-bold",
   },
   fire: {
     label: "Fuego",
@@ -45,7 +26,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-orange-300",
     text: "text-orange-700",
     glow: "shadow-orange-500/15",
-    icon: Flame,
+    icon: "solar:flame-bold",
   },
   water: {
     label: "Agua",
@@ -53,7 +34,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-blue-300",
     text: "text-blue-700",
     glow: "shadow-blue-500/15",
-    icon: Droplets,
+    icon: "solar:waterdrop-bold",
   },
   grass: {
     label: "Planta",
@@ -61,7 +42,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-emerald-300",
     text: "text-emerald-700",
     glow: "shadow-emerald-500/15",
-    icon: Leaf,
+    icon: "solar:leaf-bold",
   },
   electric: {
     label: "Eléctrico",
@@ -69,7 +50,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-amber-300",
     text: "text-amber-800",
     glow: "shadow-amber-500/15",
-    icon: Zap,
+    icon: "solar:bolt-bold",
   },
   ice: {
     label: "Hielo",
@@ -77,7 +58,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-cyan-300",
     text: "text-cyan-800",
     glow: "shadow-cyan-400/15",
-    icon: Snowflake,
+    icon: "solar:snowflake-bold",
   },
   fighting: {
     label: "Lucha",
@@ -85,7 +66,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-red-300",
     text: "text-red-700",
     glow: "shadow-red-600/15",
-    icon: Swords,
+    icon: "solar:fist-bold",
   },
   poison: {
     label: "Veneno",
@@ -93,7 +74,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-purple-300",
     text: "text-purple-700",
     glow: "shadow-purple-600/15",
-    icon: Skull,
+    icon: "solar:skull-bold",
   },
   ground: {
     label: "Tierra",
@@ -101,7 +82,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-amber-400",
     text: "text-amber-900",
     glow: "shadow-amber-600/15",
-    icon: Mountain,
+    icon: "tabler:mountain",
   },
   flying: {
     label: "Volador",
@@ -109,7 +90,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-indigo-300",
     text: "text-indigo-700",
     glow: "shadow-indigo-400/15",
-    icon: Feather,
+    icon: "solar:wing-bold",
   },
   psychic: {
     label: "Psíquico",
@@ -117,7 +98,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-pink-300",
     text: "text-pink-700",
     glow: "shadow-pink-500/15",
-    icon: Eye,
+    icon: "solar:eye-bold",
   },
   bug: {
     label: "Bicho",
@@ -125,7 +106,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-lime-300",
     text: "text-lime-800",
     glow: "shadow-lime-500/15",
-    icon: Bug,
+    icon: "solar:bug-bold",
   },
   rock: {
     label: "Roca",
@@ -133,7 +114,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-yellow-400",
     text: "text-yellow-900",
     glow: "shadow-yellow-800/15",
-    icon: Gem,
+    icon: "solar:gem-bold",
   },
   ghost: {
     label: "Fantasma",
@@ -141,7 +122,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-violet-300",
     text: "text-violet-800",
     glow: "shadow-violet-800/15",
-    icon: Ghost,
+    icon: "solar:ghost-bold",
   },
   dragon: {
     label: "Dragón",
@@ -149,7 +130,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-purple-400",
     text: "text-purple-900",
     glow: "shadow-purple-600/15",
-    icon: Flame,
+    icon: "tabler:dragon",
   },
   dark: {
     label: "Siniestro",
@@ -157,7 +138,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-zinc-300",
     text: "text-zinc-800",
     glow: "shadow-zinc-700/15",
-    icon: Moon,
+    icon: "solar:moon-bold",
   },
   steel: {
     label: "Acero",
@@ -165,7 +146,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-slate-300",
     text: "text-slate-700",
     glow: "shadow-slate-400/15",
-    icon: Shield,
+    icon: "solar:shield-bold",
   },
   fairy: {
     label: "Hada",
@@ -173,7 +154,7 @@ const TYPE_CONFIG: Record<string, TypeStyle> = {
     border: "border-rose-300",
     text: "text-rose-700",
     glow: "shadow-rose-400/15",
-    icon: Heart,
+    icon: "solar:magic-stick-3-bold",
   },
 };
 
@@ -197,10 +178,8 @@ export function TypeBadge({
     border: "border-slate-700",
     text: "text-slate-300",
     glow: "shadow-none",
-    icon: Circle,
+    icon: "solar:record-circle-bold",
   };
-
-  const Icon = config.icon;
 
   const sizeClasses = {
     sm: "px-2 py-0.5 text-xs font-medium gap-1",
@@ -209,9 +188,9 @@ export function TypeBadge({
   };
 
   const iconSizes = {
-    sm: "w-3 h-3",
-    md: "w-3.5 h-3.5",
-    lg: "w-4 h-4",
+    sm: 12,
+    md: 14,
+    lg: 16,
   };
 
   return (
@@ -226,7 +205,9 @@ export function TypeBadge({
         className
       )}
     >
-      {showIcon && <Icon className={iconSizes[size]} />}
+      {showIcon && (
+        <Icon icon={config.icon} width={iconSizes[size]} height={iconSizes[size]} />
+      )}
       <span>{config.label}</span>
     </span>
   );

@@ -2,14 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeft,
-  Heart,
-  MapPin,
-  Ruler,
-  Weight,
-  Zap,
-} from "lucide-react";
+import { Icon } from "@iconify/react";
 import confetti from "canvas-confetti";
 import Lenis from "lenis";
 import { PokemonRadarEntity } from "@/types/pokemon";
@@ -290,12 +283,12 @@ export function DetailDrawer({
                   className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer z-10"
                   aria-label="Volver"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <Icon icon="solar:arrow-left-linear" width={20} height={20} />
                 </button>
 
                 {/* Habitat (Centered in the middle, no padding, just icon and text) */}
                 <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-white text-xs font-semibold max-w-[55%] pointer-events-none drop-shadow-xs">
-                  <MapPin className="w-3.5 h-3.5 text-white shrink-0" />
+                  <Icon icon="solar:map-point-bold" width={14} height={14} className="text-white shrink-0 drop-shadow-xs" />
                   <span className="truncate leading-none">
                     {pokemon.biomeName}
                   </span>
@@ -330,9 +323,12 @@ export function DetailDrawer({
                         : "Reclutar al equipo"
                     }
                   >
-                    <Heart
-                      className={`w-5 h-5 transition-transform ${
-                        isInParty ? "fill-red-500 text-red-500 scale-110" : "text-white"
+                    <Icon
+                      icon={isInParty ? "solar:heart-bold" : "solar:heart-linear"}
+                      width={20}
+                      height={20}
+                      className={`transition-transform ${
+                        isInParty ? "text-red-500 scale-110" : "text-white"
                       }`}
                     />
                   </button>
@@ -415,9 +411,9 @@ export function DetailDrawer({
                   <h2 className="text-3xl font-extrabold capitalize text-slate-900 tracking-tight font-sans">
                     {pokemon.displayName}
                   </h2>
-                  {/* 2. Número abajo del nombre tipo gris */}
+                  {/* 2. Número abajo del nombre sin ceros innecesarios (ej. N° 8, N° 15) */}
                   <div className="text-sm font-bold text-slate-400 font-sans tracking-wider mt-0.5">
-                    N° {String(pokemon.id).padStart(3, "0")}
+                    N° {pokemon.id}
                   </div>
                 </div>
 
@@ -440,7 +436,7 @@ export function DetailDrawer({
                           key={ability}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800"
                         >
-                          <Zap className="w-3.5 h-3.5 text-amber-500" />
+                          <Icon icon="solar:bolt-bold" width={14} height={14} className="text-amber-500" />
                           <span>{translateAbilityToSpanish(ability)}</span>
                         </span>
                       ))
@@ -466,7 +462,7 @@ export function DetailDrawer({
                 <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
-                      <Ruler className="w-4 h-4 text-cyan-600" />
+                      <Icon icon="solar:ruler-bold" width={16} height={16} className="text-cyan-600" />
                     </div>
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">
@@ -480,7 +476,7 @@ export function DetailDrawer({
 
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-white shadow-xs text-slate-700">
-                      <Weight className="w-4 h-4 text-amber-600" />
+                      <Icon icon="solar:dumbbell-large-bold" width={16} height={16} className="text-amber-600" />
                     </div>
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">
