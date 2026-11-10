@@ -164,10 +164,10 @@ export function DetailDrawer({
 
           {/* Behance Pokédex Sheet Drawer */}
           <motion.aside
-            initial={{ x: "100%", opacity: 0.8 }}
+            initial={{ x: '100%', opacity: 0.8 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            exit={{ x: '100%', opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
             className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
           >
             {/* Top Color Card with Pokéball Watermark (Behance Layout) */}
@@ -200,11 +200,11 @@ export function DetailDrawer({
                     onClick={handleCapture}
                     disabled={isInParty || isPartyFull}
                     className="p-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
-                    title={isInParty ? "En el equipo" : "Capturar"}
+                    title={isInParty ? 'En el equipo' : 'Capturar'}
                   >
                     <Heart
                       className={`w-5 h-5 ${
-                        isInParty ? "fill-white text-white" : ""
+                        isInParty ? 'fill-white text-white' : ''
                       }`}
                     />
                   </button>
@@ -231,7 +231,7 @@ export function DetailDrawer({
                 </div>
 
                 <span className="text-xl font-bold text-white/80 font-sans tracking-wider">
-                  #{String(pokemon.id).padStart(3, "0")}
+                  #{String(pokemon.id).padStart(3, '0')}
                 </span>
               </div>
 
@@ -240,7 +240,7 @@ export function DetailDrawer({
                 <motion.div
                   initial={{ scale: 0.8, y: 15 }}
                   animate={{ scale: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
                   className="relative"
                 >
                   {pokemon.animatedSprite ? (
@@ -266,15 +266,15 @@ export function DetailDrawer({
               <div>
                 <div className="flex items-center justify-around border-b border-slate-100 pb-3 mb-5">
                   <button
-                    onClick={() => setActiveTab("about")}
+                    onClick={() => setActiveTab('about')}
                     className={`font-sans text-sm font-semibold transition-all relative pb-2 cursor-pointer ${
-                      activeTab === "about"
-                        ? "text-slate-900 font-bold"
-                        : "text-slate-400 hover:text-slate-600"
+                      activeTab === 'about'
+                        ? 'text-slate-900 font-bold'
+                        : 'text-slate-400 hover:text-slate-600'
                     }`}
                   >
                     <span>Acerca de</span>
-                    {activeTab === "about" && (
+                    {activeTab === 'about' && (
                       <motion.div
                         layoutId="active-tab-line"
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500 to-rose-500 rounded-full"
@@ -283,15 +283,15 @@ export function DetailDrawer({
                   </button>
 
                   <button
-                    onClick={() => setActiveTab("stats")}
+                    onClick={() => setActiveTab('stats')}
                     className={`font-sans text-sm font-semibold transition-all relative pb-2 cursor-pointer ${
-                      activeTab === "stats"
-                        ? "text-slate-900 font-bold"
-                        : "text-slate-400 hover:text-slate-600"
+                      activeTab === 'stats'
+                        ? 'text-slate-900 font-bold'
+                        : 'text-slate-400 hover:text-slate-600'
                     }`}
                   >
                     <span>Estadísticas Base</span>
-                    {activeTab === "stats" && (
+                    {activeTab === 'stats' && (
                       <motion.div
                         layoutId="active-tab-line"
                         className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500 to-rose-500 rounded-full"
@@ -301,7 +301,7 @@ export function DetailDrawer({
                 </div>
 
                 {/* Tab Content: About */}
-                {activeTab === "about" && (
+                {activeTab === 'about' && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -346,13 +346,13 @@ export function DetailDrawer({
                         <span>Hábitat y Detección</span>
                       </div>
                       <div className="text-xs font-medium text-slate-700">
-                        Avistado en{" "}
+                        Avistado en{' '}
                         <strong className="text-slate-900 font-bold">
                           {pokemon.biomeName}
                         </strong>
                       </div>
                       <div className="text-[11px] text-slate-400">
-                        Coordenadas: {pokemon.coordinates[1].toFixed(3)}° S,{" "}
+                        Coordenadas: {pokemon.coordinates[1].toFixed(3)}° S,{' '}
                         {pokemon.coordinates[0].toFixed(3)}° O
                       </div>
                     </div>
@@ -363,13 +363,16 @@ export function DetailDrawer({
                         <Volume2 className="w-4 h-4 text-red-500" />
                         <span>Alarido de PokéAPI</span>
                       </div>
-                      <CryPlayer cryUrl={pokemon.cryUrl} name={pokemon.displayName} />
+                      <CryPlayer
+                        cryUrl={pokemon.cryUrl}
+                        name={pokemon.displayName}
+                      />
                     </div>
                   </motion.div>
                 )}
 
                 {/* Tab Content: Base Stats */}
-                {activeTab === "stats" && (
+                {activeTab === 'stats' && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -388,10 +391,10 @@ export function DetailDrawer({
                   disabled={isInParty || isPartyFull}
                   className={`w-full py-3.5 px-4 rounded-2xl font-sans text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
                     isInParty
-                      ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                      ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                       : isPartyFull
-                      ? "bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed"
-                      : "bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/30 hover:scale-[1.01]"
+                        ? 'bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/30 hover:scale-[1.01]'
                   }`}
                 >
                   {isInParty ? (
