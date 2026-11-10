@@ -198,14 +198,7 @@ export function RadarHud({
 
               {/* Dropdown Menu */}
               {isTypeDropdownOpen && (
-                <>
-                  {/* Backdrop on mobile so dropdown has high contrast and closes on tap outside */}
-                  <div
-                    className="fixed inset-0 z-40 sm:hidden bg-slate-900/20 backdrop-blur-xs"
-                    onClick={() => setIsTypeDropdownOpen(false)}
-                  />
-
-                  <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                     <button
                       onClick={() => {
                         sfx.playButtonPress();
@@ -262,7 +255,6 @@ export function RadarHud({
                       );
                     })}
                   </div>
-                </>
               )}
             </div>
 
