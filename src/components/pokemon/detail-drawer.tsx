@@ -5,11 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Heart,
-  PlusCircle,
   MapPin,
   Ruler,
   Weight,
-  ShieldCheck,
   Zap,
 } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -27,6 +25,7 @@ interface DetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToParty: (pokemon: PokemonRadarEntity) => void;
+  onRemoveFromParty: (pokemonId: number) => void;
   isInParty: boolean;
   isPartyFull: boolean;
 }
@@ -127,6 +126,7 @@ export function DetailDrawer({
   isOpen,
   onClose,
   onAddToParty,
+  onRemoveFromParty,
   isInParty,
   isPartyFull,
 }: DetailDrawerProps) {
@@ -135,6 +135,7 @@ export function DetailDrawer({
 
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollContentRef = useRef<HTMLDivElement | null>(null);
+  const lenisRef = useRef<Lenis | null>(null);
 
   // Initialize Lenis smooth scroll on drawer container
   useEffect(() => {
@@ -146,6 +147,7 @@ export function DetailDrawer({
       smoothWheel: true,
       lerp: 0.1,
     });
+    lenisRef.current = lenis;
 
     let rafId: number;
     function raf(time: number) {
@@ -157,8 +159,21 @@ export function DetailDrawer({
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, [isOpen]);
+
+  // Always scroll to top when opening or switching pokemon
+  useEffect(() => {
+    if (isOpen) {
+      if (scrollWrapperRef.current) {
+        scrollWrapperRef.current.scrollTop = 0;
+      }
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true });
+      }
+    }
+  }, [isOpen, pokemon?.id]);
 
   // Fetch official Pokédex description in Spanish
   useEffect(() => {
@@ -194,15 +209,24 @@ export function DetailDrawer({
       accentColor: "#3b82f6",
     };
 
-  const handleCapture = () => {
-    onAddToParty(pokemon);
-    sfx.playCatchSuccess();
-    confetti({
-      particleCount: 70,
-      spread: 70,
-      origin: { y: 0.7 },
-      colors: ["#38bdf8", "#eab308", "#10b981", "#ef4444"],
-    });
+  // Toggle party recruitment via heart icon
+  const handleToggleParty = () => {
+    if (!pokemon) return;
+
+    if (isInParty) {
+      onRemoveFromParty(pokemon.id);
+      sfx.playRelease();
+    } else {
+      if (isPartyFull) return;
+      onAddToParty(pokemon);
+      sfx.playCatchSuccess();
+      confetti({
+        particleCount: 70,
+        spread: 70,
+        origin: { y: 0.7 },
+        colors: ["#38bdf8", "#eab308", "#10b981", "#ef4444"],
+      });
+    }
   };
 
   return (
@@ -230,7 +254,7 @@ export function DetailDrawer({
             <div ref={scrollContentRef} className="flex flex-col min-h-full">
               {/* Top Color Card with Animated Pokéball, Sprite (Left) & Habitat/Cry (Right) */}
               <div
-                className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-8 flex flex-col justify-between`}
+                className={`relative p-6 pt-5 bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden pb-8 flex flex-col justify-between shrink-0 min-h-[300px]`}
               >
                 {/* Floating Ambient Atmosphere Particles */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -282,15 +306,33 @@ export function DetailDrawer({
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md">
                       Nv. {pokemon.level}
                     </span>
+                    {/* Heart Button: Toggle recruit / remove from party */}
                     <button
-                      onClick={handleCapture}
-                      disabled={isInParty || isPartyFull}
-                      className="p-2 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer"
-                      title={isInParty ? "En el equipo" : "Capturar"}
+                      onClick={handleToggleParty}
+                      disabled={!isInParty && isPartyFull}
+                      className={`p-2 rounded-full transition-all cursor-pointer ${
+                        isInParty
+                          ? "bg-white/30 text-white shadow-md scale-105"
+                          : isPartyFull
+                            ? "opacity-50 cursor-not-allowed hover:bg-transparent"
+                            : "hover:bg-white/20 text-white"
+                      }`}
+                      title={
+                        isInParty
+                          ? "Quitar del equipo de expedición"
+                          : isPartyFull
+                            ? "Equipo completo (6/6)"
+                            : "Reclutar al equipo"
+                      }
+                      aria-label={
+                        isInParty
+                          ? "Quitar del equipo"
+                          : "Reclutar al equipo"
+                      }
                     >
                       <Heart
-                        className={`w-5 h-5 ${
-                          isInParty ? "fill-white text-white" : ""
+                        className={`w-5 h-5 transition-transform ${
+                          isInParty ? "fill-red-500 text-red-500 scale-110" : "text-white"
                         }`}
                       />
                     </button>
@@ -365,7 +407,7 @@ export function DetailDrawer({
               </div>
 
               {/* Bottom White Container: Sequential Details */}
-              <div className="flex-1 rounded-t-[32px] bg-white p-6 -mt-4 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)] space-y-5">
+              <div className="flex-1 rounded-t-[32px] bg-white p-6 -mt-4 relative z-30 shadow-[0_-8px_25px_rgba(0,0,0,0.06)] space-y-5 pb-10">
                 {/* 1. Nombre */}
                 <div>
                   <h2 className="text-3xl font-extrabold capitalize text-slate-900 tracking-tight font-sans">
@@ -457,35 +499,6 @@ export function DetailDrawer({
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                     <StatsBars stats={pokemon.stats} />
                   </div>
-                </div>
-
-                {/* 8. Botón Reclutar al Equipo */}
-                <div className="pt-2 pb-4">
-                  <button
-                    onClick={handleCapture}
-                    disabled={isInParty || isPartyFull}
-                    className={`w-full py-3.5 px-4 rounded-2xl font-sans text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
-                      isInParty
-                        ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                        : isPartyFull
-                          ? "bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed"
-                          : "bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-red-500/30 hover:scale-[1.01]"
-                    }`}
-                  >
-                    {isInParty ? (
-                      <>
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        <span>EN TU EQUIPO DE EXPEDICIÓN</span>
-                      </>
-                    ) : isPartyFull ? (
-                      <span>EQUIPO COMPLETO (6/6)</span>
-                    ) : (
-                      <>
-                        <PlusCircle className="w-4 h-4" />
-                        <span>RECLUTAR AL EQUIPO DE EXPEDICIÓN</span>
-                      </>
-                    )}
-                  </button>
                 </div>
               </div>
             </div>

@@ -63,6 +63,7 @@ export default function HomePage() {
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         onAddToParty={addToParty}
+        onRemoveFromParty={removeFromParty}
         isInParty={selectedPokemon ? isInParty(selectedPokemon.id) : false}
         isPartyFull={isPartyFull}
       />
