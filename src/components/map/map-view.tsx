@@ -54,6 +54,15 @@ export function MapView({
       "bottom-right"
     );
 
+    // Suppress missing style image warnings (e.g. wood-pattern, circle-11)
+    map.setMissingStyleImageResolver(() => {
+      return {
+        width: 1,
+        height: 1,
+        data: new Uint8Array([0, 0, 0, 0]),
+      };
+    });
+
     map.on("load", () => {
       // GeoJSON Feature Collection for Biome Atmospheric Radii
       const biomeFeatures: GeoJSON.FeatureCollection<GeoJSON.Point> = {
