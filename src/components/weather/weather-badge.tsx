@@ -130,7 +130,7 @@ export function WeatherBadge({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setIsModalOpen(false)}
-                  className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+                  className="fixed inset-0 bg-slate-900/50"
                 />
 
                 {/* Modal Container */}

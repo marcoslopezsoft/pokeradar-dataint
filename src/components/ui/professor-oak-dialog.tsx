@@ -128,7 +128,7 @@ export function ProfessorOakDialog({
             width={208}
             height={260}
             unoptimized
-            className="w-28 sm:w-44 md:w-52 h-auto object-contain md:drop-shadow-[0_4px_10px_rgba(0,0,0,0.3)] select-none pointer-events-none"
+            className="w-28 sm:w-44 md:w-52 h-auto object-contain select-none pointer-events-none"
           />
         </motion.div>
 

@@ -133,8 +133,6 @@ export function MapView({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    const isMobileViewport =
-      typeof window !== "undefined" && window.innerWidth < 768;
     const cappedPixelRatio =
       typeof window !== "undefined"
         ? Math.min(window.devicePixelRatio || 1, 1.5)
@@ -147,7 +145,7 @@ export function MapView({
       zoom: initialBiomeRef.current.zoom,
       minZoom: INITIAL_MAP_CONFIG.minZoom,
       maxZoom: INITIAL_MAP_CONFIG.maxZoom,
-      pitch: isMobileViewport ? 0 : 22,
+      pitch: 0,
       bearing: 0,
       attributionControl: false,
       pixelRatio: cappedPixelRatio,
@@ -283,7 +281,7 @@ export function MapView({
             zoom: b.zoom,
             speed: isMobile ? 2.0 : 1.5,
             curve: 1.25,
-            pitch: isMobile ? 0 : 22,
+            pitch: 0,
             essential: true,
           });
         };
@@ -330,7 +328,7 @@ export function MapView({
       speed: isMobile ? 2.0 : 1.5,
       curve: 1.25,
       essential: true,
-      pitch: isMobile ? 0 : 22,
+      pitch: 0,
     });
   }, [activeBiome]);
 
@@ -389,7 +387,7 @@ export function MapView({
             center: pokemon.coordinates,
             zoom: 15.5,
             speed: isMobile ? 2.0 : 1.5,
-            pitch: isMobile ? 0 : 28,
+            pitch: 0,
             essential: true,
           });
         }
@@ -437,7 +435,7 @@ export function MapView({
         center: selectedPokemon.coordinates,
         zoom: 15.5,
         speed: isMobile ? 2.0 : 1.5,
-        pitch: isMobile ? 0 : 28,
+        pitch: 0,
         essential: true,
       });
     }

@@ -462,7 +462,7 @@ export function TeamAnalysisModal({
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/55 sm:bg-slate-900/40 sm:backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50"
         >
           <motion.div
             onClick={(e) => e.stopPropagation()}

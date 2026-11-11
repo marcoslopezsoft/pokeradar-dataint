@@ -503,7 +503,7 @@ export function DetailDrawer({
                             imageRendering: 'pixelated',
                             transform: `translateY(${activeNorm.offsetY}px) scale(${activeNorm.scale})`,
                           }}
-                          className="w-full h-full object-contain md:drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-150"
+                          className="w-full h-full object-contain transition-transform duration-150"
                         />
                       );
                     })()}
