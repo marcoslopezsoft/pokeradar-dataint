@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useId, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -21,6 +21,8 @@ import { TypeBadge } from "../pokemon/type-badge";
 import { buildTeamTacticalDiagnosis } from "@/lib/team-analysis";
 import { translateTypeToSpanish } from "@/lib/utils";
 import { PokedexSensorCluster } from "@/components/ui/pokedex-sensors";
+import { resolvePokemonTypeThemes } from "@/lib/type-themes";
+import { PokedexSteppedBackdrop } from "@/components/ui/pokedex-stepped-backdrop";
 
 interface TeamAnalysisModalProps {
   isOpen: boolean;
@@ -28,61 +30,14 @@ interface TeamAnalysisModalProps {
   party: PokemonRadarEntity[];
 }
 
-/** Shared stepped zig-zag SVG background matching the Pokédex diagonal language. */
-function ZigZagBackdrop({
-  leftFrom,
-  leftTo,
-  rightFrom,
-  rightTo,
-  seamOpacity = 0.6,
-  seamWidth = 3,
-}: {
-  leftFrom: string;
-  leftTo: string;
-  rightFrom: string;
-  rightTo: string;
-  seamOpacity?: number;
-  seamWidth?: number;
-}) {
-  const uid = useId().replace(/:/g, "");
-  const leftId = `zig-l-${uid}`;
-  const rightId = `zig-r-${uid}`;
-
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className="absolute inset-0 w-full h-full pointer-events-none"
-    >
-      <defs>
-        <linearGradient id={leftId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={leftFrom} />
-          <stop offset="100%" stopColor={leftTo} />
-        </linearGradient>
-        <linearGradient id={rightId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={rightFrom} />
-          <stop offset="100%" stopColor={rightTo} />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="100" height="100" fill={`url(#${rightId})`} />
-      <polygon points="0,0 100,0 57,50 43,50 0,100" fill={`url(#${leftId})`} />
-      <polyline
-        points="0,100 43,50 57,50 100,0"
-        fill="none"
-        stroke={`rgba(255, 255, 255, ${seamOpacity})`}
-        strokeWidth={seamWidth}
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  );
-}
-
 interface PokedexLcdContentProps {
   party: PokemonRadarEntity[];
   diagnosis: ReturnType<typeof buildTeamTacticalDiagnosis>;
 }
+
+const HARD_WHITE_TEXT_SHADOW: React.CSSProperties = {
+  textShadow: "1px 1px 0 rgba(0, 0, 0, 0.4)",
+};
 
 /** Mounted only while modal is open so scrollRef attaches cleanly for useScroll. */
 function PokedexLcdContent({
@@ -148,10 +103,10 @@ function PokedexLcdContent({
           </div>
         ) : (
           <>
-            {/* 1. Executive Narrative Card: #28A7F6 Pokédex Blue + Pokéball Watermark + Black Text */}
+            {/* 1. Executive Narrative Card: #28A7F6 Pokédex Blue + Pokéball Watermark + White Text */}
             <motion.div
               style={{ scale: bannerScale, opacity: bannerOpacity }}
-              className="relative overflow-hidden p-4 sm:p-5 rounded-2xl bg-[#28A7F6] text-slate-950 space-y-3"
+              className="relative overflow-hidden p-4 sm:p-5 rounded-2xl bg-[#28A7F6] text-white space-y-3"
             >
               {/* Subtle Pokéball Watermark in Corner */}
               <svg
@@ -164,8 +119,14 @@ function PokedexLcdContent({
               </svg>
 
               <div className="relative z-10 flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/40 text-slate-950 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider">
-                  <Radar className="w-3.5 h-3.5 text-slate-950" />
+                <span
+                  style={HARD_WHITE_TEXT_SHADOW}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider"
+                >
+                  <Radar
+                    style={{ filter: "drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.4))" }}
+                    className="w-3.5 h-3.5 text-white"
+                  />
                   {diagnosis.memberCount > 1
                     ? "Evaluación Conjunta del Equipo"
                     : "Evaluación Inicial"}
@@ -175,18 +136,27 @@ function PokedexLcdContent({
                 </span>
               </div>
 
-              <p className="relative z-10 text-xs sm:text-[13px] leading-relaxed text-slate-950 font-semibold">
+              <p
+                style={HARD_WHITE_TEXT_SHADOW}
+                className="relative z-10 text-xs sm:text-[13px] leading-5 text-white font-semibold"
+              >
                 {diagnosis.executiveSummary}
               </p>
 
               {diagnosis.synergyNotes.length > 0 && (
-                <ul className="relative z-10 space-y-1.5 pt-2">
+                <ul
+                  style={HARD_WHITE_TEXT_SHADOW}
+                  className="relative z-10 space-y-1.5 pt-2"
+                >
                   {diagnosis.synergyNotes.map((note, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-2 text-[11px] sm:text-xs text-slate-950 font-medium leading-snug px-1 py-0.5"
+                      className="flex items-start gap-2 text-[11px] sm:text-xs text-white font-medium leading-4.5 px-1 py-0.5"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-950 shrink-0 mt-1.5" />
+                      <span
+                        style={{ boxShadow: "1px 1px 0 rgba(0, 0, 0, 0.4)" }}
+                        className="w-1.5 h-1.5 rounded-full bg-white shrink-0 mt-1.5"
+                      />
                       <span>{note}</span>
                     </li>
                   ))}
@@ -364,6 +334,7 @@ function PokedexLcdContent({
               <div className="space-y-2.5">
                 {diagnosis.members.map((member, index) => {
                   const { pokemon } = member;
+                  const { primary, secondary } = resolvePokemonTypeThemes(pokemon.types);
                   return (
                     <motion.div
                       key={pokemon.id}
@@ -378,13 +349,11 @@ function PokedexLcdContent({
                       className="p-3.5 rounded-xl border border-slate-200 space-y-2.5"
                     >
                       <div className="flex items-start gap-3">
-                        {/* Sprite tile featuring miniature stepped Pokédex zig-zag backdrop */}
+                        {/* Sprite tile featuring Pokémon's own elemental type colors (half-and-half stepped SVG when dual-type) */}
                         <div className="relative w-13 h-13 rounded-xl overflow-hidden flex items-center justify-center shrink-0">
-                          <ZigZagBackdrop
-                            leftFrom="#bae6fd"
-                            leftTo="#7dd3fc"
-                            rightFrom="#a7f3d0"
-                            rightTo="#6ee7b7"
+                          <PokedexSteppedBackdrop
+                            primary={primary}
+                            secondary={secondary}
                             seamOpacity={0.85}
                             seamWidth={2}
                           />
@@ -408,7 +377,10 @@ function PokedexLcdContent({
                                 Nv. {pokemon.level}
                               </span>
                             </div>
-                            <span className="px-2.5 py-0.5 rounded-lg bg-[#28A7F6] text-slate-950 text-[10px] font-bold">
+                            <span
+                              style={HARD_WHITE_TEXT_SHADOW}
+                              className="px-2.5 py-0.5 rounded-lg bg-[#28A7F6] text-white text-[10px] font-bold"
+                            >
                               {member.roleLabel}
                             </span>
                           </div>
@@ -456,7 +428,10 @@ function PokedexLcdContent({
                             {pokemon.stats.speed ?? 0}
                           </span>
                         </div>
-                        <div className="py-1 px-1 rounded-lg bg-[#28A7F6] text-slate-950 whitespace-nowrap">
+                        <div
+                          style={HARD_WHITE_TEXT_SHADOW}
+                          className="py-1 px-1 rounded-lg bg-[#28A7F6] text-white whitespace-nowrap"
+                        >
                           <span className="font-semibold">TOTAL: </span>
                           <span className="font-extrabold tabular-nums">
                             {member.totalStats}
