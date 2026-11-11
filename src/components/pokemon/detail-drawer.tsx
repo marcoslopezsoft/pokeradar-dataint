@@ -22,96 +22,137 @@ interface DetailDrawerProps {
   isPartyFull: boolean;
 }
 
-const TYPE_THEMES: Record<
-  string,
-  { bgGradient: string; badgeBg: string; accentColor: string }
-> = {
+interface TypeTheme {
+  from: string;
+  to: string;
+  badgeBg: string;
+  accentColor: string;
+}
+
+const DEFAULT_TYPE_THEME: TypeTheme = {
+  from: "#3b82f6",
+  to: "#1d4ed8",
+  badgeBg: "bg-white/25",
+  accentColor: "#3b82f6",
+};
+
+const TYPE_THEMES: Record<string, TypeTheme> = {
   grass: {
-    bgGradient: "from-[#48d0b0] to-[#38b293]",
+    from: "#48d0b0",
+    to: "#38b293",
     badgeBg: "bg-white/25",
     accentColor: "#48d0b0",
   },
   fire: {
-    bgGradient: "from-[#fb6c6c] to-[#e64a4a]",
+    from: "#fb6c6c",
+    to: "#e64a4a",
     badgeBg: "bg-white/25",
     accentColor: "#fb6c6c",
   },
   water: {
-    bgGradient: "from-[#77befe] to-[#58a0e8]",
+    from: "#77befe",
+    to: "#58a0e8",
     badgeBg: "bg-white/25",
     accentColor: "#77befe",
   },
   electric: {
-    bgGradient: "from-[#ffd86f] to-[#e6be48]",
+    from: "#ffd86f",
+    to: "#e6be48",
     badgeBg: "bg-white/25",
     accentColor: "#ffd86f",
   },
   bug: {
-    bgGradient: "from-[#a8b820] to-[#8d9a1b]",
+    from: "#a8b820",
+    to: "#8d9a1b",
     badgeBg: "bg-white/25",
     accentColor: "#a8b820",
   },
   normal: {
-    bgGradient: "from-[#a8a878] to-[#8a8a60]",
+    from: "#a8a878",
+    to: "#8a8a60",
     badgeBg: "bg-white/25",
     accentColor: "#a8a878",
   },
   poison: {
-    bgGradient: "from-[#a040a0] to-[#803380]",
+    from: "#a040a0",
+    to: "#803380",
     badgeBg: "bg-white/25",
     accentColor: "#a040a0",
   },
   ground: {
-    bgGradient: "from-[#e0c068] to-[#cbb050]",
+    from: "#e0c068",
+    to: "#cbb050",
     badgeBg: "bg-white/25",
     accentColor: "#e0c068",
   },
   fairy: {
-    bgGradient: "from-[#ee99ac] to-[#d87c91]",
+    from: "#ee99ac",
+    to: "#d87c91",
     badgeBg: "bg-white/25",
     accentColor: "#ee99ac",
   },
   fighting: {
-    bgGradient: "from-[#c03028] to-[#9f2720]",
+    from: "#c03028",
+    to: "#9f2720",
     badgeBg: "bg-white/25",
     accentColor: "#c03028",
   },
   psychic: {
-    bgGradient: "from-[#f85888] to-[#d43a6a]",
+    from: "#f85888",
+    to: "#d43a6a",
     badgeBg: "bg-white/25",
     accentColor: "#f85888",
   },
   rock: {
-    bgGradient: "from-[#b8a038] to-[#968228]",
+    from: "#b8a038",
+    to: "#968228",
     badgeBg: "bg-white/25",
     accentColor: "#b8a038",
   },
   ghost: {
-    bgGradient: "from-[#705898] to-[#564278]",
+    from: "#705898",
+    to: "#564278",
     badgeBg: "bg-white/25",
     accentColor: "#705898",
   },
   ice: {
-    bgGradient: "from-[#98d8d8] to-[#74bcbc]",
+    from: "#98d8d8",
+    to: "#74bcbc",
     badgeBg: "bg-white/25",
     accentColor: "#98d8d8",
   },
   dragon: {
-    bgGradient: "from-[#7038f8] to-[#5324c4]",
+    from: "#7038f8",
+    to: "#5324c4",
     badgeBg: "bg-white/25",
     accentColor: "#7038f8",
   },
   steel: {
-    bgGradient: "from-[#b8b8d0] to-[#9999b4]",
+    from: "#b8b8d0",
+    to: "#9999b4",
     badgeBg: "bg-white/25",
     accentColor: "#b8b8d0",
   },
   dark: {
-    bgGradient: "from-[#705848] to-[#503f34]",
+    from: "#705848",
+    to: "#503f34",
     badgeBg: "bg-white/25",
     accentColor: "#705848",
   },
+  flying: {
+    from: "#8fa8ff",
+    to: "#6884eb",
+    badgeBg: "bg-white/25",
+    accentColor: "#8fa8ff",
+  },
 };
+
+function buildElementalBackground(primary: TypeTheme, secondary?: TypeTheme | null): string {
+  if (!secondary) {
+    return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} 100%)`;
+  }
+  return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} calc(50% - 1.5px), rgba(255, 255, 255, 0.36) calc(50% - 1px), rgba(255, 255, 255, 0.36) calc(50% + 1px), ${secondary.from} calc(50% + 1.5px), ${secondary.to} 100%)`;
+}
 
 export function DetailDrawer({
   pokemon,
@@ -240,12 +281,13 @@ export function DetailDrawer({
   if (!pokemon) return null;
 
   const primaryType = pokemon.types[0]?.toLowerCase() || "normal";
-  const theme =
-    TYPE_THEMES[primaryType] || {
-      bgGradient: "from-[#3b82f6] to-[#1d4ed8]",
-      badgeBg: "bg-white/25",
-      accentColor: "#3b82f6",
-    };
+  const secondaryType = pokemon.types[1]?.toLowerCase();
+  const primaryTheme = TYPE_THEMES[primaryType] || DEFAULT_TYPE_THEME;
+  const secondaryTheme =
+    secondaryType && secondaryType !== primaryType
+      ? TYPE_THEMES[secondaryType] || DEFAULT_TYPE_THEME
+      : null;
+  const elementalBackground = buildElementalBackground(primaryTheme, secondaryTheme);
 
   // Play Pokemon authentic cry when clicking on the Pokemon sprite
   const handlePlayCry = () => {
@@ -322,10 +364,11 @@ export function DetailDrawer({
             >
               {/* Sticky Top Header Bar (Maintains Pokemon elemental background color on scroll, NEVER black) */}
               <div
+                style={scrollY > 30 ? { background: elementalBackground } : undefined}
                 className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-all duration-200 ${
                   scrollY > 30
-                    ? `bg-linear-to-r ${theme.bgGradient} shadow-md border-b border-white/20 text-white`
-                    : `bg-transparent text-white`
+                    ? "shadow-md border-b border-white/20 text-white"
+                    : "bg-transparent text-white"
                 }`}
               >
                 {/* Left: Back button + Habitat location aligned to the left */}
@@ -399,8 +442,12 @@ export function DetailDrawer({
 
               {/* Sticky Hero Container: Seamlessly connects to header with exact 56px offset, zero gaps */}
               <div
-                style={{ marginTop: '-56px', paddingTop: '56px' }}
-                className={`sticky top-0 z-10 w-full bg-linear-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-85 flex flex-col justify-center items-center`}
+                style={{
+                  marginTop: '-56px',
+                  paddingTop: '56px',
+                  background: elementalBackground,
+                }}
+                className="sticky top-0 z-10 w-full text-white overflow-hidden shrink-0 h-85 flex flex-col justify-center items-center"
               >
                 {/* Floating Ambient Atmosphere Particles (Desktop only to maintain 60fps on mobile) */}
                 <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
