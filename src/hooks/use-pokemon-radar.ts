@@ -92,7 +92,15 @@ export function usePokemonRadar(options: UsePokemonRadarOptions = {}) {
   }, [entities, searchTerm, selectedType]);
 
   const selectPokemon = useCallback((pokemon: PokemonRadarEntity) => {
-    setSelectedPokemon(pokemon);
+    // Sync the active biome so navbar weather and climatic affinity reflect the selected Pokémon's zone.
+    const pokemonBiome = BIOMES.find((b) => b.id === pokemon.biomeId);
+    if (pokemonBiome) {
+      setActiveBiome((prev) =>
+        prev.id === pokemonBiome.id ? prev : pokemonBiome
+      );
+    }
+    // Shallow copy ensures MapView's selectedPokemon flyTo (zoom 15.5) always runs after any biome effect.
+    setSelectedPokemon({ ...pokemon });
     setIsDrawerOpen(true);
   }, []);
 
