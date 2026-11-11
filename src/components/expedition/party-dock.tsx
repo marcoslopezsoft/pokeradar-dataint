@@ -72,8 +72,8 @@ export function PartyDock({
                     </span>
                   )}
 
-                  {/* Level Pill Badge */}
-                  <span className="absolute -top-1.5 -right-1.5 bg-red-600 border border-white text-[9px] font-bold text-white px-1.5 py-0.2 rounded-full shadow-xs z-10 leading-none">
+                  {/* Circular Level Badge with centered number */}
+                  <span className="absolute -top-1.5 -right-1.5 w-[19px] h-[19px] flex items-center justify-center bg-red-600 border border-white text-[9px] font-bold text-white rounded-full shadow-xs z-10 leading-none tabular-nums">
                     {pokemon.level}
                   </span>
                 </button>
