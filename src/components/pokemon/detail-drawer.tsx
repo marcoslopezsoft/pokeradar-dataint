@@ -197,6 +197,70 @@ function ElementalSteppedBackdrop({
   );
 }
 
+/** Measures non-transparent pixel bounds to normalize sprite height uniformly across species. */
+function computeNormalizedSpriteTransform(
+  img: HTMLImageElement,
+  boxWidth = 256,
+  boxHeight = 224
+): { scale: number; offsetY: number } {
+  const natW = img.naturalWidth;
+  const natH = img.naturalHeight;
+  if (!natW || !natH) return { scale: 1, offsetY: 0 };
+
+  const containScale = Math.min(boxWidth / natW, boxHeight / natH);
+  const drawnW = natW * containScale;
+  const drawnH = natH * containScale;
+
+  const sampleW = Math.min(128, natW);
+  const sampleH = Math.max(1, Math.round(natH * (sampleW / natW)));
+
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = sampleW;
+    canvas.height = sampleH;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return { scale: 1, offsetY: 0 };
+
+    ctx.drawImage(img, 0, 0, sampleW, sampleH);
+    const { data } = ctx.getImageData(0, 0, sampleW, sampleH);
+
+    let minX = sampleW;
+    let minY = sampleH;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < sampleH; y++) {
+      for (let x = 0; x < sampleW; x++) {
+        if (data[(y * sampleW + x) * 4 + 3] > 20) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (maxX < minX || maxY < minY) return { scale: 1, offsetY: 0 };
+
+    const visiblePxW = drawnW * ((maxX - minX + 1) / sampleW);
+    const visiblePxH = drawnH * ((maxY - minY + 1) / sampleH);
+    const centerFracY = (minY + maxY) / 2 / sampleH - 0.5;
+
+    const targetHeight = boxHeight * 0.92;
+    const maxWidth = boxWidth * 1.12;
+    const scaleByH = visiblePxH > 0 ? targetHeight / visiblePxH : 1;
+    const scaleByW = visiblePxW > 0 ? maxWidth / visiblePxW : 1;
+    const scale = Number(
+      Math.max(1, Math.min(scaleByH, scaleByW, 2.35)).toFixed(3)
+    );
+    const offsetY = Number((-centerFracY * drawnH * scale).toFixed(1));
+
+    return { scale, offsetY };
+  } catch {
+    return { scale: 1, offsetY: 0 };
+  }
+}
+
 export function DetailDrawer({
   pokemon,
   isOpen,
@@ -213,6 +277,11 @@ export function DetailDrawer({
     key: scrollKey,
     y: 0,
   });
+  const [spriteNorm, setSpriteNorm] = useState<{
+    id: number;
+    scale: number;
+    offsetY: number;
+  } | null>(null);
 
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollContentRef = useRef<HTMLDivElement | null>(null);
@@ -553,32 +622,61 @@ export function DetailDrawer({
                     transform: `scale(${1 - scrollProgress * 0.15}) translateY(${scrollProgress * 20}px)`,
                     opacity: 1 - scrollProgress * 0.45,
                   }}
-                  className="relative z-20 flex flex-col items-center justify-center my-auto py-2 cursor-pointer group active:scale-95 transition-transform"
+                  className="relative z-20 flex flex-col items-center justify-center my-auto pb-3 cursor-pointer group active:scale-95 transition-transform"
                   title={`Haz clic para escuchar el alarido de ${pokemon.displayName}`}
                 >
                   {/* Luminous Aura Behind Pokemon via radial-gradient (zero CSS blur cost) */}
                   <div
-                    className="absolute w-56 h-56 rounded-full pointer-events-none"
+                    className="absolute w-60 h-60 rounded-full pointer-events-none"
                     style={{
                       background:
                         'radial-gradient(circle, rgba(255,255,255,0.28) 0%, transparent 70%)',
                     }}
                   />
 
-                  {/* Big Centered Pokemon Sprite (Zero per-frame GIF drop-shadow on mobile!) */}
-                  <Image
-                    src={pokemon.animatedSprite || pokemon.sprite}
-                    alt={pokemon.displayName}
-                    width={192}
-                    height={192}
-                    unoptimized
-                    style={{ imageRendering: 'pixelated' }}
-                    className="w-48 h-48 object-contain md:drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-105"
-                  />
+                  {/* Big Centered Pokemon Sprite normalized cleanly across height (Zero per-frame GIF drop-shadow on mobile!) */}
+                  <div className="w-64 h-56 flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+                    {(() => {
+                      const spriteSrc = pokemon.animatedSprite || pokemon.sprite;
+                      const activeNorm =
+                        spriteNorm?.id === pokemon.id
+                          ? spriteNorm
+                          : { scale: 1, offsetY: 0 };
+
+                      return (
+                        <Image
+                          key={pokemon.id}
+                          src={spriteSrc}
+                          alt={pokemon.displayName}
+                          width={256}
+                          height={224}
+                          unoptimized
+                          crossOrigin={
+                            spriteSrc.includes('raw.githubusercontent.com')
+                              ? 'anonymous'
+                              : undefined
+                          }
+                          onLoad={(e) => {
+                            const norm = computeNormalizedSpriteTransform(
+                              e.currentTarget,
+                              256,
+                              224
+                            );
+                            setSpriteNorm({ id: pokemon.id, ...norm });
+                          }}
+                          style={{
+                            imageRendering: 'pixelated',
+                            transform: `translateY(${activeNorm.offsetY}px) scale(${activeNorm.scale})`,
+                          }}
+                          className="w-full h-full object-contain md:drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-150"
+                        />
+                      );
+                    })()}
+                  </div>
 
                   {/* Soft Ground Shadow via radial gradient */}
                   <div
-                    className="w-36 h-4 mx-auto -mt-2"
+                    className="w-40 h-4 mx-auto -mt-2"
                     style={{
                       background:
                         'radial-gradient(ellipse at center, rgba(0,0,0,0.26) 0%, transparent 72%)',
