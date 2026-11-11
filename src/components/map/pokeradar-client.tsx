@@ -114,6 +114,9 @@ export function PokeRadarClient({
         selectedType={selectedType}
         onTypeChange={setSelectedType}
         totalSpotted={totalSpotted}
+        filteredEntities={entities}
+        selectedPokemonId={selectedPokemon?.id ?? null}
+        onSelectPokemon={selectPokemon}
         party={party}
         activeWeather={weatherByBiome[activeBiome.id] ?? null}
         onOpenTeamAnalysis={() => setIsTeamModalOpen(true)}

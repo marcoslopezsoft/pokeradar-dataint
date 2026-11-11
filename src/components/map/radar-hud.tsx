@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { BIOMES } from "@/lib/biomes";
 import { BiomeRegion, PokemonRadarEntity, WeatherData } from "@/types/pokemon";
-import { Search, Volume2, VolumeX } from "lucide-react";
+import { Search, Volume2, VolumeX, X } from "lucide-react";
 import { Icon } from "@iconify/react";
 import { WeatherBadge } from "../weather/weather-badge";
 import { sfx } from "@/lib/sound-effects";
@@ -20,6 +20,9 @@ interface RadarHudProps {
   selectedType: string;
   onTypeChange: (type: string) => void;
   totalSpotted: number;
+  filteredEntities?: PokemonRadarEntity[];
+  selectedPokemonId?: number | null;
+  onSelectPokemon?: (pokemon: PokemonRadarEntity) => void;
   party?: PokemonRadarEntity[];
   activeWeather?: WeatherData | null;
   onOpenTeamAnalysis?: () => void;
@@ -55,10 +58,14 @@ export function RadarHud({
   selectedType,
   onTypeChange,
   totalSpotted,
+  filteredEntities = [],
+  selectedPokemonId = null,
+  onSelectPokemon,
   party = [],
   activeWeather = null,
   onOpenTeamAnalysis,
 }: RadarHudProps) {
+  const hasActiveFilter = selectedType !== "all" || searchTerm.trim().length > 0;
   const [isMuted, setIsMuted] = useState(sfx.getIsMuted());
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
@@ -288,71 +295,138 @@ export function RadarHud({
           </div>
         </div>
 
-        {/* Vertical Biomes Selector: Lower z-index (z-10) so it never sits on top of open menus */}
-        <div className="relative z-10 self-start pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
-          <span className="text-[8px] font-extrabold text-slate-400 tracking-wider text-center uppercase leading-none pt-0.5">
-            Biomas
-          </span>
+        {/* Row 2: Vertical Biomes Selector + Conditional Filtered Pokemon Quick-Jump Strip */}
+        <div className="relative z-10 flex items-start justify-between gap-2.5">
+          {/* Vertical Biomes Selector: Lower z-index (z-10) so it never sits on top of open menus */}
+          <div className="shrink-0 pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
+            <span className="text-[8px] font-extrabold text-slate-400 tracking-wider text-center uppercase leading-none pt-0.5">
+              Biomas
+            </span>
 
-          {BIOMES.map((biome) => {
-            const isActive = biome.id === activeBiome.id;
+            {BIOMES.map((biome) => {
+              const isActive = biome.id === activeBiome.id;
 
-            return (
-              <div key={biome.id} className="relative flex items-center group">
+              return (
+                <div key={biome.id} className="relative flex items-center group">
+                  <button
+                    onClick={() => {
+                      sfx.playSwitch();
+                      onSelectBiome(biome);
+                    }}
+                    className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-full transition-all flex items-center justify-center cursor-pointer p-0.5 ${
+                      isActive
+                        ? "scale-115 z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
+                        : "opacity-65 hover:opacity-100 hover:scale-110 drop-shadow-xs"
+                    }`}
+                    title={biome.name}
+                    aria-label={biome.name}
+                  >
+                    {/* Authentic compact Pokéball vector icon */}
+                    <svg
+                      viewBox="0 0 100 100"
+                      className="w-full h-full transition-transform duration-200"
+                    >
+                      {/* Top Hemisphere dome filled with biome accent color */}
+                      <path
+                        d="M 50 10 c 19.9 0 36.3 14.7 39.4 34 H 66.2 C 63.6 34.6 57.4 30 50 30 s -13.6 4.6 -16.2 14 H 10.6 C 13.7 24.7 30.1 10 50 10 z"
+                        fill={biome.accentColor}
+                      />
+                      {/* Bottom Hemisphere dome filled with white */}
+                      <path
+                        d="M 50 90 c -19.9 0 -36.3 -14.7 -39.4 -34 h 23.2 C 36.4 65.4 42.6 70 50 70 s 13.6 -4.6 16.2 -14 h 23.2 c -3.1 19.3 -19.5 34 -39.4 34 z"
+                        fill="#ffffff"
+                      />
+                      {/* Center button circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="10"
+                        fill="#ffffff"
+                      />
+                      {/* Pokéball vector stencil: rim, belt and center button ring */}
+                      <path
+                        d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z"
+                        fill={isActive ? biome.accentColor : "#475569"}
+                      />
+                    </svg>
+                  </button>
+
+                  {/* Desktop hover tooltip extends to the right without persistent badge */}
+                  <div className="absolute left-full ml-2.5 px-2.5 py-1 rounded-lg bg-slate-900/95 text-white text-[10px] font-medium shadow-md border border-slate-700/50 hidden group-hover:flex items-center gap-1.5 whitespace-nowrap z-20 pointer-events-none">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ backgroundColor: biome.accentColor }}
+                    />
+                    <span>{biome.name}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Conditional Filter Results Strip: Shows circular clickable Pokémon matches ONLY when a filter/search is active */}
+          {hasActiveFilter && (
+            <div className="flex-1 min-w-0 flex justify-end max-w-full">
+              <div className="relative pointer-events-auto inline-flex max-w-full items-center gap-1.5 px-2 py-1.5 rounded-2xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
+                <span
+                  title={`${filteredEntities.length} coincidencias`}
+                  className="absolute -top-2 -left-2 z-10 min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white border-2 border-white shadow-sm flex items-center justify-center text-[10px] font-extrabold tabular-nums leading-none"
+                >
+                  {filteredEntities.length}
+                </span>
+
+                {filteredEntities.length > 0 ? (
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+                    {filteredEntities.map((pokemon) => {
+                      const isSelected = selectedPokemonId === pokemon.id;
+                      return (
+                        <button
+                          key={`filter-hit-${pokemon.id}-${pokemon.biomeId}`}
+                          onClick={() => {
+                            sfx.playButtonPress();
+                            onSelectPokemon?.(pokemon);
+                          }}
+                          title={`${pokemon.displayName} · ${pokemon.biomeName}`}
+                          aria-label={`Ir a ${pokemon.displayName} en ${pokemon.biomeName}`}
+                          className={`relative w-9 h-9 sm:w-10 sm:h-10 rounded-full shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-red-50 border-2 border-red-500 shadow-md shadow-red-500/25 scale-105"
+                              : "bg-slate-50 border border-slate-200 hover:border-red-400 hover:bg-white hover:scale-105"
+                          }`}
+                        >
+                          <Image
+                            src={pokemon.animatedSprite || pokemon.sprite}
+                            alt={pokemon.displayName}
+                            width={32}
+                            height={32}
+                            unoptimized
+                            className="w-7 h-7 sm:w-8 sm:h-8 object-contain pointer-events-none"
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap pl-2 pr-1">
+                    Sin coincidencias en el radar
+                  </span>
+                )}
+
                 <button
                   onClick={() => {
-                    sfx.playSwitch();
-                    onSelectBiome(biome);
+                    sfx.playButtonPress();
+                    onSearchChange("");
+                    onTypeChange("all");
                   }}
-                  className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-full transition-all flex items-center justify-center cursor-pointer p-0.5 ${
-                    isActive
-                      ? "scale-115 z-10 drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
-                      : "opacity-65 hover:opacity-100 hover:scale-110 drop-shadow-xs"
-                  }`}
-                  title={biome.name}
-                  aria-label={biome.name}
+                  title="Limpiar filtros"
+                  aria-label="Limpiar filtros"
+                  className="shrink-0 p-1 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                 >
-                  {/* Authentic compact Pokéball vector icon */}
-                  <svg
-                    viewBox="0 0 100 100"
-                    className="w-full h-full transition-transform duration-200"
-                  >
-                    {/* Top Hemisphere dome filled with biome accent color */}
-                    <path
-                      d="M 50 10 c 19.9 0 36.3 14.7 39.4 34 H 66.2 C 63.6 34.6 57.4 30 50 30 s -13.6 4.6 -16.2 14 H 10.6 C 13.7 24.7 30.1 10 50 10 z"
-                      fill={biome.accentColor}
-                    />
-                    {/* Bottom Hemisphere dome filled with white */}
-                    <path
-                      d="M 50 90 c -19.9 0 -36.3 -14.7 -39.4 -34 h 23.2 C 36.4 65.4 42.6 70 50 70 s 13.6 -4.6 16.2 -14 h 23.2 c -3.1 19.3 -19.5 34 -39.4 34 z"
-                      fill="#ffffff"
-                    />
-                    {/* Center button circle */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="10"
-                      fill="#ffffff"
-                    />
-                    {/* Pokéball vector stencil: rim, belt and center button ring */}
-                    <path
-                      d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z"
-                      fill={isActive ? biome.accentColor : "#475569"}
-                    />
-                  </svg>
+                  <X className="w-3.5 h-3.5" />
                 </button>
-
-                {/* Desktop hover tooltip extends to the right without persistent badge */}
-                <div className="absolute left-full ml-2.5 px-2.5 py-1 rounded-lg bg-slate-900/95 text-white text-[10px] font-medium shadow-md border border-slate-700/50 hidden group-hover:flex items-center gap-1.5 whitespace-nowrap z-20 pointer-events-none">
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ backgroundColor: biome.accentColor }}
-                  />
-                  <span>{biome.name}</span>
-                </div>
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
       </header>
 

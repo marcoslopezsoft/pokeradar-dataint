@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Cloud, CloudRain, CloudSnow, Sun, Wind, CloudLightning } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { fetchBiomeWeather, getWeatherBoostConfig } from "@/lib/pokeapi";
+import { TYPE_CONFIG } from "@/components/pokemon/type-badge";
 import { WeatherData } from "@/types/pokemon";
 
 interface WeatherBadgeProps {
@@ -85,9 +87,21 @@ export function WeatherBadge({
         <span className="hidden sm:inline text-slate-500 text-[10px]">
           · {weather.conditionDescription}
         </span>
-        <span className="hidden lg:inline text-emerald-700 font-semibold text-[10px]">
-          · {boostConfig.shortLabel}
-        </span>
+        <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-slate-200/90">
+          {boostConfig.boostedTypes.slice(0, 3).map((t) => {
+            const cfg = TYPE_CONFIG[t];
+            if (!cfg) return null;
+            return (
+              <span
+                key={t}
+                title={`Favorece tipo ${cfg.label}`}
+                className={`inline-flex items-center justify-center w-4.5 h-4.5 rounded-full border ${cfg.bg} ${cfg.border}`}
+              >
+                <Icon icon={cfg.icon} width={10} height={10} className={cfg.text} />
+              </span>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
