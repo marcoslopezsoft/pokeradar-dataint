@@ -444,7 +444,7 @@ export function MapView({
   }, [selectedPokemon]);
 
   return (
-    <div className="relative w-full h-full min-h-screen bg-slate-950">
+    <div className="relative w-full h-full min-h-screen bg-white">
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
     </div>
   );

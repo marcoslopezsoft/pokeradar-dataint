@@ -86,6 +86,13 @@ export const HIGH_PERF_LIGHT_STYLE: StyleSpecification = {
   },
   layers: [
     {
+      id: "background-base",
+      type: "background",
+      paint: {
+        "background-color": "#ffffff"
+      }
+    },
+    {
       id: "osm-light-base",
       type: "raster",
       source: "osm-raster-tiles",
