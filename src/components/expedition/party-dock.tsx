@@ -23,85 +23,116 @@ export function PartyDock({
   const slots = Array.from({ length: maxPartySize }, (_, i) => party[i] || null);
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-full px-3 pointer-events-auto">
-      <div className="flex items-center gap-2 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-300/50">
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          {slots.map((pokemon, idx) => {
-            if (!pokemon) {
+    <div className="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-full px-2 sm:px-3 pointer-events-auto">
+      {/* Authentic Pokédex Red Chassis */}
+      <div className="p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl bg-linear-to-b from-[#dc0a2d] to-[#b00722] border-2 border-[#7f0417] shadow-2xl shadow-red-950/35">
+        {/* Top Pokédex Sensor Bar: Blue Lens + 3 Status LEDs + Counter & Hardware Vents */}
+        <div className="flex items-center justify-between px-1 pb-1.5 sm:pb-2">
+          <div className="flex items-center gap-2">
+            {/* Classic Glowing Blue Optical Lens */}
+            <div className="relative w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-linear-to-br from-cyan-200 via-sky-400 to-blue-600 border-2 border-white shadow-[0_0_8px_rgba(56,189,248,0.85)] shrink-0">
+              <span className="absolute top-0.5 left-0.5 w-1 h-1 rounded-full bg-white/85" />
+            </div>
+
+            {/* Classic Red / Yellow / Green Pokédex LEDs */}
+            <div className="flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-300 ring-1 ring-[#7f0417]/60" />
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-300 ring-1 ring-[#7f0417]/60" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 ring-1 ring-[#7f0417]/60" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest uppercase text-white/95 drop-shadow-xs">
+              Pokédex · {party.length}/6
+            </span>
+            <div className="hidden min-[380px]:flex items-center gap-0.5" aria-hidden="true">
+              <span className="w-2.5 h-1 rounded-full bg-[#7f0417]/75" />
+              <span className="w-2.5 h-1 rounded-full bg-[#7f0417]/75" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recessed LCD Screen Tray */}
+        <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-slate-100 border-2 border-[#7f0417]/55 shadow-inner">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {slots.map((pokemon, idx) => {
+              if (!pokemon) {
+                return (
+                  <div
+                    key={`empty-${idx}`}
+                    className="w-10.5 h-10.5 sm:w-12 sm:h-12 rounded-xl border border-dashed border-slate-300 bg-slate-200/75 flex items-center justify-center text-slate-400 font-mono text-xs font-bold select-none"
+                    title={`Ranura ${idx + 1} Vacía`}
+                  >
+                    {idx + 1}
+                  </div>
+                );
+              }
+
+              const isSelected = selectedId === pokemon.id;
+
               return (
                 <div
-                  key={`empty-${idx}`}
-                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl border border-dashed border-slate-200 bg-slate-50/80 flex items-center justify-center text-slate-400 text-xs font-semibold select-none"
-                  title={`Ranura ${idx + 1} Vacía`}
+                  key={`party-${pokemon.id}-${idx}`}
+                  className="group relative"
                 >
-                  {idx + 1}
+                  <button
+                    onClick={() => onSelectPokemon(pokemon)}
+                    className={`relative w-10.5 h-10.5 sm:w-12 sm:h-12 rounded-xl p-1 flex items-center justify-center transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-red-50 border-2 border-red-500 shadow-md shadow-red-500/25 -translate-y-0.5'
+                        : 'bg-white border border-slate-300 hover:border-red-400 hover:shadow-xs hover:-translate-y-0.5'
+                    }`}
+                    title={`${pokemon.displayName} (Nv. ${pokemon.level})`}
+                  >
+                    {pokemon.animatedSprite ? (
+                      <Image
+                        src={pokemon.animatedSprite}
+                        alt={pokemon.displayName}
+                        width={40}
+                        height={40}
+                        unoptimized
+                        className="w-8.5 h-8.5 sm:w-10 sm:h-10 object-contain pixelated pointer-events-none"
+                      />
+                    ) : pokemon.sprite ? (
+                      <Image
+                        src={pokemon.sprite}
+                        alt={pokemon.displayName}
+                        width={40}
+                        height={40}
+                        unoptimized
+                        className="w-8.5 h-8.5 sm:w-10 sm:h-10 object-contain pointer-events-none"
+                      />
+                    ) : (
+                      <span className="text-xs font-semibold text-slate-400">
+                        {pokemon.id}
+                      </span>
+                    )}
+
+                    {/* Level Badge (Nv. + level) */}
+                    <span className="absolute -top-1.5 -right-2 min-w-5 h-4.5 px-1.5 flex items-center justify-center bg-red-600 border border-white text-[8px] font-bold tracking-tight text-white rounded-full shadow-xs z-10 leading-none tabular-nums whitespace-nowrap">
+                      Nv. {pokemon.level}
+                    </span>
+                  </button>
+
+                  {/* Release button on hover */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sfx.playRelease();
+                      onReleasePokemon(pokemon.id);
+                    }}
+                    className="absolute -bottom-1 -right-1 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white hover:bg-red-500 transition-all shadow-md cursor-pointer z-20"
+                    title="Liberar del equipo"
+                  >
+                    <Trash2 className="w-2.5 h-2.5" />
+                  </button>
                 </div>
               );
-            }
-
-            const isSelected = selectedId === pokemon.id;
-
-            return (
-              <div
-                key={`party-${pokemon.id}-${idx}`}
-                className="group relative"
-              >
-                <button
-                  onClick={() => onSelectPokemon(pokemon)}
-                  className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl p-1 flex items-center justify-center transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-red-50/90 border-2 border-red-500 shadow-md shadow-red-500/25 -translate-y-0.5'
-                      : 'bg-white border border-slate-200 hover:border-red-400 hover:shadow-xs hover:-translate-y-0.5'
-                  }`}
-                  title={`${pokemon.displayName} (Nv. ${pokemon.level})`}
-                >
-                  {pokemon.animatedSprite ? (
-                    <Image
-                      src={pokemon.animatedSprite}
-                      alt={pokemon.displayName}
-                      width={40}
-                      height={40}
-                      unoptimized
-                      className="w-9 h-9 sm:w-10 sm:h-10 object-contain pixelated pointer-events-none"
-                    />
-                  ) : pokemon.sprite ? (
-                    <Image
-                      src={pokemon.sprite}
-                      alt={pokemon.displayName}
-                      width={40}
-                      height={40}
-                      unoptimized
-                      className="w-9 h-9 sm:w-10 sm:h-10 object-contain pointer-events-none"
-                    />
-                  ) : (
-                    <span className="text-xs font-semibold text-slate-400">
-                      {pokemon.id}
-                    </span>
-                  )}
-
-                  {/* Level Badge (Nv. + level) */}
-                  <span className="absolute -top-1.5 -right-2 min-w-5 h-4.5 px-1.5 flex items-center justify-center bg-red-600 border border-white text-[8px] font-bold tracking-tight text-white rounded-full shadow-xs z-10 leading-none tabular-nums whitespace-nowrap">
-                    Nv. {pokemon.level}
-                  </span>
-                </button>
-
-                {/* Release button on hover */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sfx.playRelease();
-                    onReleasePokemon(pokemon.id);
-                  }}
-                  className="absolute -bottom-1 -right-1 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white hover:bg-red-500 transition-all shadow-md cursor-pointer z-20"
-                  title="Liberar del equipo"
-                >
-                  <Trash2 className="w-2.5 h-2.5" />
-                </button>
-              </div>
-            );
-          })}
+            })}
+          </div>
         </div>
       </div>
     </div>
-    );
+  );
 }
