@@ -41,15 +41,25 @@ export function PokeRadarClient({
     closeDrawer,
   } = usePokemonRadar({ initialEntities, initialWeatherByBiome });
 
-  const { party, addToParty, removeFromParty, isInParty, isPartyFull } =
-    useExpedition();
+  const {
+    party,
+    isLoaded,
+    addToParty,
+    removeFromParty,
+    isInParty,
+    isPartyFull,
+  } = useExpedition();
 
-  const [hasStarted, setHasStarted] = useState(false);
+  const [hasEnteredInSession, setHasEnteredInSession] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [showOakDialog, setShowOakDialog] = useState(false);
   const [showTeamTutorialDialog, setShowTeamTutorialDialog] = useState(false);
   const [hasShownTeamTutorial, setHasShownTeamTutorial] = useState(false);
   const [firstRecruitedPokemon, setFirstRecruitedPokemon] = useState<string | null>(null);
+
+  // Skip onboarding automatically on reload when Pokémon are already saved;
+  // when reloading with an empty Pokédex/team (party.length === 0), restart from 0.
+  const hasStarted = isLoaded && (hasEnteredInSession || party.length > 0);
 
   const handleAddToParty = (pokemon: Parameters<typeof addToParty>[0]) => {
     const isFirstPokemon = party.length === 0;
@@ -61,16 +71,22 @@ export function PokeRadarClient({
     }
   };
 
+  const handleRemoveFromParty = (pokemonId: number) => {
+    setHasEnteredInSession(true);
+    setHasShownTeamTutorial(true);
+    removeFromParty(pokemonId);
+  };
+
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
       {/* Welcome Screen & Spinning Pokeball Loading Screen */}
-      {!hasStarted && (
+      {isLoaded && !hasStarted && (
         <WelcomeScreen
           isLoading={loading}
           error={error}
           onRetry={retryLoad}
           onStartAdventure={() => {
-            setHasStarted(true);
+            setHasEnteredInSession(true);
             setShowOakDialog(true);
           }}
         />
@@ -135,7 +151,7 @@ export function PokeRadarClient({
       <PartyDock
         party={party}
         onSelectPokemon={selectPokemon}
-        onReleasePokemon={removeFromParty}
+        onReleasePokemon={handleRemoveFromParty}
         selectedId={selectedPokemon?.id}
         isDrawerOpen={isDrawerOpen}
       />
@@ -146,7 +162,7 @@ export function PokeRadarClient({
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         onAddToParty={handleAddToParty}
-        onRemoveFromParty={removeFromParty}
+        onRemoveFromParty={handleRemoveFromParty}
         isInParty={selectedPokemon ? isInParty(selectedPokemon.id) : false}
         isPartyFull={isPartyFull}
       />

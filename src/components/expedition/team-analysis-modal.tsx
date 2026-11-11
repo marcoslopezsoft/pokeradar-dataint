@@ -403,7 +403,7 @@ function PokedexLcdContent({
                       </p>
 
                       {/* Clean borderless stat row */}
-                      <div className="grid grid-cols-5 gap-1.5 sm:gap-2 text-center text-[10px] font-sans pt-1">
+                      <div className="grid grid-cols-4 sm:grid-cols-[repeat(4,minmax(0,1fr))_auto] gap-1.5 sm:gap-2 text-center text-[10px] font-sans pt-1 items-center">
                         <div className="py-1 whitespace-nowrap">
                           <span className="text-emerald-700 font-semibold">HP: </span>
                           <span className="font-extrabold text-slate-900 tabular-nums">
@@ -430,7 +430,7 @@ function PokedexLcdContent({
                         </div>
                         <div
                           style={HARD_WHITE_TEXT_SHADOW}
-                          className="py-1 px-1 rounded-lg bg-[#28A7F6] text-white whitespace-nowrap"
+                          className="col-span-4 sm:col-span-1 py-1 px-2.5 rounded-lg bg-[#28A7F6] text-white whitespace-nowrap inline-flex items-center justify-center gap-1"
                         >
                           <span className="font-semibold">TOTAL: </span>
                           <span className="font-extrabold tabular-nums">
