@@ -9,26 +9,25 @@
 ### ¿Qué es PokéRadar?
 PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartográfica inmersiva basada en biomas reales de Argentina. Inspirado en el concepto visual moderno de Pokédex (Behance), en lugar de colocar marcadores estáticos sobre un mapa genérico, el sistema fusiona:
 - **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Normal/Psíquico), Cumbre del Aconcagua (Volador/Dragón) y Península Valdés (Agua/Hada/Siniestro), delimitados con polígonos GeoJSON y pines interactivos al alejar el zoom.
-- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y viento) que prioriza dinámicamente las especies del pool afines al clima actual (`weatherBoosted`) y muestra su afinidad elemental.
+- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y viento) que prioriza dinámicamente las especies del pool afines al clima actual (`weatherBoosted`) y muestra íconos de tipos potenciados con tooltips instantáneos.
 - **Visualización Limpia sin Cajas**: Marcadores sobre el mapa representados directamente por el sprite animado del espécimen, con sombras de contacto en el terreno y microinteracciones optimizadas a 60 FPS en desktop y mobile.
 - **Audio Auténtico (`cries.latest`) & SFX Web Audio**: Reproducción de alaridos sonoros oficiales en formato `.ogg`, música ambiental con controles de volumen y sintetizador Web Audio de efectos para diálogos, capturas y liberaciones.
-- **Equipo de Expedición (Party Dock & Diagnóstico Táctico)**: Dock flotante donde el investigador recluta hasta 6 Pokémon con persistencia en `localStorage`, guía interactiva del Profesor Oak y un Diagnóstico Táctico grupal e individual con matriz de efectividad elemental (18 tipos), roles de combate, resistencias y debilidades compartidas.
-- **Diseño Pokédex Blanco & Tipografía Poppins**: Paleta clara, pulida y tipografía Poppins (400, 500, 600) con elementos en español.
+- **Equipo de Expedición (Party Dock & Diagnóstico Táctico Pokédex)**: Dock flotante con chasis rojo clásico Pokédex (lente azul, LEDs y ranuras LCD con insignias `Nv.`) que se recentra suavemente al abrir o cerrar el panel lateral, persistiendo hasta 6 Pokémon en `localStorage`, con guía interactiva del Profesor Oak y un Diagnóstico Táctico grupal e individual con matriz de efectividad elemental (18 tipos), roles, resistencias, debilidades y tarjetas con fondo mitad-y-mitad por tipo elemental.
+- **Estética Pokédex Unificada & Tipografía Poppins**: Panel lateral [`DetailDrawer`](src/components/pokemon/detail-drawer.tsx) con división diagonal escalonada en SVG para Pokémon de doble tipo, sprites normalizados en altura y tipografía Poppins (400, 500, 600) íntegramente en español.
 
 ---
 
 ## 2. Arquitectura y Stack Técnico 🛠️
 
 ### Stack Principal
-- **Framework**: [Next.js](https://nextjs.org/) 16 (App Router, Turbopack, React 19).
+- **Framework**: [Next.js](https://nextjs.org/) 16 (App Router, Turbopack, `cacheComponents`, React 19).
 - **Lenguaje**: TypeScript Estricto (cero `any`).
 - **Gestor de Paquetes**: **pnpm** (aislamiento eficiente de dependencias y rendimiento).
-- **Motor Geoespacial**: [MapLibre GL JS](https://maplibre.org/) con raster tiles optimizados de OpenStreetMap a 60 FPS, sin marcas de agua ni API keys.
-- **Animaciones e Interacciones**: [Framer Motion](https://www.framer.com/motion/) para transiciones del drawer lateral, diálogos, microinteracciones y barras de estadísticas, más **Lenis** para scroll suave en desktop.
-- **Estilos**: Tailwind CSS v4 para diseño Pokédex claro y responsive en mobile/desktop.
+- **Motor Geoespacial**: [MapLibre GL JS](https://maplibre.org/) con estilo raster claro de OpenStreetMap a 60 FPS, sin marcas de agua ni API keys.
+- **Animaciones e Interacciones**: [Framer Motion](https://www.framer.com/motion/) para transiciones del drawer lateral, diálogos, modal táctico y barras de estadísticas, más **Lenis** para scroll suave en desktop.
+- **Estilos**: Tailwind CSS v4 para diseño Pokédex responsive en mobile y desktop.
 - **Tipografía**: Google Font **Poppins** (Regular, Medium y SemiBold) configurada con `next/font/google`.
 - **Iconografía**: [Lucide React](https://lucide.dev/) e [Iconify (`@iconify/react`)](https://iconify.design/).
-- **Efectos**: `canvas-confetti` al reclutar criaturas.
 
 ### Estructura del Código
 ```text
@@ -44,20 +43,22 @@ src/
 │   │   ├── pokeradar-client.tsx # Orquestador Client Component hidratado desde page.tsx
 │   │   ├── map-container.tsx   # Envoltorio client-side con dynamic(..., { ssr: false })
 │   │   ├── map-view.tsx        # Instancia MapLibre GL, polígonos GeoJSON, pines de bioma y sprites
-│   │   └── radar-hud.tsx       # Barra Pokédex superior, biomas, búsqueda y filtro de tipos en español
+│   │   └── radar-hud.tsx       # Barra Pokédex superior, biomas, búsqueda y tira de coincidencias
 │   ├── pokemon/
-│   │   ├── detail-drawer.tsx   # Panel lateral Pokédex con sprite animado, skeleton y stats
+│   │   ├── detail-drawer.tsx   # Panel lateral Pokédex con fondo dual-type, sprite normalizado y stats
 │   │   ├── stats-bars.tsx      # Barras animadas de stats base (HP, Ataque, Defensa, Velocidad)
 │   │   ├── cry-player.tsx      # Reproductor reactivo de audio (.ogg) con visualizador de ondas
 │   │   └── type-badge.tsx      # Badges con colores e íconos oficiales de tipos en español
 │   ├── expedition/
-│   │   ├── party-dock.tsx      # Dock flotante con el equipo de 6 y persistencia en localStorage
-│   │   └── team-analysis-modal.tsx # Diagnóstico táctico grupal, debilidades y detalle por integrante
+│   │   ├── party-dock.tsx      # Dock Pokédex flotante (6 ranuras) con centrado adaptativo y localStorage
+│   │   └── team-analysis-modal.tsx # Modal Pokédex LCD de diagnóstico táctico grupal e individual
 │   ├── ui/
+│   │   ├── pokedex-sensors.tsx # Cluster reutilizable de lente óptica azul y LEDs tricolores
+│   │   ├── pokedex-stepped-backdrop.tsx # Fondo SVG diagonal escalonado de tipos elementales
 │   │   ├── professor-oak-dialog.tsx # Diálogo narrativo con efecto typewriter e intro/tutorial
 │   │   └── welcome-screen.tsx  # Pantalla de bienvenida con carga paralela y reintento ante error
 │   └── weather/
-│       └── weather-badge.tsx   # Widget meteorológico en vivo conectado a Open-Meteo
+│       └── weather-badge.tsx   # Widget meteorológico en vivo (Open-Meteo) con tooltips por tipo
 ├── hooks/
 │   ├── use-pokemon-radar.ts    # Estado de criaturas, filtros y fallback/reintento cliente
 │   └── use-expedition.ts       # Manejo reactivo del equipo con useSyncExternalStore + localStorage
@@ -67,6 +68,7 @@ src/
 │   ├── server-radar.ts         # Loader Server-Side con Next.js 16 'use cache' y cacheLife
 │   ├── sound-effects.ts        # Motor de audio ambiental y SFX sintetizados con Web Audio API
 │   ├── team-analysis.ts        # Matriz de efectividad (18 tipos), roles tácticos y sinergia de equipo
+│   ├── type-themes.ts          # Paletas elementales compartidas y resolución de gradientes duales
 │   └── utils.ts                # Clsx + Tailwind Merge y diccionarios de tipos/habilidades ES
 └── types/
     └── pokemon.ts              # Modelos e interfaces TypeScript estrictas
@@ -99,6 +101,9 @@ El desarrollo de este proyecto se estructuró siguiendo un flujo de trabajo **AI
 6. **Fugas de `AudioContext`, Reglas de React 19 y No-Determinismo en `cacheComponents`**:
    - *Error de la IA*: Creó nuevas instancias de `AudioContext` en cada tick del efecto typewriter (congelando dispositivos móviles), disparó `setState` síncronos dentro de `useEffect` y usó `Math.random()` para el nivel de las criaturas.
    - *Intervención*: Se refactorizó `SoundEffectsEngine` a un singleton reutilizable, se migró a `useSyncExternalStore` y estado derivado (`0` errores en ESLint React 19), y se volvió determinista el cálculo de nivel para compatibilidad limpia con Next.js 16 `cacheComponents`.
+7. **Layout CSS Flexbox, Subpíxeles en Encabezado Sticky y Táctil en Móviles**:
+   - *Error de la IA*: Al añadir `overflow-hidden` en el encabezado `sticky` sin `shrink-0`, CSS Flexbox redujo su altura mínima a `0px` colapsando visualmente la barra; usó margen `-mt-4` menor al radio `rounded-t-[36px]` dejando esquinas descubiertas; y aplicó sombras/interlineados decimales (`1.5px`) con desplazamiento desigual por línea y eventos `touchend` que disparaban clics fantasma.
+   - *Intervención*: Se auditó visualmente y se fijó `shrink-0 overflow-hidden` con costura opaca y hairline `1px` independiente, solapamiento `-mt-11` (`-44px`) con `h-92 pb-7` en el hero, sombras e interlineados enteros (`1px 1px 0`), y `touch-action: manipulation` para toques instantáneos sin doble disparo.
 
 ---
 
