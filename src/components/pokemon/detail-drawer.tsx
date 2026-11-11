@@ -364,9 +364,9 @@ export function DetailDrawer({
                   <button
                     onClick={handleToggleParty}
                     disabled={!isInParty && isPartyFull}
-                    className={`p-2 rounded-full transition-all cursor-pointer ${
+                    className={`p-1.5 rounded-full transition-all cursor-pointer ${
                       isInParty
-                        ? 'bg-white/30 text-white shadow-md scale-105'
+                        ? 'bg-white/30 text-white shadow-sm'
                         : isPartyFull
                           ? 'opacity-50 cursor-not-allowed hover:bg-transparent'
                           : 'hover:bg-white/20 text-white'

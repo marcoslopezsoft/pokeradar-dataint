@@ -215,14 +215,13 @@ export function MapView({
         pinEl.className =
           "biome-pin-marker group cursor-pointer flex flex-col items-center select-none transition-opacity duration-200";
 
-        // Label pill with biome name (solid bg without backdrop-blur for 60fps over WebGL)
+        // Label pill with biome name (solid white bg + page red border, zero backdrop-blur for 60fps over WebGL)
         const labelPill = document.createElement("div");
         labelPill.className =
-          "flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white border shadow-lg mb-1.5 transition-transform duration-200 group-hover:scale-105";
-        labelPill.style.borderColor = `${b.accentColor}99`;
+          "flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-slate-800 border-2 border-red-500 shadow-lg mb-1.5 transition-transform duration-200 group-hover:scale-105";
         labelPill.innerHTML = `
           <span class="w-2 h-2 rounded-full inline-block" style="background-color: ${b.accentColor};"></span>
-          <span class="font-sans font-bold text-[11px] whitespace-nowrap tracking-wide text-slate-100">${b.name}</span>
+          <span class="font-sans font-bold text-[11px] whitespace-nowrap tracking-wide text-slate-800">${b.name}</span>
         `;
         pinEl.appendChild(labelPill);
 
