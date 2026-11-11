@@ -95,7 +95,7 @@ export const HIGH_PERF_LIGHT_STYLE: StyleSpecification = {
         "raster-saturation": -0.1,
         "raster-contrast": 0.05,
         "raster-brightness-min": 0.08,
-        "raster-fade-duration": 100
+        "raster-fade-duration": 0
       }
     }
   ]

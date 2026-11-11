@@ -255,7 +255,7 @@ export function WeatherBadge({
           setIsModalOpen(true);
         }}
         aria-label={`Ver clima y afinidad climática de ${biomeName}: ${weather.temperature}°C, ${weather.conditionDescription}`}
-        className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100 sm:bg-white/90 sm:backdrop-blur-md border border-slate-200/90 hover:border-sky-300 hover:bg-sky-50/60 active:scale-95 transition-all shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0 cursor-pointer touch-manipulation"
+        className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100 sm:bg-white/90 border border-slate-200/90 hover:border-sky-300 hover:bg-sky-50/60 active:scale-95 transition-all shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0 cursor-pointer touch-manipulation"
       >
         <span
           className="flex items-center gap-1 sm:gap-1.5"

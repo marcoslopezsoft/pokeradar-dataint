@@ -56,13 +56,16 @@ export function MapView({
 }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
-  const markersRef = useRef<{ [key: string]: Marker }>({});
+  const markersRef = useRef<{
+    [key: string]: { marker: Marker; coordinates: [number, number] };
+  }>({});
   const markerImgsRef = useRef<{ [id: number]: HTMLImageElement }>({});
   const biomePinsRef = useRef<{ [key: string]: Marker }>({});
   const onSelectBiomeRef = useRef(onSelectBiome);
   const onSelectPokemonRef = useRef(onSelectPokemon);
   const selectedPokemonIdRef = useRef<number | null>(null);
   const lastZoomedOutRef = useRef<boolean | null>(null);
+  const isFirstBiomeEffectRef = useRef(true);
 
   useEffect(() => {
     onSelectBiomeRef.current = onSelectBiome;
@@ -76,7 +79,7 @@ export function MapView({
     selectedPokemonIdRef.current = selectedPokemon?.id ?? null;
   }, [selectedPokemon]);
 
-  // Synchronize visibility of biome pins vs pokemon markers (only runs when crossing zoom 9.2 threshold)
+  // Synchronize visibility of biome pins and cull off-screen Pokémon markers outside a 3x viewport buffer
   const syncZoomVisibility = (force = false) => {
     const map = mapRef.current;
     if (!map) return;
@@ -96,11 +99,27 @@ export function MapView({
       }
     });
 
-    // Pokemon markers: visible when zoomed in
-    Object.values(markersRef.current).forEach((marker) => {
+    const bounds = !isZoomedOut ? map.getBounds() : null;
+    const lngSpan = bounds ? bounds.getEast() - bounds.getWest() : 0;
+    const latSpan = bounds ? bounds.getNorth() - bounds.getSouth() : 0;
+    const minLng = bounds ? bounds.getWest() - lngSpan : -180;
+    const maxLng = bounds ? bounds.getEast() + lngSpan : 180;
+    const minLat = bounds ? bounds.getSouth() - latSpan : -90;
+    const maxLat = bounds ? bounds.getNorth() + latSpan : 90;
+
+    // Pokemon markers: visible only when zoomed in AND inside the padded viewport
+    Object.values(markersRef.current).forEach(({ marker, coordinates }) => {
       const el = marker.getElement();
-      if (el) {
-        el.style.display = isZoomedOut ? "none" : "flex";
+      if (!el) return;
+      const inBuffer =
+        !isZoomedOut &&
+        coordinates[0] >= minLng &&
+        coordinates[0] <= maxLng &&
+        coordinates[1] >= minLat &&
+        coordinates[1] <= maxLat;
+      const targetDisplay = inBuffer ? "flex" : "none";
+      if (el.style.display !== targetDisplay) {
+        el.style.display = targetDisplay;
       }
     });
   };
@@ -114,6 +133,13 @@ export function MapView({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
+    const isMobileViewport =
+      typeof window !== "undefined" && window.innerWidth < 768;
+    const cappedPixelRatio =
+      typeof window !== "undefined"
+        ? Math.min(window.devicePixelRatio || 1, 1.5)
+        : 1;
+
     const map = new Map({
       container: mapContainerRef.current,
       style: INITIAL_MAP_CONFIG.style,
@@ -121,9 +147,14 @@ export function MapView({
       zoom: initialBiomeRef.current.zoom,
       minZoom: INITIAL_MAP_CONFIG.minZoom,
       maxZoom: INITIAL_MAP_CONFIG.maxZoom,
-      pitch: 35,
+      pitch: isMobileViewport ? 0 : 22,
       bearing: 0,
       attributionControl: false,
+      pixelRatio: cappedPixelRatio,
+      maxTileCacheSize: 300,
+      cancelPendingTileRequestsWhileZooming: true,
+      refreshExpiredTiles: false,
+      fadeDuration: 0,
     });
 
     // Suppress missing style image warnings
@@ -250,9 +281,9 @@ export function MapView({
           map.flyTo({
             center: b.center,
             zoom: b.zoom,
-            speed: isMobile ? 1.8 : 1.3,
-            curve: 1.3,
-            pitch: isMobile ? 0 : 40,
+            speed: isMobile ? 2.0 : 1.5,
+            curve: 1.25,
+            pitch: isMobile ? 0 : 22,
             essential: true,
           });
         };
@@ -269,8 +300,9 @@ export function MapView({
         biomePinsRef.current[b.id] = pinMarker;
       });
 
-      // Synchronize visibility ONLY when crossing zoom threshold
+      // Synchronize overview pins on zoom threshold and refresh viewport culling after panning/flying
       map.on("zoom", () => syncZoomVisibility(false));
+      map.on("moveend", () => syncZoomVisibility(true));
       syncZoomVisibility(true);
     });
 
@@ -284,17 +316,21 @@ export function MapView({
     };
   }, []);
 
-  // 2. React to activeBiome changes (smooth flyTo)
+  // 2. React to activeBiome changes (skip initial mount flyTo since map starts at initialBiomeRef)
   useEffect(() => {
+    if (isFirstBiomeEffectRef.current) {
+      isFirstBiomeEffectRef.current = false;
+      return;
+    }
     if (!mapRef.current) return;
     const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
     mapRef.current.flyTo({
       center: activeBiome.center,
       zoom: activeBiome.zoom,
-      speed: isMobile ? 1.8 : 1.2,
-      curve: isMobile ? 1.2 : 1.4,
+      speed: isMobile ? 2.0 : 1.5,
+      curve: 1.25,
       essential: true,
-      pitch: isMobile ? 0 : 40,
+      pitch: isMobile ? 0 : 22,
     });
   }, [activeBiome]);
 
@@ -304,7 +340,7 @@ export function MapView({
     if (!map) return;
 
     // Clear existing markers
-    Object.values(markersRef.current).forEach((marker) => marker.remove());
+    Object.values(markersRef.current).forEach(({ marker }) => marker.remove());
     markersRef.current = {};
     markerImgsRef.current = {};
 
@@ -315,6 +351,7 @@ export function MapView({
       el.style.width = "64px";
       el.style.height = "64px";
       el.style.touchAction = "manipulation";
+      el.style.contain = "layout style";
 
       // Tooltip pill on hover (desktop only)
       const tooltip = document.createElement("div");
@@ -330,12 +367,13 @@ export function MapView({
       groundShadow.style.background = "radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 72%)";
       el.appendChild(groundShadow);
 
-      // Pokemon HD official artwork directly on terrain (No per-pixel drop-shadow on mobile GPU)
+      // Pokemon HD official artwork directly on terrain (0 CSS drop-shadow filter passes during pan/zoom)
       const img = document.createElement("img");
       img.src = pokemon.sprite || pokemon.animatedSprite;
       img.alt = pokemon.displayName;
+      img.decoding = "async";
       img.className =
-        "w-14 h-14 object-contain pointer-events-none transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 md:drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]";
+        "w-14 h-14 object-contain pointer-events-none transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 select-none";
       el.appendChild(img);
       markerImgsRef.current[pokemon.id] = img;
 
@@ -350,8 +388,8 @@ export function MapView({
           map.flyTo({
             center: pokemon.coordinates,
             zoom: 15.5,
-            speed: isMobile ? 1.8 : 1.35,
-            pitch: isMobile ? 0 : 45,
+            speed: isMobile ? 2.0 : 1.5,
+            pitch: isMobile ? 0 : 28,
             essential: true,
           });
         }
@@ -364,14 +402,17 @@ export function MapView({
         .setLngLat(pokemon.coordinates)
         .addTo(map);
 
-      markersRef.current[`${pokemon.id}-${pokemon.coordinates.join(",")}`] = marker;
+      markersRef.current[`${pokemon.id}-${pokemon.coordinates.join(",")}`] = {
+        marker,
+        coordinates: pokemon.coordinates,
+      };
     });
 
     // Sync visibility with current zoom level
     syncZoomVisibility(true);
 
     return () => {
-      Object.values(markersRef.current).forEach((marker) => marker.remove());
+      Object.values(markersRef.current).forEach(({ marker }) => marker.remove());
       markersRef.current = {};
       markerImgsRef.current = {};
     };
@@ -381,13 +422,11 @@ export function MapView({
   useEffect(() => {
     if (!selectedPokemon) return;
 
-    // Update active highlight classes on marker images instantly
+    // Update active highlight classes on marker images instantly (pure transform, zero filter overhead)
     Object.entries(markerImgsRef.current).forEach(([idStr, img]) => {
       const isSel = Number(idStr) === selectedPokemon.id;
-      img.className = `w-14 h-14 object-contain pointer-events-none transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
-        isSel
-          ? "scale-125 -translate-y-2 md:drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
-          : "md:drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
+      img.className = `w-14 h-14 object-contain pointer-events-none transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 select-none ${
+        isSel ? "scale-125 -translate-y-2 brightness-105" : ""
       }`;
     });
 
@@ -397,8 +436,8 @@ export function MapView({
       mapRef.current.flyTo({
         center: selectedPokemon.coordinates,
         zoom: 15.5,
-        speed: isMobile ? 1.8 : 1.35,
-        pitch: isMobile ? 0 : 45,
+        speed: isMobile ? 2.0 : 1.5,
+        pitch: isMobile ? 0 : 28,
         essential: true,
       });
     }
