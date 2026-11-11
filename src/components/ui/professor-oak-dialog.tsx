@@ -98,9 +98,14 @@ export function ProfessorOakDialog({
         <motion.div
           initial={{ scale: 0, opacity: 0, y: 80, rotate: -8 }}
           animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
-          exit={{ scale: 0.2, opacity: 0, y: 80, transition: { duration: 0.25 } }}
+          exit={{
+            scale: 0.2,
+            opacity: 0,
+            y: 80,
+            transition: { duration: 0.25 },
+          }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 340,
             damping: 22,
           }}
@@ -111,7 +116,7 @@ export function ProfessorOakDialog({
             className="absolute -inset-2 rounded-full pointer-events-none"
             style={{
               background:
-                "radial-gradient(circle, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.14) 50%, transparent 72%)",
+                'radial-gradient(circle, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.14) 50%, transparent 72%)',
             }}
           />
 
@@ -127,9 +132,14 @@ export function ProfessorOakDialog({
         <motion.div
           initial={{ scale: 0.7, opacity: 0, y: 30 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.7, opacity: 0, y: 20, transition: { duration: 0.2 } }}
+          exit={{
+            scale: 0.7,
+            opacity: 0,
+            y: 20,
+            transition: { duration: 0.2 },
+          }}
           transition={{
-            type: "spring",
+            type: 'spring',
             stiffness: 380,
             damping: 26,
             delay: 0.12,
@@ -138,10 +148,10 @@ export function ProfessorOakDialog({
           className="relative pointer-events-auto w-full sm:max-w-md bg-white rounded-2xl sm:rounded-3xl border-2 border-red-300 p-4 sm:p-5 shadow-2xl text-slate-800 z-30 cursor-pointer mb-2 sm:mb-6"
         >
           {/* Seamless Speech Bubble Tail integrated into left border (Desktop) */}
-          <div className="hidden sm:block absolute -left-[9px] bottom-8 w-4 h-4 bg-white border-l-2 border-b-2 border-red-300 rotate-45 rounded-bl-[2px]" />
+          <div className="hidden sm:block absolute -left-2.25 bottom-8 w-4 h-4 bg-white border-l-2 border-b-2 border-red-300 rotate-45 rounded-bl-xs" />
 
           {/* Seamless Speech Bubble Tail integrated into top border (Mobile) */}
-          <div className="sm:hidden absolute -top-[9px] left-11 w-4 h-4 bg-white border-l-2 border-t-2 border-red-300 rotate-45 rounded-tl-[2px]" />
+          <div className="sm:hidden absolute -top-2.25 left-11 w-4 h-4 bg-white border-l-2 border-t-2 border-red-300 rotate-45 rounded-tl-xs" />
 
           {/* Top Bar: Badge & "X" Close Button in Top-Right Corner */}
           <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-slate-100">
@@ -172,7 +182,7 @@ export function ProfessorOakDialog({
           </div>
 
           {/* Message Content with Typewriter Effect */}
-          <div className="min-h-[96px] text-xs sm:text-[13px] font-sans font-medium text-slate-700 leading-relaxed whitespace-pre-line select-text">
+          <div className="min-h-24 text-xs sm:text-[13px] font-sans font-medium text-slate-700 leading-relaxed whitespace-pre-line select-text">
             {displayedText}
             {isTyping && (
               <span className="inline-block w-1.5 h-3.5 bg-red-600 ml-0.5 align-middle animate-pulse" />
@@ -182,7 +192,7 @@ export function ProfessorOakDialog({
           {/* Footer action / skip hint */}
           <div className="mt-3 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] text-slate-400 font-sans">
             <span className="italic">
-              {isTyping ? "Toca para completar texto" : "¡Listo para explorar!"}
+              {isTyping ? 'Toca para completar texto' : '¡Listo para explorar!'}
             </span>
             <button
               onClick={(e) => {
