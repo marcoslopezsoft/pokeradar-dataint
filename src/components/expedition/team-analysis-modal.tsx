@@ -76,7 +76,7 @@ export function TeamAnalysisModal({
             initial={{ scale: 0.94, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.94, opacity: 0, y: 12 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
             className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl shadow-slate-900/20 overflow-hidden"
           >
             {/* Header (clean title without side icon) */}
@@ -89,8 +89,8 @@ export function TeamAnalysisModal({
                   {diagnosis.memberCount > 1
                     ? `Análisis grupal de ${diagnosis.memberCount} Pokémon y detalle individual`
                     : diagnosis.memberCount === 1
-                    ? "Evaluación individual del primer integrante y proyección de equipo"
-                    : "Estado actual del escuadrón de campo"}
+                      ? 'Evaluación individual del primer integrante y proyección de equipo'
+                      : 'Estado actual del escuadrón de campo'}
                 </p>
               </div>
               <button
@@ -110,18 +110,19 @@ export function TeamAnalysisModal({
                     Tu equipo de expedición está vacío.
                   </p>
                   <p className="text-xs text-slate-400">
-                    Seleccioná especímenes en el radar y pulsá &quot;Reclutar al Equipo&quot;.
+                    Seleccioná especímenes en el radar y pulsá &quot;Reclutar al
+                    Equipo&quot;.
                   </p>
                 </div>
               ) : (
                 <>
                   {/* 1. Executive Narrative (Team-wide analysis when >1, solo breakdown when 1) */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-red-50/40 border border-slate-200 space-y-2.5">
+                  <div className="p-4 rounded-2xl bg-linear-to-br from-slate-50 to-red-50/40 border border-slate-200 space-y-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">
                         {diagnosis.memberCount > 1
-                          ? "Evaluación Conjunta del Equipo"
-                          : "Evaluación Inicial"}
+                          ? 'Evaluación Conjunta del Equipo'
+                          : 'Evaluación Inicial'}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-500">
                         {diagnosis.avgStats.total} pts base prom.
@@ -190,19 +191,25 @@ export function TeamAnalysisModal({
                       </div>
                     </div>
                     <div>
-                      <div className="text-slate-400 font-medium">ATQ prom.</div>
+                      <div className="text-slate-400 font-medium">
+                        ATQ prom.
+                      </div>
                       <div className="font-bold text-red-600 text-xs mt-0.5">
                         {diagnosis.avgStats.attack}
                       </div>
                     </div>
                     <div>
-                      <div className="text-slate-400 font-medium">DEF prom.</div>
+                      <div className="text-slate-400 font-medium">
+                        DEF prom.
+                      </div>
                       <div className="font-bold text-blue-600 text-xs mt-0.5">
                         {diagnosis.avgStats.defense}
                       </div>
                     </div>
                     <div>
-                      <div className="text-slate-400 font-medium">VEL prom.</div>
+                      <div className="text-slate-400 font-medium">
+                        VEL prom.
+                      </div>
                       <div className="font-bold text-amber-600 text-xs mt-0.5">
                         {diagnosis.avgStats.speed}
                       </div>
@@ -217,8 +224,8 @@ export function TeamAnalysisModal({
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
                         <span>
                           {diagnosis.memberCount > 1
-                            ? "Resistencias del Equipo"
-                            : "Resistencias del Pokémon"}
+                            ? 'Resistencias del Equipo'
+                            : 'Resistencias del Pokémon'}
                         </span>
                       </div>
                       {diagnosis.defensiveStrengths.length > 0 ? (
@@ -250,8 +257,8 @@ export function TeamAnalysisModal({
                         <AlertTriangle className="w-4 h-4 text-rose-600" />
                         <span>
                           {diagnosis.memberCount > 1
-                            ? "Debilidades Críticas del Equipo"
-                            : "Debilidades Directas"}
+                            ? 'Debilidades Críticas del Equipo'
+                            : 'Debilidades Directas'}
                         </span>
                       </div>
                       {diagnosis.criticalWeaknesses.length > 0 ? (
@@ -282,7 +289,8 @@ export function TeamAnalysisModal({
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between text-xs font-sans">
                       <span className="font-bold uppercase tracking-wider text-slate-600">
-                        Detalle de Integrantes Seleccionados ({diagnosis.memberCount})
+                        Detalle de Integrantes Seleccionados (
+                        {diagnosis.memberCount})
                       </span>
                       <span className="text-[11px] text-slate-400">
                         {diagnosis.uniqueElementalTypes.length} tipos propios
@@ -365,7 +373,9 @@ export function TeamAnalysisModal({
                                 </span>
                               </div>
                               <div className="py-1 rounded-lg bg-red-50 border border-red-200/70">
-                                <span className="text-red-500 font-semibold">TOT </span>
+                                <span className="text-red-500 font-semibold">
+                                  TOT{' '}
+                                </span>
                                 <span className="font-bold text-red-700">
                                   {member.totalStats}
                                 </span>
@@ -403,7 +413,7 @@ export function TeamAnalysisModal({
 
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-sans text-xs font-bold transition-all cursor-pointer ml-auto shadow-md shadow-red-600/30"
+                className="px-4 py-2 rounded-xl bg-linear-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-sans text-xs font-bold transition-all cursor-pointer ml-auto shadow-md shadow-red-600/30"
               >
                 CERRAR DIAGNÓSTICO
               </button>

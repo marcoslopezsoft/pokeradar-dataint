@@ -49,8 +49,8 @@ export function PartyDock({
                   onClick={() => onSelectPokemon(pokemon)}
                   className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl p-1 flex items-center justify-center transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-red-50/90 border-2 border-red-500 shadow-md shadow-red-500/25 -translate-y-0.5"
-                      : "bg-white border border-slate-200 hover:border-red-400 hover:shadow-xs hover:-translate-y-0.5"
+                      ? 'bg-red-50/90 border-2 border-red-500 shadow-md shadow-red-500/25 -translate-y-0.5'
+                      : 'bg-white border border-slate-200 hover:border-red-400 hover:shadow-xs hover:-translate-y-0.5'
                   }`}
                   title={`${pokemon.displayName} (Nv. ${pokemon.level})`}
                 >
@@ -73,7 +73,7 @@ export function PartyDock({
                   )}
 
                   {/* Circular Level Badge with centered number */}
-                  <span className="absolute -top-1.5 -right-1.5 w-[19px] h-[19px] flex items-center justify-center bg-red-600 border border-white text-[9px] font-bold text-white rounded-full shadow-xs z-10 leading-none tabular-nums">
+                  <span className="absolute -top-1.5 -right-1.5 w-4.75 h-4.75 flex items-center justify-center bg-red-600 border border-white text-[9px] font-bold text-white rounded-full shadow-xs z-10 leading-none tabular-nums">
                     {pokemon.level}
                   </span>
                 </button>

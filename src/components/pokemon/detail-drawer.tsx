@@ -308,19 +308,22 @@ export function DetailDrawer({
             onScroll={(e) =>
               setScrollState({ key: scrollKey, y: e.currentTarget.scrollTop })
             }
-            initial={{ x: "100%" }}
+            initial={{ x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            exit={{ x: '100%' }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            style={{ willChange: "transform" }}
-            className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar overscroll-contain"
+            style={{ willChange: 'transform' }}
+            className="fixed inset-y-0 right-0 h-full w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar overscroll-contain"
           >
-            <div ref={scrollContentRef} className="relative flex flex-col min-h-full bg-white">
+            <div
+              ref={scrollContentRef}
+              className="relative flex flex-col min-h-full bg-white"
+            >
               {/* Sticky Top Header Bar (Maintains Pokemon elemental background color on scroll, NEVER black) */}
               <div
                 className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-all duration-200 ${
                   scrollY > 30
-                    ? `bg-gradient-to-r ${theme.bgGradient} shadow-md border-b border-white/20 text-white`
+                    ? `bg-linear-to-r ${theme.bgGradient} shadow-md border-b border-white/20 text-white`
                     : `bg-transparent text-white`
                 }`}
               >
@@ -331,7 +334,11 @@ export function DetailDrawer({
                     className="p-2 -ml-1 rounded-full hover:bg-white/20 transition-colors text-white cursor-pointer shrink-0"
                     aria-label="Volver"
                   >
-                    <Icon icon="solar:arrow-left-linear" width={20} height={20} />
+                    <Icon
+                      icon="solar:arrow-left-linear"
+                      width={20}
+                      height={20}
+                    />
                   </button>
 
                   {/* Habitat aligned to the left next to back arrow */}
@@ -359,30 +366,30 @@ export function DetailDrawer({
                     disabled={!isInParty && isPartyFull}
                     className={`p-2 rounded-full transition-all cursor-pointer ${
                       isInParty
-                        ? "bg-white/30 text-white shadow-md scale-105"
+                        ? 'bg-white/30 text-white shadow-md scale-105'
                         : isPartyFull
-                          ? "opacity-50 cursor-not-allowed hover:bg-transparent"
-                          : "hover:bg-white/20 text-white"
+                          ? 'opacity-50 cursor-not-allowed hover:bg-transparent'
+                          : 'hover:bg-white/20 text-white'
                     }`}
                     title={
                       isInParty
-                        ? "Quitar del equipo de expedición"
+                        ? 'Quitar del equipo de expedición'
                         : isPartyFull
-                          ? "Equipo completo (6/6)"
-                          : "Reclutar al equipo"
+                          ? 'Equipo completo (6/6)'
+                          : 'Reclutar al equipo'
                     }
                     aria-label={
-                      isInParty
-                        ? "Quitar del equipo"
-                        : "Reclutar al equipo"
+                      isInParty ? 'Quitar del equipo' : 'Reclutar al equipo'
                     }
                   >
                     <Icon
-                      icon={isInParty ? "solar:heart-bold" : "solar:heart-linear"}
+                      icon={
+                        isInParty ? 'solar:heart-bold' : 'solar:heart-linear'
+                      }
                       width={20}
                       height={20}
                       className={`transition-transform ${
-                        isInParty ? "text-red-500 scale-110" : "text-white"
+                        isInParty ? 'text-red-500 scale-110' : 'text-white'
                       }`}
                     />
                   </button>
@@ -391,8 +398,8 @@ export function DetailDrawer({
 
               {/* Sticky Hero Container: Seamlessly connects to header with exact 56px offset, zero gaps */}
               <div
-                style={{ marginTop: "-56px", paddingTop: "56px" }}
-                className={`sticky top-0 z-10 w-full bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-[340px] flex flex-col justify-center items-center`}
+                style={{ marginTop: '-56px', paddingTop: '56px' }}
+                className={`sticky top-0 z-10 w-full bg-linear-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-85 flex flex-col justify-center items-center`}
               >
                 {/* Floating Ambient Atmosphere Particles (Desktop only to maintain 60fps on mobile) */}
                 <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
@@ -402,19 +409,19 @@ export function DetailDrawer({
                       className="absolute w-2 h-2 rounded-full bg-white/20"
                       initial={{
                         x: `${10 + i * 16}%`,
-                        y: "110%",
+                        y: '110%',
                         scale: 0.6 + (i % 3) * 0.3,
                         opacity: 0.1,
                       }}
                       animate={{
-                        y: ["110%", "-20%"],
+                        y: ['110%', '-20%'],
                         opacity: [0.1, 0.45, 0],
                       }}
                       transition={{
                         duration: 4.5 + (i % 3) * 2,
                         repeat: Infinity,
                         delay: i * 0.7,
-                        ease: "linear",
+                        ease: 'linear',
                       }}
                     />
                   ))}
@@ -426,7 +433,11 @@ export function DetailDrawer({
                   className="hidden md:block absolute -right-8 -bottom-8 w-64 h-64 text-white/15 pointer-events-none"
                   fill="currentColor"
                   animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 45,
+                    ease: 'linear',
+                  }}
                 >
                   <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
                 </motion.svg>
@@ -451,21 +462,27 @@ export function DetailDrawer({
                   {/* Luminous Aura Behind Pokemon via radial-gradient (zero CSS blur cost) */}
                   <div
                     className="absolute w-56 h-56 rounded-full pointer-events-none"
-                    style={{ background: "radial-gradient(circle, rgba(255,255,255,0.28) 0%, transparent 70%)" }}
+                    style={{
+                      background:
+                        'radial-gradient(circle, rgba(255,255,255,0.28) 0%, transparent 70%)',
+                    }}
                   />
 
                   {/* Big Centered Pokemon Sprite (Zero per-frame GIF drop-shadow on mobile!) */}
                   <img
                     src={pokemon.animatedSprite || pokemon.sprite}
                     alt={pokemon.displayName}
-                    style={{ imageRendering: "pixelated" }}
+                    style={{ imageRendering: 'pixelated' }}
                     className="w-48 h-48 object-contain md:drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-105"
                   />
 
                   {/* Soft Ground Shadow via radial gradient */}
                   <div
                     className="w-36 h-4 mx-auto -mt-2"
-                    style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.26) 0%, transparent 72%)" }}
+                    style={{
+                      background:
+                        'radial-gradient(ellipse at center, rgba(0,0,0,0.26) 0%, transparent 72%)',
+                    }}
                   />
                 </div>
               </div>
@@ -489,7 +506,12 @@ export function DetailDrawer({
                 {/* 3. Tipo abajo del número con su icono correspondiente */}
                 <div className="flex flex-wrap items-center gap-2">
                   {pokemon.types.map((type) => (
-                    <TypeBadge key={type} type={type} size="md" showIcon={true} />
+                    <TypeBadge
+                      key={type}
+                      type={type}
+                      size="md"
+                      showIcon={true}
+                    />
                   ))}
                 </div>
 
@@ -512,12 +534,15 @@ export function DetailDrawer({
                             className="text-amber-500"
                           />
                           <span>
-                            {abilityTranslations[ability] || translateAbilityToSpanish(ability)}
+                            {abilityTranslations[ability] ||
+                              translateAbilityToSpanish(ability)}
                           </span>
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-slate-500">Habilidad estándar</span>
+                      <span className="text-xs text-slate-500">
+                        Habilidad estándar
+                      </span>
                     )}
                   </div>
                 </div>

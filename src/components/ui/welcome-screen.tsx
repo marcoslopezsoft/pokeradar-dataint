@@ -33,14 +33,14 @@ export function WelcomeScreen({
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white p-6 select-none"
         >
           {/* Subtle Watermark in background */}
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 60, ease: "linear" }}
-            className="absolute w-[600px] h-[600px] pointer-events-none opacity-5"
+            transition={{ repeat: Infinity, duration: 60, ease: 'linear' }}
+            className="absolute w-150 h-150 pointer-events-none opacity-5"
           >
             <img
               src="/pokeball-icon.webp"
@@ -59,21 +59,21 @@ export function WelcomeScreen({
                   scale: [1, 1.25, 1],
                   opacity: [0.15, 0.35, 0.15],
                 }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 3,
+                  ease: 'easeInOut',
+                }}
                 className="absolute w-44 h-44 rounded-full bg-red-500 blur-2xl pointer-events-none"
               />
 
               {/* Pokeball Image */}
               <motion.div
-                animate={
-                  isLoading
-                    ? { rotate: 360 }
-                    : { y: [0, -6, 0] }
-                }
+                animate={isLoading ? { rotate: 360 } : { y: [0, -6, 0] }}
                 transition={
                   isLoading
-                    ? { repeat: Infinity, duration: 1.2, ease: "linear" }
-                    : { repeat: Infinity, duration: 2.8, ease: "easeInOut" }
+                    ? { repeat: Infinity, duration: 1.2, ease: 'linear' }
+                    : { repeat: Infinity, duration: 2.8, ease: 'easeInOut' }
                 }
                 className="relative z-10 w-28 h-28 flex items-center justify-center"
               >
@@ -97,7 +97,8 @@ export function WelcomeScreen({
               </h1>
 
               <p className="text-sm font-medium text-slate-500 max-w-sm mx-auto">
-                Exploración geoespacial interactiva del mundo Pokémon con biomas reales y telemetría satelital.
+                Exploración geoespacial interactiva del mundo Pokémon con biomas
+                reales y telemetría satelital.
               </p>
             </motion.div>
 
@@ -112,7 +113,11 @@ export function WelcomeScreen({
                 <div className="flex items-center justify-center gap-3 py-4 px-6 rounded-2xl bg-slate-100 border border-slate-200 text-slate-600 font-sans text-sm font-bold shadow-xs">
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1,
+                      ease: 'linear',
+                    }}
                     className="w-4 h-4 flex items-center justify-center"
                   >
                     <img
@@ -143,7 +148,7 @@ export function WelcomeScreen({
               ) : (
                 <button
                   onClick={handleStart}
-                  className="group relative w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white font-sans text-sm font-extrabold tracking-wide shadow-lg shadow-red-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2.5"
+                  className="group relative w-full py-4 px-6 rounded-2xl bg-linear-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white font-sans text-sm font-extrabold tracking-wide shadow-lg shadow-red-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2.5"
                 >
                   <span>COMENZAR AVENTURA</span>
                   <Icon

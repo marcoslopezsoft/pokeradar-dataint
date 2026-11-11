@@ -40,15 +40,18 @@ export function StatsBars({ stats }: StatsBarsProps) {
             max: 200,
           };
           const val = stats[key] || 0;
-          const percentage = Math.min(100, Math.round((val / config.max) * 100));
+          const percentage = Math.min(
+            100,
+            Math.round((val / config.max) * 100),
+          );
 
           // Behance Pokédex color logic: >= 50 teal/green, < 50 warm coral/red
           const barColor =
             val >= 100
-              ? "bg-[#48d0b0]"
+              ? 'bg-[#48d0b0]'
               : val >= 60
-              ? "bg-[#6890f0]"
-              : "bg-[#fb6c6c]";
+                ? 'bg-[#6890f0]'
+                : 'bg-[#fb6c6c]';
 
           return (
             <div key={key} className="flex items-center text-xs">
@@ -63,7 +66,7 @@ export function StatsBars({ stats }: StatsBarsProps) {
                   className={`h-full rounded-full ${barColor}`}
                   initial={{ width: 0 }}
                   animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
                 />
               </div>
             </div>
@@ -80,10 +83,12 @@ export function StatsBars({ stats }: StatsBarsProps) {
           </span>
           <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-red-500 to-rose-600"
+              className="h-full rounded-full bg-linear-to-r from-red-500 to-rose-600"
               initial={{ width: 0 }}
-              animate={{ width: `${Math.min(100, Math.round((total / 720) * 100))}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              animate={{
+                width: `${Math.min(100, Math.round((total / 720) * 100))}%`,
+              }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
             />
           </div>
         </div>
