@@ -23,7 +23,7 @@ export function PartyDock({
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-full px-3 pointer-events-auto">
-      <div className="flex items-center gap-2 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-300/50">
+      <div className="flex items-center gap-2 p-2.5 sm:p-3 rounded-2xl sm:rounded-3xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-300/50">
         <div className="flex items-center gap-2 sm:gap-2.5">
           {slots.map((pokemon, idx) => {
             if (!pokemon) {

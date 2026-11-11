@@ -196,7 +196,7 @@ export function TypeBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded-full border backdrop-blur-md transition-all shadow-sm",
+        "inline-flex items-center justify-center rounded-full border sm:backdrop-blur-md transition-all shadow-sm",
         config.bg,
         config.border,
         config.text,

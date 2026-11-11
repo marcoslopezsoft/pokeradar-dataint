@@ -290,14 +290,15 @@ export function DetailDrawer({
             className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden"
           />
 
-          {/* Behance Pokédex Sheet Drawer with Smooth Scrolling */}
+          {/* Behance Pokédex Sheet Drawer with Smooth GPU-Accelerated Slide */}
           <motion.aside
             ref={scrollWrapperRef}
             onScroll={(e) => setScrollY(e.currentTarget.scrollTop)}
-            initial={{ x: "100%", opacity: 0.8 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: "transform" }}
             className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar overscroll-contain"
           >
             <div ref={scrollContentRef} className="relative flex flex-col min-h-full bg-white">
@@ -335,7 +336,7 @@ export function DetailDrawer({
 
                 {/* Right Actions: Level & Heart Party Toggle */}
                 <div className="flex items-center gap-2 z-10">
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/25">
                     Nv. {pokemon.level}
                   </span>
 
@@ -379,8 +380,8 @@ export function DetailDrawer({
                 style={{ marginTop: "-56px", paddingTop: "56px" }}
                 className={`sticky top-0 z-10 w-full bg-gradient-to-br ${theme.bgGradient} text-white overflow-hidden shrink-0 h-[340px] flex flex-col justify-center items-center`}
               >
-                {/* Floating Ambient Atmosphere Particles */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {/* Floating Ambient Atmosphere Particles (Desktop only to maintain 60fps on mobile) */}
+                <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
                   {[...Array(6)].map((_, i) => (
                     <motion.div
                       key={i}
@@ -405,18 +406,25 @@ export function DetailDrawer({
                   ))}
                 </div>
 
-                {/* Pokéball Background Watermark with slow rotation */}
+                {/* Pokéball Background Watermark (Static on mobile for 60fps, slow rotation on desktop) */}
                 <motion.svg
                   viewBox="0 0 100 100"
-                  className="absolute -right-8 -bottom-8 w-64 h-64 text-white/15 pointer-events-none"
+                  className="hidden md:block absolute -right-8 -bottom-8 w-64 h-64 text-white/15 pointer-events-none"
                   fill="currentColor"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 45, ease: "linear" }}
                 >
                   <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
                 </motion.svg>
+                <svg
+                  viewBox="0 0 100 100"
+                  className="md:hidden absolute -right-8 -bottom-8 w-64 h-64 text-white/15 pointer-events-none"
+                  fill="currentColor"
+                >
+                  <path d="M50 0C22.4 0 0 22.4 0 50s22.4 50 50 50 50-22.4 50-50S77.6 0 50 0zm0 10c19.9 0 36.3 14.7 39.4 34H66.2C63.6 34.6 57.4 30 50 30s-13.6 4.6-16.2 14H10.6C13.7 24.7 30.1 10 50 10zm0 80c-19.9 0-36.3-14.7-39.4-34h23.2C36.4 65.4 42.6 70 50 70s13.6-4.6 16.2-14h23.2c-3.1 19.3-19.5 34-39.4 34zm0-50c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10z" />
+                </svg>
 
-                {/* Centered Large Pokemon Sprite (Click to roar authentic cry, No bounce) */}
+                {/* Centered Large Pokemon Sprite (Click to roar authentic cry) */}
                 <div
                   onClick={handlePlayCry}
                   style={{
@@ -426,19 +434,25 @@ export function DetailDrawer({
                   className="relative z-20 flex flex-col items-center justify-center my-auto py-2 cursor-pointer group active:scale-95 transition-transform"
                   title={`Haz clic para escuchar el alarido de ${pokemon.displayName}`}
                 >
-                  {/* Luminous Pulsing Aura Behind Pokemon */}
-                  <div className="absolute w-52 h-52 rounded-full bg-white/20 blur-2xl pointer-events-none" />
+                  {/* Luminous Aura Behind Pokemon via radial-gradient (zero CSS blur cost) */}
+                  <div
+                    className="absolute w-56 h-56 rounded-full pointer-events-none"
+                    style={{ background: "radial-gradient(circle, rgba(255,255,255,0.28) 0%, transparent 70%)" }}
+                  />
 
-                  {/* Big Centered Pokemon Sprite (Static, Crisp Pixel-Art Rendering, Interactive Cry) */}
+                  {/* Big Centered Pokemon Sprite (Zero per-frame GIF drop-shadow on mobile!) */}
                   <img
                     src={pokemon.animatedSprite || pokemon.sprite}
                     alt={pokemon.displayName}
                     style={{ imageRendering: "pixelated" }}
-                    className="w-48 h-48 object-contain filter drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-105"
+                    className="w-48 h-48 object-contain md:drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-105"
                   />
 
-                  {/* Dynamic Ground Breathing Shadow */}
-                  <div className="w-32 h-3 rounded-full bg-black/25 blur-xs mx-auto -mt-2" />
+                  {/* Soft Ground Shadow via radial gradient */}
+                  <div
+                    className="w-36 h-4 mx-auto -mt-2"
+                    style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0.26) 0%, transparent 72%)" }}
+                  />
                 </div>
               </div>
 

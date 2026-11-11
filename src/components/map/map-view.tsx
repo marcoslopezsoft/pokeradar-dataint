@@ -213,16 +213,15 @@ export function MapView({
       BIOMES.forEach((b) => {
         const pinEl = document.createElement("div");
         pinEl.className =
-          "biome-pin-marker group cursor-pointer flex flex-col items-center select-none transition-all duration-300";
-        pinEl.style.willChange = "transform, opacity";
+          "biome-pin-marker group cursor-pointer flex flex-col items-center select-none transition-opacity duration-200";
 
-        // Label pill with biome name
+        // Label pill with biome name (solid bg without backdrop-blur for 60fps over WebGL)
         const labelPill = document.createElement("div");
         labelPill.className =
-          "flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/95 text-white border shadow-2xl backdrop-blur-md mb-1.5 transition-transform duration-200 group-hover:scale-105";
+          "flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white border shadow-lg mb-1.5 transition-transform duration-200 group-hover:scale-105";
         labelPill.style.borderColor = `${b.accentColor}99`;
         labelPill.innerHTML = `
-          <span class="w-2 h-2 rounded-full inline-block animate-pulse" style="background-color: ${b.accentColor}; box-shadow: 0 0 8px ${b.accentColor};"></span>
+          <span class="w-2 h-2 rounded-full inline-block" style="background-color: ${b.accentColor};"></span>
           <span class="font-sans font-bold text-[11px] whitespace-nowrap tracking-wide text-slate-100">${b.name}</span>
         `;
         pinEl.appendChild(labelPill);
@@ -231,7 +230,7 @@ export function MapView({
         const pinIcon = document.createElement("div");
         pinIcon.className = "relative flex items-center justify-center transition-transform duration-200 group-hover:-translate-y-1 group-hover:scale-110";
         pinIcon.innerHTML = `
-          <div class="w-9 h-9 rounded-full flex items-center justify-center shadow-2xl border-2 border-white" style="background: radial-gradient(circle at 30% 30%, ${b.accentColor}, #0f172a); box-shadow: 0 4px 16px ${b.accentColor}99;">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white" style="background: radial-gradient(circle at 30% 30%, ${b.accentColor}, #0f172a);">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
@@ -240,10 +239,10 @@ export function MapView({
         `;
         pinEl.appendChild(pinIcon);
 
-        // Ripple dot on terrain
+        // Soft terrain dot (radial gradient, zero CSS blur filter)
         const ripple = document.createElement("div");
-        ripple.className = "w-7 h-1.5 rounded-full mt-1 opacity-60 blur-[1px]";
-        ripple.style.backgroundColor = b.accentColor;
+        ripple.className = "w-7 h-2 mt-1 opacity-70";
+        ripple.style.background = `radial-gradient(ellipse at center, ${b.accentColor} 0%, transparent 72%)`;
         pinEl.appendChild(ripple);
 
         // Click handler (touchAction: manipulation gives zero-delay click on mobile without double-fire)
@@ -252,12 +251,13 @@ export function MapView({
           e.stopPropagation();
           sfx.playSwitch();
           onSelectBiomeRef.current?.(b);
+          const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
           map.flyTo({
             center: b.center,
             zoom: b.zoom,
-            speed: 1.3,
-            curve: 1.4,
-            pitch: 40,
+            speed: isMobile ? 1.8 : 1.3,
+            curve: 1.3,
+            pitch: isMobile ? 0 : 40,
             essential: true,
           });
         };
@@ -292,13 +292,14 @@ export function MapView({
   // 2. React to activeBiome changes (smooth flyTo)
   useEffect(() => {
     if (!mapRef.current) return;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
     mapRef.current.flyTo({
       center: activeBiome.center,
       zoom: activeBiome.zoom,
-      speed: 1.2,
-      curve: 1.4,
+      speed: isMobile ? 1.8 : 1.2,
+      curve: isMobile ? 1.2 : 1.4,
       essential: true,
-      pitch: 40,
+      pitch: isMobile ? 0 : 40,
     });
   }, [activeBiome]);
 
@@ -313,49 +314,49 @@ export function MapView({
     markerImgsRef.current = {};
 
     pokemonList.forEach((pokemon) => {
-      // Custom marker DOM Element
+      // Custom marker DOM Element (No will-change on 48 idle nodes to save mobile VRAM)
       const el = document.createElement("div");
       el.className = "pokemon-radar-marker group cursor-pointer relative select-none flex items-center justify-center";
       el.style.width = "64px";
       el.style.height = "64px";
       el.style.touchAction = "manipulation";
-      el.style.willChange = "transform";
 
-      // Tooltip pill on hover
+      // Tooltip pill on hover (desktop only)
       const tooltip = document.createElement("div");
       tooltip.className =
-        "absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white/95 border border-slate-200 text-[10px] font-sans text-slate-800 whitespace-nowrap shadow-lg pointer-events-none z-30 font-bold";
+        "absolute -top-7 left-1/2 -translate-x-1/2 hidden sm:group-hover:flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-white border border-slate-200 text-[10px] font-sans text-slate-800 whitespace-nowrap shadow-lg pointer-events-none z-30 font-bold";
       tooltip.innerText = `${pokemon.displayName} · Nv.${pokemon.level}`;
       el.appendChild(tooltip);
 
-      // Subtle ground contact shadow
+      // Soft ground contact shadow via radial gradient (Zero CSS blur filter cost)
       const groundShadow = document.createElement("div");
       groundShadow.className =
-        "absolute bottom-1 left-1/2 -translate-x-1/2 w-9 h-2.5 rounded-full bg-black/25 blur-[2px] pointer-events-none transition-transform duration-200 group-hover:scale-125";
+        "absolute bottom-1 left-1/2 -translate-x-1/2 w-10 h-3 pointer-events-none transition-transform duration-200 group-hover:scale-125";
+      groundShadow.style.background = "radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 72%)";
       el.appendChild(groundShadow);
 
-      // Pokemon HD official artwork directly on terrain
+      // Pokemon HD official artwork directly on terrain (No per-pixel drop-shadow on mobile GPU)
       const img = document.createElement("img");
       img.src = pokemon.sprite || pokemon.animatedSprite;
       img.alt = pokemon.displayName;
       img.className =
-        "w-14 h-14 object-contain pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]";
+        "w-14 h-14 object-contain pointer-events-none transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 md:drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]";
       el.appendChild(img);
       markerImgsRef.current[pokemon.id] = img;
 
-      // Click handler: zero-delay on mobile with touchAction: manipulation, prevents ghost clicks closing drawer
+      // Click handler: zero-delay on mobile with touchAction: manipulation
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         sfx.playDexPage();
         const isAlreadySelected = selectedPokemonIdRef.current === pokemon.id;
         onSelectPokemonRef.current(pokemon);
-        // Only fly directly if clicking the already-selected pokemon (otherwise useEffect([selectedPokemon]) handles it)
         if (isAlreadySelected) {
+          const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
           map.flyTo({
             center: pokemon.coordinates,
             zoom: 15.5,
-            speed: 1.35,
-            pitch: 45,
+            speed: isMobile ? 1.8 : 1.35,
+            pitch: isMobile ? 0 : 45,
             essential: true,
           });
         }
@@ -388,20 +389,21 @@ export function MapView({
     // Update active highlight classes on marker images instantly
     Object.entries(markerImgsRef.current).forEach(([idStr, img]) => {
       const isSel = Number(idStr) === selectedPokemon.id;
-      img.className = `w-14 h-14 object-contain pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
+      img.className = `w-14 h-14 object-contain pointer-events-none transition-transform duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
         isSel
-          ? "scale-125 -translate-y-2 drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
-          : "drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
+          ? "scale-125 -translate-y-2 md:drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
+          : "md:drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
       }`;
     });
 
     // Fly to coordinates smoothly (e.g. when selected from PartyDock or Search)
     if (mapRef.current) {
+      const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
       mapRef.current.flyTo({
         center: selectedPokemon.coordinates,
         zoom: 15.5,
-        speed: 1.35,
-        pitch: 45,
+        speed: isMobile ? 1.8 : 1.35,
+        pitch: isMobile ? 0 : 45,
         essential: true,
       });
     }

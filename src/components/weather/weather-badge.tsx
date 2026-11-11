@@ -56,7 +56,7 @@ export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
 
   return (
     <div
-      className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100/80 sm:bg-white/90 backdrop-blur-md border border-slate-200/90 shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0"
+      className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100 sm:bg-white/90 sm:backdrop-blur-md border border-slate-200/90 shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0"
       title={`${weather.conditionDescription} · ${weather.temperature}°C · Viento: ${weather.windSpeed} km/h · ${biomeName}`}
     >
       <div className="flex items-center justify-center shrink-0">

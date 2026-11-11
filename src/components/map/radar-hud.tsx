@@ -89,8 +89,8 @@ export function RadarHud({
   return (
     <>
       <header className="fixed top-3 left-3 right-3 z-30 flex flex-col gap-2.5 max-w-7xl mx-auto pointer-events-none">
-        {/* Top Pokédex Navigation Bar: higher z-index (z-30) so dropdown always floats on top */}
-        <div className="relative z-30 flex items-center justify-between gap-1 sm:gap-2.5 p-1.5 sm:p-2.5 md:p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
+        {/* Top Pokédex Navigation Bar: solid white on mobile (0 backdrop-blur GPU cost over WebGL) */}
+        <div className="relative z-30 flex items-center justify-between gap-1 sm:gap-2.5 p-1.5 sm:p-2.5 md:p-3 rounded-2xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50 pointer-events-auto">
           {/* Brand & Pokeball Icon */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 hover:scale-110 hover:rotate-12 cursor-pointer">
@@ -154,7 +154,7 @@ export function RadarHud({
               {isMuted ? (
                 <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               ) : (
-                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" />
+                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               )}
             </button>
 
@@ -200,7 +200,7 @@ export function RadarHud({
 
               {/* Dropdown Menu */}
               {isTypeDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 top-full mt-2 w-48 sm:w-52 max-h-72 overflow-y-auto no-scrollbar rounded-2xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                   <button
                     onClick={() => {
                       sfx.playButtonPress();
@@ -282,7 +282,7 @@ export function RadarHud({
         </div>
 
         {/* Vertical Biomes Selector: Lower z-index (z-10) so it never sits on top of open menus */}
-        <div className="relative z-10 self-start pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
+        <div className="relative z-10 self-start pointer-events-auto flex flex-col items-center gap-1.5 p-1.5 rounded-xl sm:rounded-2xl bg-white sm:bg-white/95 sm:backdrop-blur-xl border border-slate-200/90 shadow-xl shadow-slate-200/50">
           <span className="text-[8px] font-extrabold text-slate-400 tracking-wider text-center uppercase leading-none pt-0.5">
             Biomas
           </span>

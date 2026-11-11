@@ -8,6 +8,24 @@ class SoundEffectsEngine {
   private sfxVolume: number = 0.5;
   private bgmListeners: Set<(playing: boolean) => void> = new Set();
   private volumeListeners: Set<() => void> = new Set();
+  private sharedAudioCtx: AudioContext | null = null;
+
+  private getAudioContext(): AudioContext | null {
+    if (typeof window === "undefined") return null;
+    if (!this.sharedAudioCtx) {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      if (AudioCtx) {
+        this.sharedAudioCtx = new AudioCtx();
+      }
+    }
+    if (this.sharedAudioCtx && this.sharedAudioCtx.state === "suspended") {
+      this.sharedAudioCtx.resume().catch(() => {});
+    }
+    return this.sharedAudioCtx;
+  }
 
   public subscribeBgm(callback: (playing: boolean) => void): () => void {
     this.bgmListeners.add(callback);
@@ -108,8 +126,8 @@ class SoundEffectsEngine {
   public playPop() {
     if (this.isMuted || typeof window === "undefined") return;
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
@@ -127,12 +145,12 @@ class SoundEffectsEngine {
     }
   }
 
-  // 7. Typewriter dialogue blip (Vintage RPG text sound)
+  // 7. Typewriter dialogue blip (Vintage RPG text sound, reuses shared AudioContext)
   public playTypewriterBlip() {
     if (this.isMuted || typeof window === "undefined") return;
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "triangle";

@@ -37,30 +37,36 @@ export function ProfessorOakDialog({
     sfx.playPop();
   }, []);
 
-  // Typewriter effect
+  // Typewriter effect (delayed briefly so initial spring entrance stays smooth on mobile)
   useEffect(() => {
     textIndexRef.current = 0;
     setDisplayedText("");
     setIsTyping(true);
 
-    const interval = setInterval(() => {
-      if (textIndexRef.current < speech.length) {
-        textIndexRef.current += 1;
-        const currentSlice = speech.slice(0, textIndexRef.current);
-        setDisplayedText(currentSlice);
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const startTimeout = setTimeout(() => {
+      interval = setInterval(() => {
+        if (textIndexRef.current < speech.length) {
+          textIndexRef.current = Math.min(textIndexRef.current + 2, speech.length);
+          const currentSlice = speech.slice(0, textIndexRef.current);
+          setDisplayedText(currentSlice);
 
-        // Subtle vintage typewriter blip every 3 characters (excluding spaces/newlines)
-        const char = speech[textIndexRef.current - 1];
-        if (textIndexRef.current % 3 === 0 && char !== " " && char !== "\n") {
-          sfx.playTypewriterBlip();
+          // Subtle vintage typewriter blip every 2 ticks (~4 chars, excluding spaces/newlines)
+          const char = speech[textIndexRef.current - 1];
+          if (textIndexRef.current % 4 < 2 && char !== " " && char !== "\n") {
+            sfx.playTypewriterBlip();
+          }
+        } else {
+          setIsTyping(false);
+          if (interval) clearInterval(interval);
         }
-      } else {
-        setIsTyping(false);
-        clearInterval(interval);
-      }
-    }, 20);
+      }, 32);
+    }, 180);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(startTimeout);
+      if (interval) clearInterval(interval);
+    };
   }, [speech]);
 
   // Skip typing if clicked on the speech text
@@ -101,14 +107,20 @@ export function ProfessorOakDialog({
           }}
           className="relative pointer-events-auto shrink-0 z-20"
         >
-          {/* Subtle glow behind Oak */}
-          <div className="absolute -inset-2 bg-gradient-to-t from-red-500/20 to-amber-500/20 blur-xl rounded-full pointer-events-none" />
+          {/* Subtle glow behind Oak (pure radial gradient to avoid expensive mobile blur filters) */}
+          <div
+            className="absolute -inset-2 rounded-full pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.14) 50%, transparent 72%)",
+            }}
+          />
 
           {/* Professor Oak Artwork */}
           <img
             src={imageSrc}
             alt="Profesor Oak"
-            className="w-28 sm:w-44 md:w-52 h-auto object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)] select-none pointer-events-none"
+            className="w-28 sm:w-44 md:w-52 h-auto object-contain md:drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)] select-none pointer-events-none"
           />
         </motion.div>
 
