@@ -66,13 +66,6 @@ export function PokeRadarClient({
     }
   };
 
-  const handleRemoveFromParty = (pokemonId: number) => {
-    if (party.length <= 1) {
-      setHasShownTeamTutorial(false);
-    }
-    removeFromParty(pokemonId);
-  };
-
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#f8fafc] font-sans select-none">
       {/* Welcome Screen & Spinning Pokeball Loading Screen */}
@@ -83,9 +76,11 @@ export function PokeRadarClient({
           onRetry={retryLoad}
           onStartAdventure={() => {
             setHasStarted(true);
-            // Only show Professor Oak's intro when starting with an empty team/Pokédex.
+            // Only show Professor Oak dialogs when the session starts with an empty team.
             if (party.length === 0) {
               setShowOakDialog(true);
+            } else {
+              setHasShownTeamTutorial(true);
             }
           }}
         />
@@ -150,7 +145,7 @@ export function PokeRadarClient({
       <PartyDock
         party={party}
         onSelectPokemon={selectPokemon}
-        onReleasePokemon={handleRemoveFromParty}
+        onReleasePokemon={removeFromParty}
         selectedId={selectedPokemon?.id}
         isDrawerOpen={isDrawerOpen}
       />
@@ -161,7 +156,7 @@ export function PokeRadarClient({
         isOpen={isDrawerOpen}
         onClose={closeDrawer}
         onAddToParty={handleAddToParty}
-        onRemoveFromParty={handleRemoveFromParty}
+        onRemoveFromParty={removeFromParty}
         isInParty={selectedPokemon ? isInParty(selectedPokemon.id) : false}
         isPartyFull={isPartyFull}
       />

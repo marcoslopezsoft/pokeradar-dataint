@@ -112,12 +112,12 @@ export function ProfessorOakDialog({
           }}
           className="relative pointer-events-auto shrink-0 z-20"
         >
-          {/* Subtle glow behind Oak (pure radial gradient to avoid expensive mobile blur filters) */}
+          {/* Subtle glow behind Oak (closest-side fade ensures zero clipped straight edges) */}
           <div
-            className="absolute -inset-2 rounded-full pointer-events-none"
+            className="absolute -inset-6 pointer-events-none"
             style={{
               background:
-                'radial-gradient(circle, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.14) 50%, transparent 72%)',
+                'radial-gradient(ellipse closest-side, rgba(239, 68, 68, 0.2) 0%, rgba(245, 158, 11, 0.12) 50%, transparent 95%)',
             }}
           />
 
@@ -128,7 +128,7 @@ export function ProfessorOakDialog({
             width={208}
             height={260}
             unoptimized
-            className="w-28 sm:w-44 md:w-52 h-auto object-contain md:drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)] select-none pointer-events-none"
+            className="w-28 sm:w-44 md:w-52 h-auto object-contain md:drop-shadow-[0_4px_10px_rgba(0,0,0,0.3)] select-none pointer-events-none"
           />
         </motion.div>
 
