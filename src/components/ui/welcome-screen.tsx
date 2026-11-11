@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { sfx } from "@/lib/sound-effects";
@@ -42,9 +43,12 @@ export function WelcomeScreen({
             transition={{ repeat: Infinity, duration: 60, ease: 'linear' }}
             className="absolute w-150 h-150 pointer-events-none opacity-5"
           >
-            <img
+            <Image
               src="/pokeball-icon.webp"
               alt=""
+              width={600}
+              height={600}
+              unoptimized
               className="w-full h-full object-contain"
             />
           </motion.div>
@@ -77,9 +81,12 @@ export function WelcomeScreen({
                 }
                 className="relative z-10 w-28 h-28 flex items-center justify-center"
               >
-                <img
+                <Image
                   src="/pokeball-icon.webp"
                   alt="PokéRadar Pokeball"
+                  width={112}
+                  height={112}
+                  unoptimized
                   className="w-full h-full object-contain filter drop-shadow-[0_12px_24px_rgba(220,10,45,0.3)]"
                 />
               </motion.div>
@@ -120,9 +127,12 @@ export function WelcomeScreen({
                     }}
                     className="w-4 h-4 flex items-center justify-center"
                   >
-                    <img
+                    <Image
                       src="/pokeball-icon.webp"
                       alt=""
+                      width={16}
+                      height={16}
+                      unoptimized
                       className="w-full h-full object-contain"
                     />
                   </motion.div>

@@ -1,4 +1,5 @@
 import {
+  BiomeRegion,
   PokemonRadarEntity,
   RawPokeApiResponse,
   WeatherData,
@@ -87,11 +88,60 @@ export async function fetchPokemonData(id: number): Promise<RawPokeApiResponse |
   }
 }
 
+export function getWeatherBoostConfig(weatherCode: number): {
+  reason: string;
+  shortLabel: string;
+  boostedTypes: string[];
+} {
+  if (weatherCode >= 95) {
+    return {
+      reason: "Tormenta eléctrica activa: atrae tipos Eléctrico, Dragón y Volador",
+      shortLabel: "+Eléc/Dragón",
+      boostedTypes: ["electric", "dragon", "flying"],
+    };
+  }
+  if ((weatherCode >= 71 && weatherCode <= 77) || (weatherCode >= 85 && weatherCode <= 86)) {
+    return {
+      reason: "Clima gélido/nieve: favorece tipos Hielo, Acero y Agua",
+      shortLabel: "+Hielo/Acero",
+      boostedTypes: ["ice", "steel", "water"],
+    };
+  }
+  if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82)) {
+    return {
+      reason: "Precipitaciones en curso: atrae tipos Agua, Eléctrico y Planta",
+      shortLabel: "+Agua/Eléc",
+      boostedTypes: ["water", "electric", "grass"],
+    };
+  }
+  if (weatherCode === 0 || weatherCode === 1) {
+    return {
+      reason: "Cielo despejado: potencia tipos Fuego, Planta, Tierra y Volador",
+      shortLabel: "+Fuego/Planta",
+      boostedTypes: ["fire", "grass", "ground", "rock", "flying"],
+    };
+  }
+  return {
+    reason: "Cielo cubierto: favorece tipos Psíquico, Siniestro, Normal y Bicho",
+    shortLabel: "+Psíq/Siniestro",
+    boostedTypes: ["normal", "psychic", "ghost", "dark", "bug"],
+  };
+}
+
+export function getStableOffset(id: number, seed: number): [number, number] {
+  const angle = ((id * 47 + seed * 83) % 360) * (Math.PI / 180);
+  const radius = 0.015 + (((id * 31 + seed * 17) % 100) / 100) * 0.04;
+  const deltaLng = radius * Math.cos(angle);
+  const deltaLat = radius * Math.sin(angle) * 0.85;
+  return [deltaLng, deltaLat];
+}
+
 export function transformToRadarEntity(
   raw: RawPokeApiResponse,
   coordinates: [number, number],
   biomeId: string,
-  biomeName: string
+  biomeName: string,
+  weather?: WeatherData | null
 ): PokemonRadarEntity {
   const statsRecord: Record<string, number> = {};
   for (const s of raw.stats) {
@@ -117,6 +167,14 @@ export function transformToRadarEntity(
   // Audio cry (.ogg)
   const cryUrl = raw.cries?.latest || raw.cries?.legacy || null;
 
+  const boostConfig = weather ? getWeatherBoostConfig(weather.weatherCode) : null;
+  const weatherBoosted = boostConfig
+    ? types.some((t) => boostConfig.boostedTypes.includes(t.toLowerCase()))
+    : false;
+
+  // Deterministic expedition level so Server and Client renders stay 100% pure
+  const deterministicLevel = 10 + ((raw.id * 17 + biomeId.length * 7) % 50);
+
   return {
     id: raw.id,
     name: raw.name,
@@ -131,15 +189,17 @@ export function transformToRadarEntity(
     coordinates,
     biomeId,
     biomeName,
-    level: Math.floor(Math.random() * 50) + 10,
+    level: deterministicLevel,
     abilities: raw.abilities?.map((a) => a.ability?.name || "").filter(Boolean) || [],
+    weatherBoosted,
+    weatherBoostReason: weatherBoosted ? boostConfig?.reason : undefined,
   };
 }
 
 export async function fetchBiomeWeather(lat: number, lng: number): Promise<WeatherData | null> {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,wind_speed_10m,is_day&timezone=auto`;
-    const res = await fetch(url);
+    const res = await fetch(url, { next: { revalidate: 1800 } });
     if (!res.ok) return null;
 
     const data = await res.json();
@@ -159,6 +219,64 @@ export async function fetchBiomeWeather(lat: number, lng: number): Promise<Weath
     console.error("Failed to fetch weather from Open-Meteo:", error);
     return null;
   }
+}
+
+export async function fetchRadarEntitiesForBiomes(biomes: BiomeRegion[]): Promise<{
+  entities: PokemonRadarEntity[];
+  weatherByBiome: Record<string, WeatherData | null>;
+}> {
+  const weatherEntries = await Promise.all(
+    biomes.map(async (biome) => {
+      const weather = await fetchBiomeWeather(biome.center[1], biome.center[0]);
+      return [biome.id, weather] as const;
+    })
+  );
+  const weatherByBiome: Record<string, WeatherData | null> = Object.fromEntries(weatherEntries);
+
+  const biomeEntityArrays = await Promise.all(
+    biomes.map(async (biome) => {
+      const weather = weatherByBiome[biome.id];
+      const boostConfig = weather ? getWeatherBoostConfig(weather.weatherCode) : null;
+
+      // Fetch up to 12 pool candidates in parallel so live weather picks the active 8 spawns
+      const poolResults = await Promise.all(
+        biome.pokemonPool.slice(0, 12).map((id) => fetchPokemonData(id))
+      );
+      const validPool = poolResults.filter(
+        (raw): raw is RawPokeApiResponse => raw !== null
+      );
+
+      const prioritizedPool = boostConfig
+        ? [...validPool].sort((a, b) => {
+            const aMatch = a.types.some((t) =>
+              boostConfig.boostedTypes.includes(t.type.name.toLowerCase())
+            )
+              ? 1
+              : 0;
+            const bMatch = b.types.some((t) =>
+              boostConfig.boostedTypes.includes(t.type.name.toLowerCase())
+            )
+              ? 1
+              : 0;
+            return bMatch - aMatch;
+          })
+        : validPool;
+
+      return prioritizedPool.slice(0, 8).map((raw, i) => {
+        const [dLng, dLat] = getStableOffset(raw.id, i);
+        const coords: [number, number] = [
+          biome.center[0] + dLng,
+          biome.center[1] + dLat,
+        ];
+        return transformToRadarEntity(raw, coords, biome.id, biome.name, weather);
+      });
+    })
+  );
+
+  return {
+    entities: biomeEntityArrays.flat(),
+    weatherByBiome,
+  };
 }
 
 function decodeWmoCode(code: number): string {

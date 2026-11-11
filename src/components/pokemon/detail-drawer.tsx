@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
 import Lenis from "lenis";
@@ -469,9 +470,12 @@ export function DetailDrawer({
                   />
 
                   {/* Big Centered Pokemon Sprite (Zero per-frame GIF drop-shadow on mobile!) */}
-                  <img
+                  <Image
                     src={pokemon.animatedSprite || pokemon.sprite}
                     alt={pokemon.displayName}
+                    width={192}
+                    height={192}
+                    unoptimized
                     style={{ imageRendering: 'pixelated' }}
                     className="w-48 h-48 object-contain md:drop-shadow-[0_16px_32px_rgba(0,0,0,0.35)] transition-transform duration-200 group-hover:scale-105"
                   />
@@ -503,7 +507,7 @@ export function DetailDrawer({
                   </div>
                 </div>
 
-                {/* 3. Tipo abajo del número con su icono correspondiente */}
+                {/* 3. Tipo abajo del número con su icono correspondiente + afinidad climática si aplica */}
                 <div className="flex flex-wrap items-center gap-2">
                   {pokemon.types.map((type) => (
                     <TypeBadge
@@ -513,6 +517,15 @@ export function DetailDrawer({
                       showIcon={true}
                     />
                   ))}
+                  {pokemon.weatherBoosted && (
+                    <span
+                      title={pokemon.weatherBoostReason}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold"
+                    >
+                      <Icon icon="solar:cloud-sun-2-bold" width={13} height={13} />
+                      Afinidad Climática
+                    </span>
+                  )}
                 </div>
 
                 {/* 4. Habilidad */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { sfx } from "@/lib/sound-effects";
@@ -121,9 +122,12 @@ export function ProfessorOakDialog({
           />
 
           {/* Professor Oak Artwork */}
-          <img
+          <Image
             src={imageSrc}
             alt="Profesor Oak"
+            width={208}
+            height={260}
+            unoptimized
             className="w-28 sm:w-44 md:w-52 h-auto object-contain md:drop-shadow-[0_12px_24px_rgba(0,0,0,0.45)] select-none pointer-events-none"
           />
         </motion.div>
@@ -157,9 +161,12 @@ export function ProfessorOakDialog({
           <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <span className="flex items-center justify-center w-6 h-6 rounded-full bg-red-600 text-white shadow-xs">
-                <img
+                <Image
                   src="/pokeball-icon.webp"
                   alt=""
+                  width={14}
+                  height={14}
+                  unoptimized
                   className="w-3.5 h-3.5 object-contain"
                 />
               </span>

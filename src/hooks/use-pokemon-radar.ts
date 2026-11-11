@@ -2,23 +2,25 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { BIOMES } from "@/lib/biomes";
-import { fetchPokemonData, transformToRadarEntity } from "@/lib/pokeapi";
-import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
+import { fetchRadarEntitiesForBiomes } from "@/lib/pokeapi";
+import { PokemonRadarEntity, BiomeRegion, WeatherData } from "@/types/pokemon";
 import { sfx } from "@/lib/sound-effects";
 
-// Pseudo-random deterministic offset based on ID so markers stay stable
-function getStableOffset(id: number, seed: number): [number, number] {
-  const angle = ((id * 47 + seed * 83) % 360) * (Math.PI / 180);
-  const radius = 0.015 + (((id * 31 + seed * 17) % 100) / 100) * 0.04;
-  const deltaLng = radius * Math.cos(angle);
-  const deltaLat = radius * Math.sin(angle) * 0.85;
-  return [deltaLng, deltaLat];
+interface UsePokemonRadarOptions {
+  initialEntities?: PokemonRadarEntity[];
+  initialWeatherByBiome?: Record<string, WeatherData | null>;
 }
 
-export function usePokemonRadar() {
+export function usePokemonRadar(options: UsePokemonRadarOptions = {}) {
+  const { initialEntities = [], initialWeatherByBiome = {} } = options;
+  const hasInitialData = initialEntities.length > 0;
+
   const [activeBiome, setActiveBiome] = useState<BiomeRegion>(BIOMES[0]);
-  const [entities, setEntities] = useState<PokemonRadarEntity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entities, setEntities] = useState<PokemonRadarEntity[]>(initialEntities);
+  const [weatherByBiome, setWeatherByBiome] = useState<Record<string, WeatherData | null>>(
+    initialWeatherByBiome
+  );
+  const [loading, setLoading] = useState(!hasInitialData);
   const [error, setError] = useState<string | null>(null);
   const [reloadNonce, setReloadNonce] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,33 +30,19 @@ export function usePokemonRadar() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
 
-  // Load Pokemon for all biomes in parallel on initial mount or retry
+  // Fallback client load when server prefetch returned empty, or on manual retry
   useEffect(() => {
+    if (hasInitialData && reloadNonce === 0) return;
     let isCancelled = false;
 
     async function loadAllBiomeEntities() {
       try {
-        const requests = BIOMES.flatMap((biome) =>
-          biome.pokemonPool.slice(0, 8).map(async (id, i) => {
-            const raw = await fetchPokemonData(id);
-            if (!raw) return null;
-            const [dLng, dLat] = getStableOffset(id, i);
-            const coords: [number, number] = [
-              biome.center[0] + dLng,
-              biome.center[1] + dLat,
-            ];
-            return transformToRadarEntity(raw, coords, biome.id, biome.name);
-          })
-        );
-
-        const settled = await Promise.all(requests);
-        const allSpawned = settled.filter(
-          (item): item is PokemonRadarEntity => item !== null
-        );
+        const result = await fetchRadarEntitiesForBiomes(BIOMES);
 
         if (!isCancelled) {
-          setEntities(allSpawned);
-          if (allSpawned.length === 0) {
+          setEntities(result.entities);
+          setWeatherByBiome(result.weatherByBiome);
+          if (result.entities.length === 0) {
             setError(
               "No pudimos conectar con PokéAPI para detectar criaturas. Verificá tu conexión e intentá nuevamente."
             );
@@ -78,7 +66,7 @@ export function usePokemonRadar() {
     return () => {
       isCancelled = true;
     };
-  }, [reloadNonce]);
+  }, [hasInitialData, reloadNonce]);
 
   const retryLoad = useCallback(() => {
     setLoading(true);
@@ -135,6 +123,7 @@ export function usePokemonRadar() {
     activeBiome,
     selectBiome,
     entities: filteredEntities,
+    weatherByBiome,
     totalSpotted: entities.length,
     loading,
     error,

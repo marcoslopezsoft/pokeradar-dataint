@@ -2,23 +2,30 @@
 
 import React, { useEffect, useState } from "react";
 import { Cloud, CloudRain, CloudSnow, Sun, Wind, CloudLightning } from "lucide-react";
-import { fetchBiomeWeather } from "@/lib/pokeapi";
+import { fetchBiomeWeather, getWeatherBoostConfig } from "@/lib/pokeapi";
 import { WeatherData } from "@/types/pokemon";
 
 interface WeatherBadgeProps {
   lat: number;
   lng: number;
   biomeName: string;
+  initialWeather?: WeatherData | null;
 }
 
-export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
+export function WeatherBadge({
+  lat,
+  lng,
+  biomeName,
+  initialWeather = null,
+}: WeatherBadgeProps) {
   const coordKey = `${lat},${lng}`;
   const [weatherState, setWeatherState] = useState<{
     key: string;
     data: WeatherData | null;
-  } | null>(null);
+  } | null>(initialWeather ? { key: coordKey, data: initialWeather } : null);
 
   useEffect(() => {
+    if (initialWeather) return;
     let isMounted = true;
 
     fetchBiomeWeather(lat, lng)
@@ -36,10 +43,11 @@ export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
     return () => {
       isMounted = false;
     };
-  }, [lat, lng, coordKey]);
+  }, [lat, lng, coordKey, initialWeather]);
 
-  const loading = weatherState?.key !== coordKey;
-  const weather = weatherState?.key === coordKey ? weatherState.data : null;
+  const weather =
+    weatherState?.key === coordKey ? weatherState.data : initialWeather;
+  const loading = weather === null && weatherState?.key !== coordKey;
 
   const getWeatherIcon = (code: number) => {
     if (code === 0 || code === 1) return <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 shrink-0" />;
@@ -60,10 +68,12 @@ export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
 
   if (!weather) return null;
 
+  const boostConfig = getWeatherBoostConfig(weather.weatherCode);
+
   return (
     <div
       className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100 sm:bg-white/90 sm:backdrop-blur-md border border-slate-200/90 shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0"
-      title={`${weather.conditionDescription} · ${weather.temperature}°C · Viento: ${weather.windSpeed} km/h · ${biomeName}`}
+      title={`${weather.conditionDescription} · ${weather.temperature}°C · Viento: ${weather.windSpeed} km/h · ${biomeName} · ${boostConfig.reason}`}
     >
       <div className="flex items-center justify-center shrink-0">
         {getWeatherIcon(weather.weatherCode)}
@@ -75,8 +85,8 @@ export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
         <span className="hidden sm:inline text-slate-500 text-[10px]">
           · {weather.conditionDescription}
         </span>
-        <span className="hidden md:inline text-slate-400 text-[10px]">
-          · {weather.windSpeed} km/h
+        <span className="hidden lg:inline text-emerald-700 font-semibold text-[10px]">
+          · {boostConfig.shortLabel}
         </span>
       </div>
     </div>

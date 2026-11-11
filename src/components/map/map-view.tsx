@@ -106,14 +106,19 @@ export function MapView({
   };
 
   // 1. Initialize MapLibre GL Map & GeoJSON Geographic Biome Layers
+  const initialBiomeRef = useRef({
+    center: activeBiome.center,
+    zoom: activeBiome.zoom,
+  });
+
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
     const map = new Map({
       container: mapContainerRef.current,
       style: INITIAL_MAP_CONFIG.style,
-      center: activeBiome.center,
-      zoom: activeBiome.zoom,
+      center: initialBiomeRef.current.center,
+      zoom: initialBiomeRef.current.zoom,
       minZoom: INITIAL_MAP_CONFIG.minZoom,
       maxZoom: INITIAL_MAP_CONFIG.maxZoom,
       pitch: 35,

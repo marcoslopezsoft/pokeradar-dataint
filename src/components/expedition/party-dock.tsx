@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { Trash2 } from "lucide-react";
 import { sfx } from "@/lib/sound-effects";
@@ -55,15 +56,21 @@ export function PartyDock({
                   title={`${pokemon.displayName} (Nv. ${pokemon.level})`}
                 >
                   {pokemon.animatedSprite ? (
-                    <img
+                    <Image
                       src={pokemon.animatedSprite}
                       alt={pokemon.displayName}
+                      width={40}
+                      height={40}
+                      unoptimized
                       className="w-9 h-9 sm:w-10 sm:h-10 object-contain pixelated pointer-events-none"
                     />
                   ) : pokemon.sprite ? (
-                    <img
+                    <Image
                       src={pokemon.sprite}
                       alt={pokemon.displayName}
+                      width={40}
+                      height={40}
+                      unoptimized
                       className="w-9 h-9 sm:w-10 sm:h-10 object-contain pointer-events-none"
                     />
                   ) : (

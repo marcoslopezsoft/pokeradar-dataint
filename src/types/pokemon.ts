@@ -79,6 +79,8 @@ export interface PokemonRadarEntity {
   biomeName: string;
   level: number;
   abilities: string[];
+  weatherBoosted?: boolean;
+  weatherBoostReason?: string;
 }
 
 export interface BiomeRegion {

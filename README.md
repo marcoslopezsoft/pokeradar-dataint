@@ -9,7 +9,7 @@
 ### ¿Qué es PokéRadar?
 PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartográfica inmersiva basada en biomas reales de Argentina. Inspirado en el concepto visual moderno de Pokédex (Behance), en lugar de colocar marcadores estáticos sobre un mapa genérico, el sistema fusiona:
 - **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Normal/Psíquico), Cumbre del Aconcagua (Volador/Dragón) y Península Valdés (Agua/Hada/Siniestro), delimitados con polígonos GeoJSON y pines interactivos al alejar el zoom.
-- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y velocidad del viento) para contextualizar la exploración en terreno.
+- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y viento) que prioriza dinámicamente las especies del pool afines al clima actual (`weatherBoosted`) y muestra su afinidad elemental.
 - **Visualización Limpia sin Cajas**: Marcadores sobre el mapa representados directamente por el sprite animado del espécimen, con sombras de contacto en el terreno y microinteracciones optimizadas a 60 FPS en desktop y mobile.
 - **Audio Auténtico (`cries.latest`) & SFX Web Audio**: Reproducción de alaridos sonoros oficiales en formato `.ogg`, música ambiental con controles de volumen y sintetizador Web Audio de efectos para diálogos, capturas y liberaciones.
 - **Equipo de Expedición (Party Dock & Diagnóstico Táctico)**: Dock flotante donde el investigador recluta hasta 6 Pokémon con persistencia en `localStorage`, guía interactiva del Profesor Oak y un Diagnóstico Táctico grupal e individual con matriz de efectividad elemental (18 tipos), roles de combate, resistencias y debilidades compartidas.
@@ -34,13 +34,14 @@ PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartogr
 ```text
 src/
 ├── app/
-│   ├── layout.tsx              # Shell global con fuente Poppins y metadata
-│   ├── page.tsx                # Dashboard principal integrador
+│   ├── layout.tsx              # Shell Server Component con fuente Poppins y metadata
+│   ├── page.tsx                # Server Component raíz: prefetch cacheado ('use cache') de PokéAPI + clima
 │   └── globals.css             # Estilos globales, scrollbars tácticas y temas MapLibre
 ├── components/
 │   ├── audio/
 │   │   └── audio-settings-modal.tsx # Controles de música de fondo y efectos SFX
 │   ├── map/
+│   │   ├── pokeradar-client.tsx # Orquestador Client Component hidratado desde page.tsx
 │   │   ├── map-container.tsx   # Envoltorio client-side con dynamic(..., { ssr: false })
 │   │   ├── map-view.tsx        # Instancia MapLibre GL, polígonos GeoJSON, pines de bioma y sprites
 │   │   └── radar-hud.tsx       # Barra Pokédex superior, biomas, búsqueda y filtro de tipos en español
@@ -58,11 +59,12 @@ src/
 │   └── weather/
 │       └── weather-badge.tsx   # Widget meteorológico en vivo conectado a Open-Meteo
 ├── hooks/
-│   ├── use-pokemon-radar.ts    # Carga paralela de PokéAPI, estado de error/reintento y filtros
+│   ├── use-pokemon-radar.ts    # Estado de criaturas, filtros y fallback/reintento cliente
 │   └── use-expedition.ts       # Manejo reactivo del equipo con useSyncExternalStore + localStorage
 ├── lib/
 │   ├── biomes.ts               # Coordenadas, estilo raster claro y pools de especies por bioma
-│   ├── pokeapi.ts              # Cliente tipado de PokéAPI y Open-Meteo con cache
+│   ├── pokeapi.ts              # Cliente tipado de PokéAPI y Open-Meteo + prioridad climática
+│   ├── server-radar.ts         # Loader Server-Side con Next.js 16 'use cache' y cacheLife
 │   ├── sound-effects.ts        # Motor de audio ambiental y SFX sintetizados con Web Audio API
 │   ├── team-analysis.ts        # Matriz de efectividad (18 tipos), roles tácticos y sinergia de equipo
 │   └── utils.ts                # Clsx + Tailwind Merge y diccionarios de tipos/habilidades ES
@@ -74,9 +76,10 @@ src/
 
 ## 3. Uso de Inteligencia Artificial (AI-Native Workflow) 🤖
 
-El desarrollo de este proyecto se estructuró siguiendo un flujo de trabajo **AI-Native** asistido con herramientas de última generación:
+El desarrollo de este proyecto se estructuró siguiendo un flujo de trabajo **AI-Native** utilizando **Google Antigravity IDE (modelos Gemini / Claude)** y **VS Code + Copilot** bajo revisión y criterio técnico propio:
 - **Scaffolding y Modelado de Datos**: Formulación rápida de interfaces exhaustivas para PokéAPI v2, meteorología de Open-Meteo y capas GeoJSON.
-- **Diseño de Interfaz y Microinteracciones**: Adaptación del sistema de diseño Pokédex (Behance) a componentes modulares con Tailwind CSS y Framer Motion.
+- **Diseño de Interfaz y Microinteracciones**: Adaptación del sistema de diseño Pokédex a componentes modulares con Tailwind CSS v4 y Framer Motion.
+- **Optimización Mobile y Auditoría**: Detección y corrección manual de cuellos de botella de GPU/Web Audio, reglas estrictas de React 19 ESLint y separación Server vs Client Components.
 
 ### Detección y Corrección de Alucinaciones / Errores de la IA:
 1. **Acceso a `window` y Web Workers en Next.js (Turbopack)**:
@@ -93,6 +96,9 @@ El desarrollo de este proyecto se estructuró siguiendo un flujo de trabajo **AI
    - *Intervención*: Se diseñó un estilo raster claro acelerado por GPU (`HIGH_PERF_LIGHT_STYLE`) sobre tiles libres de OpenStreetMap, garantizando 60 FPS estables sin costo ni marcas de agua.
 5. **Formato de Coordenadas [Lng, Lat] vs [Lat, Lng]**:
    - *Error de la IA*: Confundió la convención de Leaflet `[lat, lng]` con la convención estándar de MapLibre GL / GeoJSON `[longitude, latitude]`. Se corrigieron y auditaron todas las coordenadas geográficas de los biomas argentinos.
+6. **Fugas de `AudioContext`, Reglas de React 19 y No-Determinismo en `cacheComponents`**:
+   - *Error de la IA*: Creó nuevas instancias de `AudioContext` en cada tick del efecto typewriter (congelando dispositivos móviles), disparó `setState` síncronos dentro de `useEffect` y usó `Math.random()` para el nivel de las criaturas.
+   - *Intervención*: Se refactorizó `SoundEffectsEngine` a un singleton reutilizable, se migró a `useSyncExternalStore` y estado derivado (`0` errores en ESLint React 19), y se volvió determinista el cálculo de nivel para compatibilidad limpia con Next.js 16 `cacheComponents`.
 
 ---
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -307,9 +308,12 @@ export function TeamAnalysisModal({
                           >
                             <div className="flex items-start gap-3">
                               <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                                <img
+                                <Image
                                   src={pokemon.animatedSprite || pokemon.sprite}
                                   alt={pokemon.displayName}
+                                  width={40}
+                                  height={40}
+                                  unoptimized
                                   className="w-10 h-10 object-contain"
                                 />
                               </div>

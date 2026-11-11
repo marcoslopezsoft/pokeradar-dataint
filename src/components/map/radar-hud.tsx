@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { BIOMES } from "@/lib/biomes";
-import { BiomeRegion, PokemonRadarEntity } from "@/types/pokemon";
+import { BiomeRegion, PokemonRadarEntity, WeatherData } from "@/types/pokemon";
 import { Search, Volume2, VolumeX } from "lucide-react";
 import { Icon } from "@iconify/react";
 import { WeatherBadge } from "../weather/weather-badge";
@@ -20,6 +21,7 @@ interface RadarHudProps {
   onTypeChange: (type: string) => void;
   totalSpotted: number;
   party?: PokemonRadarEntity[];
+  activeWeather?: WeatherData | null;
   onOpenTeamAnalysis?: () => void;
 }
 
@@ -54,6 +56,7 @@ export function RadarHud({
   onTypeChange,
   totalSpotted,
   party = [],
+  activeWeather = null,
   onOpenTeamAnalysis,
 }: RadarHudProps) {
   const [isMuted, setIsMuted] = useState(sfx.getIsMuted());
@@ -94,9 +97,12 @@ export function RadarHud({
           {/* Brand & Pokeball Icon */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 transition-transform duration-300 hover:scale-110 hover:rotate-12 cursor-pointer">
-              <img
+              <Image
                 src="/pokeball-icon.webp"
                 alt="PokéRadar Pokeball"
+                width={32}
+                height={32}
+                unoptimized
                 className="w-full h-full object-contain filter drop-shadow-[0_2px_6px_rgba(220,10,45,0.25)]"
               />
             </div>
@@ -120,6 +126,7 @@ export function RadarHud({
               lat={activeBiome.center[1]}
               lng={activeBiome.center[0]}
               biomeName={activeBiome.name}
+              initialWeather={activeWeather}
             />
           </div>
 
