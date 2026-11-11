@@ -80,7 +80,7 @@ export function PartyDock({
                   )}
 
                   {/* Circular Level Badge with centered number */}
-                  <span className="absolute -top-1.5 -right-1.5 w-4.75 h-4.75 flex items-center justify-center bg-red-600 border border-white text-[9px] font-bold text-white rounded-full shadow-xs z-10 leading-none tabular-nums">
+                  <span className="absolute -top-1.5 -right-1.5 w-4.75 h-4.75 flex items-center justify-center bg-emerald-600 border border-white text-[9px] font-bold text-white rounded-full shadow-xs z-10 leading-none tabular-nums">
                     {pokemon.level}
                   </span>
                 </button>
