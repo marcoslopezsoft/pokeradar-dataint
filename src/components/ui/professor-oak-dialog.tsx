@@ -124,10 +124,13 @@ export function ProfessorOakDialog({
             delay: 0.12,
           }}
           onClick={handleBubbleClick}
-          className="relative pointer-events-auto w-full sm:max-w-md bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border-2 border-red-500/40 p-4 sm:p-5 shadow-2xl text-slate-800 z-30 cursor-pointer mb-2 sm:mb-6"
+          className="relative pointer-events-auto w-full sm:max-w-md bg-white rounded-2xl sm:rounded-3xl border-2 border-red-300 p-4 sm:p-5 shadow-2xl text-slate-800 z-30 cursor-pointer mb-2 sm:mb-6"
         >
-          {/* Speech Bubble Pointer Arrow pointing towards Oak */}
-          <div className="hidden sm:block absolute -left-2.5 bottom-8 w-0 h-0 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent border-r-[12px] border-r-white/95 drop-shadow-sm" />
+          {/* Seamless Speech Bubble Tail integrated into left border (Desktop) */}
+          <div className="hidden sm:block absolute -left-[9px] bottom-8 w-4 h-4 bg-white border-l-2 border-b-2 border-red-300 rotate-45 rounded-bl-[2px]" />
+
+          {/* Seamless Speech Bubble Tail integrated into top border (Mobile) */}
+          <div className="sm:hidden absolute -top-[9px] left-11 w-4 h-4 bg-white border-l-2 border-t-2 border-red-300 rotate-45 rounded-tl-[2px]" />
 
           {/* Top Bar: Badge & "X" Close Button in Top-Right Corner */}
           <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-slate-100">
