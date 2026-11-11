@@ -151,7 +151,7 @@ function buildElementalBackground(primary: TypeTheme, secondary?: TypeTheme | nu
   if (!secondary) {
     return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} 100%)`;
   }
-  return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} calc(50% - 1.5px), rgba(255, 255, 255, 0.36) calc(50% - 1px), rgba(255, 255, 255, 0.36) calc(50% + 1px), ${secondary.from} calc(50% + 1.5px), ${secondary.to} 100%)`;
+  return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} calc(50% - 1.5px), #ffffff calc(50% - 1px), #ffffff calc(50% + 1px), ${secondary.from} calc(50% + 1.5px), ${secondary.to} 100%)`;
 }
 
 /** Dual-type SVG backdrop with a stepped diagonal seam matching Pokemon type halves. */
@@ -474,15 +474,25 @@ export function DetailDrawer({
               ref={scrollContentRef}
               className="relative flex flex-col min-h-full bg-white"
             >
-              {/* Sticky Top Header Bar (Maintains Pokemon elemental background color on scroll, NEVER black) */}
+              {/* Sticky Top Header Bar (Maintains Pokemon elemental background color on scroll, clipped cleanly to prevent subpixel bleed) */}
               <div
-                style={scrollY > 30 ? { background: elementalBackground } : undefined}
-                className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 transition-all duration-200 ${
-                  scrollY > 30
-                    ? "shadow-md border-b border-white/20 text-white"
-                    : "bg-transparent text-white"
+                className={`sticky top-0 z-40 h-14 shrink-0 flex items-center justify-between px-4 overflow-hidden text-white transition-shadow duration-200 ${
+                  scrollY > 30 ? "shadow-md" : ""
                 }`}
               >
+                {/* Opaque scrolled backdrop + uniform 1px bottom hairline */}
+                <div
+                  aria-hidden="true"
+                  className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-200 bg-white ${
+                    scrollY > 30 ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <div
+                    className="w-full h-full"
+                    style={{ background: elementalBackground }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-px bg-black/15" />
+                </div>
                 {/* Left: Back button + Habitat location aligned to the left */}
                 <div className="flex items-center gap-1.5 z-10 max-w-[60%]">
                   <button

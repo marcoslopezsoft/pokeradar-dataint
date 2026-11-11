@@ -73,35 +73,52 @@ export function WeatherBadge({
   const boostConfig = getWeatherBoostConfig(weather.weatherCode);
 
   return (
-    <div
-      className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100 sm:bg-white/90 sm:backdrop-blur-md border border-slate-200/90 shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0"
-      title={`${weather.conditionDescription} · ${weather.temperature}°C · Viento: ${weather.windSpeed} km/h · ${biomeName} · ${boostConfig.reason}`}
-    >
-      <div className="flex items-center justify-center shrink-0">
-        {getWeatherIcon(weather.weatherCode)}
+    <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-100 sm:bg-white/90 sm:backdrop-blur-md border border-slate-200/90 shadow-2xs text-[11px] sm:text-xs font-sans font-medium shrink-0">
+      <div
+        className="flex items-center gap-1 sm:gap-1.5"
+        title={`${weather.conditionDescription} · ${weather.temperature}°C · Viento: ${weather.windSpeed} km/h · ${biomeName} · ${boostConfig.reason}`}
+      >
+        <div className="flex items-center justify-center shrink-0">
+          {getWeatherIcon(weather.weatherCode)}
+        </div>
+        <div className="flex items-center gap-1 leading-tight">
+          <span className="font-bold text-slate-800 text-[11px] sm:text-xs">
+            {weather.temperature}°C
+          </span>
+          <span className="hidden sm:inline text-slate-500 text-[10px]">
+            · {weather.conditionDescription}
+          </span>
+        </div>
       </div>
-      <div className="flex items-center gap-1 leading-tight">
-        <span className="font-bold text-slate-800 text-[11px] sm:text-xs">
-          {weather.temperature}°C
-        </span>
-        <span className="hidden sm:inline text-slate-500 text-[10px]">
-          · {weather.conditionDescription}
-        </span>
-        <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-slate-200/90">
-          {boostConfig.boostedTypes.slice(0, 3).map((t) => {
-            const cfg = TYPE_CONFIG[t];
-            if (!cfg) return null;
-            return (
+
+      <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-slate-200/90">
+        {boostConfig.boostedTypes.slice(0, 3).map((t) => {
+          const cfg = TYPE_CONFIG[t];
+          if (!cfg) return null;
+          return (
+            <div key={t} className="relative flex items-center group/boost">
               <span
-                key={t}
-                title={`Favorece tipo ${cfg.label}`}
-                className={`inline-flex items-center justify-center w-4.5 h-4.5 rounded-full border ${cfg.bg} ${cfg.border}`}
+                aria-label={`Tipo ${cfg.label} favorecido por el clima`}
+                className={`inline-flex items-center justify-center w-4.5 h-4.5 rounded-full border cursor-help transition-transform duration-150 group-hover/boost:scale-110 ${cfg.bg} ${cfg.border}`}
               >
                 <Icon icon={cfg.icon} width={10} height={10} className={cfg.text} />
               </span>
-            );
-          })}
-        </div>
+
+              {/* Instant hover tooltip naming the boosted elemental type */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 rounded-lg bg-slate-900/95 text-white text-[10px] font-medium shadow-md border border-slate-700/50 hidden group-hover/boost:flex items-center gap-1.5 whitespace-nowrap z-50 pointer-events-none">
+                <span
+                  className={`inline-flex items-center justify-center w-3.5 h-3.5 rounded-full shrink-0 ${cfg.bg}`}
+                >
+                  <Icon icon={cfg.icon} width={9} height={9} className={cfg.text} />
+                </span>
+                <span>
+                  <strong className="font-bold">Tipo {cfg.label}</strong>
+                  <span className="text-slate-300"> · Potenciado por clima</span>
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
