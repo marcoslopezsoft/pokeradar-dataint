@@ -79,9 +79,9 @@ export function PartyDock({
                     </span>
                   )}
 
-                  {/* Level Badge (Lvl + level) */}
-                  <span className="absolute -top-1.5 -right-2 min-w-5 h-4.5 px-1.5 flex items-center justify-center bg-red-600 border border-white text-[8px] font-bold tracking-tight text-white rounded-full shadow-xs z-10 leading-none tabular-nums">
-                    Lvl{pokemon.level}
+                  {/* Level Badge (Nv. + level) */}
+                  <span className="absolute -top-1.5 -right-2 min-w-5 h-4.5 px-1.5 flex items-center justify-center bg-red-600 border border-white text-[8px] font-bold tracking-tight text-white rounded-full shadow-xs z-10 leading-none tabular-nums whitespace-nowrap">
+                    Nv. {pokemon.level}
                   </span>
                 </button>
 
