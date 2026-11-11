@@ -9,8 +9,8 @@
 ### ¿Qué es PokéRadar?
 PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartográfica inmersiva basada en biomas reales de Argentina. Inspirado en el concepto visual moderno de Pokédex (Behance), en lugar de colocar marcadores estáticos sobre un mapa genérico, el sistema fusiona:
 - **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Normal/Psíquico), Cumbre del Aconcagua (Volador/Dragón) y Península Valdés (Agua/Hada/Siniestro), delimitados con polígonos GeoJSON y pines interactivos al alejar el zoom.
-- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y viento) que prioriza dinámicamente las especies del pool afines al clima actual (`weatherBoosted`) y muestra íconos de tipos potenciados con tooltips instantáneos.
-- **Visualización Limpia sin Cajas**: Marcadores sobre el mapa representados directamente por el sprite animado del espécimen, con sombras de contacto en el terreno y microinteracciones optimizadas a 60 FPS en desktop y mobile.
+- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y viento) que prioriza dinámicamente las especies del pool afines al clima actual (`weatherBoosted`), sincroniza el clima al instante al seleccionar cualquier Pokémon (aunque pertenezca a otro bioma), e incluye tooltips en desktop y un modal táctil interactivo con todos los tipos potenciados.
+- **Visualización Limpia a 60 FPS**: Marcadores sobre el mapa representados directamente por el sprite del espécimen con sombra radial de contacto en el terreno (sin `drop-shadow` por píxel ni `backdrop-blur` continuo sobre el canvas WebGL) y *viewport culling* (`buffer 3x`) para mantener fluidez total al arrastrar o hacer zoom en desktop y mobile.
 - **Audio Auténtico (`cries.latest`) & SFX Web Audio**: Reproducción de alaridos sonoros oficiales en formato `.ogg`, música ambiental con controles de volumen y sintetizador Web Audio de efectos para diálogos, capturas y liberaciones.
 - **Equipo de Expedición (Party Dock & Diagnóstico Táctico Pokédex)**: Dock flotante con chasis rojo clásico Pokédex (lente azul, LEDs y ranuras LCD con insignias `Nv.`) que se recentra suavemente al abrir o cerrar el panel lateral, persistiendo hasta 6 Pokémon en `localStorage`, con guía interactiva del Profesor Oak y un Diagnóstico Táctico grupal e individual con matriz de efectividad elemental (18 tipos), roles, resistencias, debilidades y tarjetas con fondo mitad-y-mitad por tipo elemental.
 - **Estética Pokédex Unificada & Tipografía Poppins**: Panel lateral [`DetailDrawer`](src/components/pokemon/detail-drawer.tsx) con división diagonal escalonada en SVG para Pokémon de doble tipo, sprites normalizados en altura y tipografía Poppins (400, 500, 600) íntegramente en español.
@@ -42,7 +42,7 @@ src/
 │   ├── map/
 │   │   ├── pokeradar-client.tsx # Orquestador Client Component hidratado desde page.tsx
 │   │   ├── map-container.tsx   # Envoltorio client-side con dynamic(..., { ssr: false })
-│   │   ├── map-view.tsx        # Instancia MapLibre GL, polígonos GeoJSON, pines de bioma y sprites
+│   │   ├── map-view.tsx        # Instancia MapLibre GL, polígonos GeoJSON, viewport culling y sprites
 │   │   └── radar-hud.tsx       # Barra Pokédex superior, biomas, búsqueda y tira de coincidencias
 │   ├── pokemon/
 │   │   ├── detail-drawer.tsx   # Panel lateral Pokédex con fondo dual-type, sprite normalizado y stats
@@ -58,9 +58,9 @@ src/
 │   │   ├── professor-oak-dialog.tsx # Diálogo narrativo con efecto typewriter e intro/tutorial
 │   │   └── welcome-screen.tsx  # Pantalla de bienvenida con carga paralela y reintento ante error
 │   └── weather/
-│       └── weather-badge.tsx   # Widget meteorológico en vivo (Open-Meteo) con tooltips por tipo
+│       └── weather-badge.tsx   # Widget meteorológico en vivo con tooltips y modal táctil de afinidad
 ├── hooks/
-│   ├── use-pokemon-radar.ts    # Estado de criaturas, filtros y fallback/reintento cliente
+│   ├── use-pokemon-radar.ts    # Estado de criaturas, filtros, sincronización de bioma y reintento cliente
 │   └── use-expedition.ts       # Manejo reactivo del equipo con useSyncExternalStore + localStorage
 ├── lib/
 │   ├── biomes.ts               # Coordenadas, estilo raster claro y pools de especies por bioma
