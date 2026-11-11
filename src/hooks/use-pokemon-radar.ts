@@ -88,18 +88,18 @@ export function usePokemonRadar() {
     });
   }, [entities, searchTerm, selectedType]);
 
-  const selectPokemon = (pokemon: PokemonRadarEntity) => {
+  const selectPokemon = useCallback((pokemon: PokemonRadarEntity) => {
     setSelectedPokemon(pokemon);
     setIsDrawerOpen(true);
-  };
+  }, []);
 
-  const closeDrawer = () => {
+  const closeDrawer = useCallback(() => {
     setIsDrawerOpen(false);
-  };
+  }, []);
 
-  const selectBiome = (biome: BiomeRegion) => {
+  const selectBiome = useCallback((biome: BiomeRegion) => {
     setActiveBiome(biome);
-  };
+  }, []);
 
   const scanCurrentBiome = useCallback(() => {
     if (isScanning) return;

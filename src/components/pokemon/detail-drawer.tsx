@@ -129,10 +129,16 @@ export function DetailDrawer({
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollContentRef = useRef<HTMLDivElement | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
+  const openedAtRef = useRef<number>(0);
 
-  // Initialize Lenis smooth scroll with scroll position tracking
+  // Initialize Lenis smooth scroll on desktop only (mobile uses native 60fps touch scroll)
   useEffect(() => {
     if (!isOpen || !scrollWrapperRef.current) return;
+    openedAtRef.current = Date.now();
+
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      return;
+    }
 
     const lenis = new Lenis({
       wrapper: scrollWrapperRef.current,
@@ -262,6 +268,12 @@ export function DetailDrawer({
     onClose();
   };
 
+  // Safe backdrop close that ignores accidental tap bleed-through within 350ms of opening
+  const handleBackdropClick = () => {
+    if (Date.now() - openedAtRef.current < 350) return;
+    handleClose();
+  };
+
   // Parallax and scroll progress: 0 when at top, 1 when scrolled 180px
   const scrollProgress = Math.min(1, Math.max(0, scrollY / 180));
 
@@ -269,23 +281,24 @@ export function DetailDrawer({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop on mobile */}
+          {/* Backdrop on mobile (No heavy backdrop-blur to keep mobile 60fps) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+            onClick={handleBackdropClick}
+            className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden"
           />
 
-          {/* Behance Pokédex Sheet Drawer with Lenis Smooth Scrolling */}
+          {/* Behance Pokédex Sheet Drawer with Smooth Scrolling */}
           <motion.aside
             ref={scrollWrapperRef}
+            onScroll={(e) => setScrollY(e.currentTarget.scrollTop)}
             initial={{ x: "100%", opacity: 0.8 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 32 }}
-            className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar"
+            className="fixed inset-y-0 right-0 h-full h-dvh w-full max-w-md bg-white z-50 flex flex-col shadow-2xl overflow-y-auto no-scrollbar overscroll-contain"
           >
             <div ref={scrollContentRef} className="relative flex flex-col min-h-full bg-white">
               {/* Sticky Top Header Bar (Maintains Pokemon elemental background color on scroll, NEVER black) */}

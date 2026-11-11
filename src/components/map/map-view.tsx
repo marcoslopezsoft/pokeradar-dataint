@@ -57,33 +57,42 @@ export function MapView({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
   const markersRef = useRef<{ [key: string]: Marker }>({});
+  const markerImgsRef = useRef<{ [id: number]: HTMLImageElement }>({});
   const biomePinsRef = useRef<{ [key: string]: Marker }>({});
   const onSelectBiomeRef = useRef(onSelectBiome);
+  const onSelectPokemonRef = useRef(onSelectPokemon);
+  const selectedPokemonIdRef = useRef<number | null>(null);
+  const lastZoomedOutRef = useRef<boolean | null>(null);
 
   useEffect(() => {
     onSelectBiomeRef.current = onSelectBiome;
   }, [onSelectBiome]);
 
-  // Synchronize visibility of biome pins vs pokemon markers based on zoom
-  const syncZoomVisibility = () => {
+  useEffect(() => {
+    onSelectPokemonRef.current = onSelectPokemon;
+  }, [onSelectPokemon]);
+
+  useEffect(() => {
+    selectedPokemonIdRef.current = selectedPokemon?.id ?? null;
+  }, [selectedPokemon]);
+
+  // Synchronize visibility of biome pins vs pokemon markers (only runs when crossing zoom 9.2 threshold)
+  const syncZoomVisibility = (force = false) => {
     const map = mapRef.current;
     if (!map) return;
     const zoom = map.getZoom();
     const isZoomedOut = zoom < 9.2;
 
+    if (!force && lastZoomedOutRef.current === isZoomedOut) return;
+    lastZoomedOutRef.current = isZoomedOut;
+
     // Biome overview pins: visible when zoomed out
     Object.values(biomePinsRef.current).forEach((pin) => {
       const el = pin.getElement();
       if (el) {
-        if (isZoomedOut) {
-          el.style.opacity = "1";
-          el.style.pointerEvents = "auto";
-          el.style.transform = "scale(1) translateY(0)";
-        } else {
-          el.style.opacity = "0";
-          el.style.pointerEvents = "none";
-          el.style.transform = "scale(0.85) translateY(-8px)";
-        }
+        el.style.opacity = isZoomedOut ? "1" : "0";
+        el.style.pointerEvents = isZoomedOut ? "auto" : "none";
+        el.style.transform = isZoomedOut ? "scale(1) translateY(0)" : "scale(0.85) translateY(-8px)";
       }
     });
 
@@ -237,7 +246,8 @@ export function MapView({
         ripple.style.backgroundColor = b.accentColor;
         pinEl.appendChild(ripple);
 
-        // Click / touch handler: select biome and fly directly to zone
+        // Click handler (touchAction: manipulation gives zero-delay click on mobile without double-fire)
+        pinEl.style.touchAction = "manipulation";
         const handleSelect = (e: Event) => {
           e.stopPropagation();
           sfx.playSwitch();
@@ -253,7 +263,6 @@ export function MapView({
         };
 
         pinEl.addEventListener("click", handleSelect);
-        pinEl.addEventListener("touchend", handleSelect);
 
         const pinMarker = new Marker({
           element: pinEl,
@@ -265,9 +274,9 @@ export function MapView({
         biomePinsRef.current[b.id] = pinMarker;
       });
 
-      // Synchronize visibility on zoom events
-      map.on("zoom", syncZoomVisibility);
-      syncZoomVisibility();
+      // Synchronize visibility ONLY when crossing zoom threshold
+      map.on("zoom", () => syncZoomVisibility(false));
+      syncZoomVisibility(true);
     });
 
     mapRef.current = map;
@@ -293,19 +302,7 @@ export function MapView({
     });
   }, [activeBiome]);
 
-  // 3. React to selectedPokemon changes (smooth focus & close-up zoom on selected creature)
-  useEffect(() => {
-    if (!mapRef.current || !selectedPokemon) return;
-    mapRef.current.flyTo({
-      center: selectedPokemon.coordinates,
-      zoom: 15.5,
-      speed: 1.35,
-      pitch: 45,
-      essential: true,
-    });
-  }, [selectedPokemon]);
-
-  // 4. Render and sync markers for Pokémon
+  // 3. Render and sync markers for Pokémon (ONLY re-runs when pokemonList changes, NEVER on selection!)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -313,15 +310,15 @@ export function MapView({
     // Clear existing markers
     Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
+    markerImgsRef.current = {};
 
     pokemonList.forEach((pokemon) => {
-      const isSelected = selectedPokemon?.id === pokemon.id;
-
       // Custom marker DOM Element
       const el = document.createElement("div");
       el.className = "pokemon-radar-marker group cursor-pointer relative select-none flex items-center justify-center";
       el.style.width = "64px";
       el.style.height = "64px";
+      el.style.touchAction = "manipulation";
       el.style.willChange = "transform";
 
       // Tooltip pill on hover
@@ -341,29 +338,28 @@ export function MapView({
       const img = document.createElement("img");
       img.src = pokemon.sprite || pokemon.animatedSprite;
       img.alt = pokemon.displayName;
-      img.className = `w-14 h-14 object-contain pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
-        isSelected
-          ? "scale-125 -translate-y-2 drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
-          : "drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
-      }`;
+      img.className =
+        "w-14 h-14 object-contain pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]";
       el.appendChild(img);
+      markerImgsRef.current[pokemon.id] = img;
 
-      // On click or touch: flyTo creature & open drawer
-      const handleMarkerSelect = (e: Event) => {
+      // Click handler: zero-delay on mobile with touchAction: manipulation, prevents ghost clicks closing drawer
+      el.addEventListener("click", (e) => {
         e.stopPropagation();
         sfx.playDexPage();
-        onSelectPokemon(pokemon);
-        map.flyTo({
-          center: pokemon.coordinates,
-          zoom: 15.5,
-          speed: 1.35,
-          pitch: 45,
-          essential: true,
-        });
-      };
-
-      el.addEventListener("click", handleMarkerSelect);
-      el.addEventListener("touchend", handleMarkerSelect);
+        const isAlreadySelected = selectedPokemonIdRef.current === pokemon.id;
+        onSelectPokemonRef.current(pokemon);
+        // Only fly directly if clicking the already-selected pokemon (otherwise useEffect([selectedPokemon]) handles it)
+        if (isAlreadySelected) {
+          map.flyTo({
+            center: pokemon.coordinates,
+            zoom: 15.5,
+            speed: 1.35,
+            pitch: 45,
+            essential: true,
+          });
+        }
+      });
 
       const marker = new Marker({
         element: el,
@@ -375,14 +371,41 @@ export function MapView({
       markersRef.current[`${pokemon.id}-${pokemon.coordinates.join(",")}`] = marker;
     });
 
-    // Sync visibility with current zoom level immediately
-    syncZoomVisibility();
+    // Sync visibility with current zoom level
+    syncZoomVisibility(true);
 
     return () => {
       Object.values(markersRef.current).forEach((marker) => marker.remove());
       markersRef.current = {};
+      markerImgsRef.current = {};
     };
-  }, [pokemonList, selectedPokemon, onSelectPokemon]);
+  }, [pokemonList]);
+
+  // 4. Update selected styling & flyTo when selectedPokemon changes (O(1) class update, NO DOM rebuild!)
+  useEffect(() => {
+    if (!selectedPokemon) return;
+
+    // Update active highlight classes on marker images instantly
+    Object.entries(markerImgsRef.current).forEach(([idStr, img]) => {
+      const isSel = Number(idStr) === selectedPokemon.id;
+      img.className = `w-14 h-14 object-contain pointer-events-none transition-all duration-200 group-hover:scale-125 group-hover:-translate-y-1.5 ${
+        isSel
+          ? "scale-125 -translate-y-2 drop-shadow-[0_8px_16px_rgba(220,10,45,0.7)]"
+          : "drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
+      }`;
+    });
+
+    // Fly to coordinates smoothly (e.g. when selected from PartyDock or Search)
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: selectedPokemon.coordinates,
+        zoom: 15.5,
+        speed: 1.35,
+        pitch: 45,
+        essential: true,
+      });
+    }
+  }, [selectedPokemon]);
 
   return (
     <div className="relative w-full h-full min-h-screen bg-slate-950">
