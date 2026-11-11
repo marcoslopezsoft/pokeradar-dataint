@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
@@ -152,6 +152,49 @@ function buildElementalBackground(primary: TypeTheme, secondary?: TypeTheme | nu
     return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} 100%)`;
   }
   return `linear-gradient(135deg, ${primary.from} 0%, ${primary.to} calc(50% - 1.5px), rgba(255, 255, 255, 0.36) calc(50% - 1px), rgba(255, 255, 255, 0.36) calc(50% + 1px), ${secondary.from} calc(50% + 1.5px), ${secondary.to} 100%)`;
+}
+
+/** Dual-type SVG backdrop with a stepped diagonal seam matching Pokemon type halves. */
+function ElementalSteppedBackdrop({
+  primary,
+  secondary,
+}: {
+  primary: TypeTheme;
+  secondary: TypeTheme;
+}) {
+  const uid = useId().replace(/:/g, "");
+  const grad1Id = `poke-grad-1-${uid}`;
+  const grad2Id = `poke-grad-2-${uid}`;
+
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      className="absolute inset-0 w-full h-full pointer-events-none"
+    >
+      <defs>
+        <linearGradient id={grad1Id} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={primary.from} />
+          <stop offset="100%" stopColor={primary.to} />
+        </linearGradient>
+        <linearGradient id={grad2Id} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={secondary.from} />
+          <stop offset="100%" stopColor={secondary.to} />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="100" height="100" fill={`url(#${grad2Id})`} />
+      <polygon points="0,0 100,0 57,50 43,50 0,100" fill={`url(#${grad1Id})`} />
+      <polyline
+        points="0,100 43,50 57,50 100,0"
+        fill="none"
+        stroke="rgba(255, 255, 255, 0.65)"
+        strokeWidth="3.5"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
 }
 
 export function DetailDrawer({
@@ -449,6 +492,12 @@ export function DetailDrawer({
                 }}
                 className="sticky top-0 z-10 w-full text-white overflow-hidden shrink-0 h-85 flex flex-col justify-center items-center"
               >
+                {secondaryTheme && (
+                  <ElementalSteppedBackdrop
+                    primary={primaryTheme}
+                    secondary={secondaryTheme}
+                  />
+                )}
                 {/* Floating Ambient Atmosphere Particles (Desktop only to maintain 60fps on mobile) */}
                 <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
                   {[...Array(6)].map((_, i) => (
