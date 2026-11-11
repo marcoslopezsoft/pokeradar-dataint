@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { Map, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
+import { Map, Marker, setWorkerUrl } from "maplibre-gl";
 import type { FeatureCollection, Polygon } from "geojson";
 import { PokemonRadarEntity, BiomeRegion } from "@/types/pokemon";
 import { INITIAL_MAP_CONFIG, BIOMES, HIGH_PERF_LIGHT_STYLE } from "@/lib/biomes";
@@ -125,15 +125,6 @@ export function MapView({
       bearing: 0,
       attributionControl: false,
     });
-
-    map.addControl(
-      new NavigationControl({
-        visualizePitch: true,
-        showCompass: true,
-        showZoom: true,
-      }),
-      "bottom-right"
-    );
 
     // Suppress missing style image warnings
     map.setMissingStyleImageResolver((id) => {
