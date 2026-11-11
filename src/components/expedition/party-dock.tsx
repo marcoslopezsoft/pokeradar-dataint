@@ -5,12 +5,14 @@ import Image from "next/image";
 import { PokemonRadarEntity } from "@/types/pokemon";
 import { Trash2 } from "lucide-react";
 import { sfx } from "@/lib/sound-effects";
+import { PokedexSensorCluster } from "@/components/ui/pokedex-sensors";
 
 interface PartyDockProps {
   party: PokemonRadarEntity[];
   onSelectPokemon: (pokemon: PokemonRadarEntity) => void;
   onReleasePokemon: (id: number) => void;
   selectedId?: number | null;
+  isDrawerOpen?: boolean;
 }
 
 export function PartyDock({
@@ -18,29 +20,22 @@ export function PartyDock({
   onSelectPokemon,
   onReleasePokemon,
   selectedId,
+  isDrawerOpen = false,
 }: PartyDockProps) {
   const maxPartySize = 6;
   const slots = Array.from({ length: maxPartySize }, (_, i) => party[i] || null);
 
   return (
     <div className="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-full px-2 sm:px-3 pointer-events-auto">
-      {/* Authentic Pokédex Red Chassis */}
-      <div className="p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl bg-linear-to-b from-[#dc0a2d] to-[#b00722] border-2 border-[#7f0417] shadow-2xl shadow-red-950/35">
+      {/* Authentic Pokédex Red Chassis (glides smoothly left when desktop DetailDrawer opens) */}
+      <div
+        className={`will-change-transform transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl bg-linear-to-b from-[#dc0a2d] to-[#b00722] border-2 border-[#7f0417] shadow-2xl shadow-red-950/35 ${
+          isDrawerOpen ? "md:-translate-x-56" : "translate-x-0"
+        }`}
+      >
         {/* Top Pokédex Sensor Bar: Blue Lens + 3 Status LEDs + Counter & Hardware Vents */}
         <div className="flex items-center justify-between px-1 pb-1.5 sm:pb-2">
-          <div className="flex items-center gap-2">
-            {/* Classic Glowing Blue Optical Lens */}
-            <div className="relative w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-linear-to-br from-cyan-200 via-sky-400 to-blue-600 border-2 border-white shadow-[0_0_8px_rgba(56,189,248,0.85)] shrink-0">
-              <span className="absolute top-0.5 left-0.5 w-1 h-1 rounded-full bg-white/85" />
-            </div>
-
-            {/* Classic Red / Yellow / Green Pokédex LEDs */}
-            <div className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-300 ring-1 ring-[#7f0417]/60" />
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-300 ring-1 ring-[#7f0417]/60" />
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 ring-1 ring-[#7f0417]/60" />
-            </div>
-          </div>
+          <PokedexSensorCluster size="sm" />
 
           <div className="flex items-center gap-2">
             <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest uppercase text-white/95 drop-shadow-xs">

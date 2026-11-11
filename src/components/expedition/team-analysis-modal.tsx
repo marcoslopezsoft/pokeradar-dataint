@@ -15,6 +15,7 @@ import { PokemonRadarEntity } from "@/types/pokemon";
 import { TypeBadge } from "../pokemon/type-badge";
 import { buildTeamTacticalDiagnosis } from "@/lib/team-analysis";
 import { translateTypeToSpanish } from "@/lib/utils";
+import { PokedexSensorCluster } from "@/components/ui/pokedex-sensors";
 
 interface TeamAnalysisModalProps {
   isOpen: boolean;
@@ -78,33 +79,45 @@ export function TeamAnalysisModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.94, opacity: 0, y: 12 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-white border border-slate-200 shadow-2xl shadow-slate-900/20 overflow-hidden"
+            className="relative w-full max-w-2xl max-h-[90vh] flex flex-col p-2.5 sm:p-3.5 rounded-3xl bg-linear-to-b from-[#dc0a2d] to-[#b00722] border-2 border-[#7f0417] shadow-2xl shadow-red-950/45 overflow-hidden"
           >
-            {/* Header (clean title without side icon) */}
-            <div className="flex items-center justify-between border-b-2 border-red-600/80 px-5 sm:px-6 py-4 shrink-0 bg-white">
-              <div>
-                <h3 className="font-sans text-sm sm:text-base font-extrabold text-slate-900 tracking-wide">
-                  DIAGNÓSTICO TÁCTICO DE EXPEDICIÓN
-                </h3>
-                <p className="font-sans text-[11px] text-slate-500 mt-0.5">
-                  {diagnosis.memberCount > 1
-                    ? `Análisis grupal de ${diagnosis.memberCount} Pokémon y detalle individual`
-                    : diagnosis.memberCount === 1
-                      ? 'Evaluación individual del primer integrante y proyección de equipo'
-                      : 'Estado actual del escuadrón de campo'}
-                </p>
+            {/* Top Pokédex Sensor & Telemetry Header */}
+            <div className="flex items-center justify-between gap-3 px-1 pb-2.5 sm:pb-3 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <PokedexSensorCluster size="md" />
+                <div className="min-w-0">
+                  <h3 className="font-sans text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase drop-shadow-xs truncate">
+                    DIAGNÓSTICO TÁCTICO DE EXPEDICIÓN
+                  </h3>
+                  <p className="font-sans text-[10px] sm:text-[11px] text-white/85 font-medium truncate">
+                    {diagnosis.memberCount > 1
+                      ? `Análisis grupal de ${diagnosis.memberCount} Pokémon y detalle individual`
+                      : diagnosis.memberCount === 1
+                        ? 'Evaluación individual del primer integrante y proyección'
+                        : 'Estado actual del escuadrón de campo'}
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={onClose}
-                aria-label="Cerrar diagnóstico táctico"
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="hidden sm:flex items-center gap-1" aria-hidden="true">
+                  <span className="w-3 h-1 rounded-full bg-[#7f0417]/75" />
+                  <span className="w-3 h-1 rounded-full bg-[#7f0417]/75" />
+                </div>
+                <button
+                  onClick={onClose}
+                  aria-label="Cerrar diagnóstico táctico"
+                  className="p-1.5 rounded-xl bg-[#7f0417]/45 hover:bg-[#7f0417]/75 text-white border border-white/20 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Scrollable Body */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 sm:px-6 py-4 space-y-5">
+            {/* Recessed Pokédex LCD Screen */}
+            <div className="flex-1 min-h-0 flex flex-col rounded-2xl bg-slate-100 border-2 border-[#7f0417]/60 shadow-inner overflow-hidden">
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 py-4 space-y-5 bg-white">
               {party.length === 0 ? (
                 <div className="py-10 text-center text-slate-500 font-sans text-sm space-y-2">
                   <p className="font-semibold text-slate-700">
@@ -394,33 +407,49 @@ export function TeamAnalysisModal({
               )}
             </div>
 
-            {/* Footer Actions */}
-            <div className="border-t border-slate-200 px-5 sm:px-6 py-3.5 flex items-center justify-between gap-3 shrink-0 bg-white">
-              {party.length > 0 && (
-                <button
-                  onClick={handleCopySummary}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-700 font-sans text-xs font-semibold transition-all cursor-pointer"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-emerald-700">¡Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Copiar Ficha</span>
-                    </>
-                  )}
-                </button>
-              )}
+              {/* Footer Actions inside LCD tray */}
+              <div className="border-t border-slate-200 px-4 sm:px-5 py-3 flex items-center justify-between gap-3 shrink-0 bg-slate-50">
+                {party.length > 0 && (
+                  <button
+                    onClick={handleCopySummary}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-sans text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-emerald-700">¡Copiado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Copiar Ficha</span>
+                      </>
+                    )}
+                  </button>
+                )}
 
-              <button
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-linear-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-sans text-xs font-bold transition-all cursor-pointer ml-auto shadow-md shadow-red-600/30"
-              >
-                CERRAR DIAGNÓSTICO
-              </button>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-xl bg-linear-to-r from-[#dc0a2d] to-[#b00722] hover:from-red-600 hover:to-red-700 text-white font-sans text-xs font-bold transition-all cursor-pointer ml-auto shadow-md shadow-red-600/25"
+                >
+                  CERRAR DIAGNÓSTICO
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom Pokédex Hardware Rim */}
+            <div className="flex items-center justify-between px-1.5 pt-2 shrink-0" aria-hidden="true">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#7f0417]/70" />
+                <span className="w-6 h-1 rounded-full bg-[#7f0417]/70" />
+              </div>
+              <span className="text-[9px] font-extrabold tracking-widest uppercase text-white/80">
+                POKÉDEX GEO · MÓDULO TÁCTICO
+              </span>
+              <div className="flex items-center gap-1">
+                <span className="w-4 h-1 rounded-full bg-[#7f0417]/70" />
+                <span className="w-4 h-1 rounded-full bg-[#7f0417]/70" />
+              </div>
             </div>
           </motion.div>
         </div>

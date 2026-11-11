@@ -137,6 +137,7 @@ export function PokeRadarClient({
         onSelectPokemon={selectPokemon}
         onReleasePokemon={removeFromParty}
         selectedId={selectedPokemon?.id}
+        isDrawerOpen={isDrawerOpen}
       />
 
       {/* Lateral Detail Drawer (Pokemon Stats & Audio) */}
