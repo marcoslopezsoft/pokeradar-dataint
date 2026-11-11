@@ -8,9 +8,16 @@ import { sfx } from "@/lib/sound-effects";
 interface WelcomeScreenProps {
   onStartAdventure: () => void;
   isLoading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
-export function WelcomeScreen({ onStartAdventure, isLoading }: WelcomeScreenProps) {
+export function WelcomeScreen({
+  onStartAdventure,
+  isLoading,
+  error,
+  onRetry,
+}: WelcomeScreenProps) {
   const [hasStarted, setHasStarted] = useState(false);
 
   const handleStart = () => {
@@ -115,6 +122,23 @@ export function WelcomeScreen({ onStartAdventure, isLoading }: WelcomeScreenProp
                     />
                   </motion.div>
                   <span>Sintonizando Radar...</span>
+                </div>
+              ) : error ? (
+                <div className="space-y-3 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-center">
+                  <p className="text-xs font-medium text-rose-700 leading-relaxed">
+                    {error}
+                  </p>
+                  {onRetry && (
+                    <button
+                      onClick={() => {
+                        sfx.playButtonPress();
+                        onRetry();
+                      }}
+                      className="w-full py-3 px-5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-sans text-xs font-bold tracking-wide shadow-md shadow-red-500/25 transition-all cursor-pointer"
+                    >
+                      REINTENTAR CONEXIÓN
+                    </button>
+                  )}
                 </div>
               ) : (
                 <button

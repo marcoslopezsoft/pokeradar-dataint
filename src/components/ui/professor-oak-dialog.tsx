@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { sfx } from "@/lib/sound-effects";
 
@@ -28,9 +28,11 @@ export function ProfessorOakDialog({
   onAction,
   onClose,
 }: ProfessorOakDialogProps) {
-  const [displayedText, setDisplayedText] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
+  const [typedState, setTypedState] = useState({ speech, text: "" });
   const textIndexRef = useRef(0);
+
+  const displayedText = typedState.speech === speech ? typedState.text : "";
+  const isTyping = displayedText.length < speech.length;
 
   // Play pop entrance SFX when Oak appears
   useEffect(() => {
@@ -40,8 +42,6 @@ export function ProfessorOakDialog({
   // Typewriter effect (delayed briefly so initial spring entrance stays smooth on mobile)
   useEffect(() => {
     textIndexRef.current = 0;
-    setDisplayedText("");
-    setIsTyping(true);
 
     let interval: ReturnType<typeof setInterval> | null = null;
     const startTimeout = setTimeout(() => {
@@ -49,7 +49,7 @@ export function ProfessorOakDialog({
         if (textIndexRef.current < speech.length) {
           textIndexRef.current = Math.min(textIndexRef.current + 2, speech.length);
           const currentSlice = speech.slice(0, textIndexRef.current);
-          setDisplayedText(currentSlice);
+          setTypedState({ speech, text: currentSlice });
 
           // Subtle vintage typewriter blip every 2 ticks (~4 chars, excluding spaces/newlines)
           const char = speech[textIndexRef.current - 1];
@@ -57,7 +57,6 @@ export function ProfessorOakDialog({
             sfx.playTypewriterBlip();
           }
         } else {
-          setIsTyping(false);
           if (interval) clearInterval(interval);
         }
       }, 32);
@@ -72,8 +71,8 @@ export function ProfessorOakDialog({
   // Skip typing if clicked on the speech text
   const handleBubbleClick = () => {
     if (isTyping) {
-      setDisplayedText(speech);
-      setIsTyping(false);
+      textIndexRef.current = speech.length;
+      setTypedState({ speech, text: speech });
       sfx.playButtonPress();
     }
   };

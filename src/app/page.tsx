@@ -19,6 +19,8 @@ export default function HomePage() {
     entities,
     totalSpotted,
     loading,
+    error,
+    retryLoad,
     searchTerm,
     setSearchTerm,
     selectedType,
@@ -55,6 +57,8 @@ export default function HomePage() {
       {!hasStarted && (
         <WelcomeScreen
           isLoading={loading}
+          error={error}
+          onRetry={retryLoad}
           onStartAdventure={() => {
             setHasStarted(true);
             setShowOakDialog(true);

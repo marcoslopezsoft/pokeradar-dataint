@@ -19,6 +19,8 @@ export function usePokemonRadar() {
   const [activeBiome, setActiveBiome] = useState<BiomeRegion>(BIOMES[0]);
   const [entities, setEntities] = useState<PokemonRadarEntity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("all");
   const [selectedPokemon, setSelectedPokemon] = useState<PokemonRadarEntity | null>(null);
@@ -26,41 +28,48 @@ export function usePokemonRadar() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
 
-  // Load Pokemon for all biomes on initial mount
+  // Load Pokemon for all biomes in parallel on initial mount or retry
   useEffect(() => {
     let isCancelled = false;
 
     async function loadAllBiomeEntities() {
-      setLoading(true);
-      const allSpawned: PokemonRadarEntity[] = [];
-
-      for (const biome of BIOMES) {
-        const spawnIds = biome.pokemonPool.slice(0, 8);
-
-        for (let i = 0; i < spawnIds.length; i++) {
-          const id = spawnIds[i];
-          const raw = await fetchPokemonData(id);
-          if (raw && !isCancelled) {
+      try {
+        const requests = BIOMES.flatMap((biome) =>
+          biome.pokemonPool.slice(0, 8).map(async (id, i) => {
+            const raw = await fetchPokemonData(id);
+            if (!raw) return null;
             const [dLng, dLat] = getStableOffset(id, i);
             const coords: [number, number] = [
               biome.center[0] + dLng,
               biome.center[1] + dLat,
             ];
+            return transformToRadarEntity(raw, coords, biome.id, biome.name);
+          })
+        );
 
-            const entity = transformToRadarEntity(
-              raw,
-              coords,
-              biome.id,
-              biome.name
+        const settled = await Promise.all(requests);
+        const allSpawned = settled.filter(
+          (item): item is PokemonRadarEntity => item !== null
+        );
+
+        if (!isCancelled) {
+          setEntities(allSpawned);
+          if (allSpawned.length === 0) {
+            setError(
+              "No pudimos conectar con PokéAPI para detectar criaturas. Verificá tu conexión e intentá nuevamente."
             );
-            allSpawned.push(entity);
+          } else {
+            setError(null);
           }
+          setLoading(false);
         }
-      }
-
-      if (!isCancelled) {
-        setEntities(allSpawned);
-        setLoading(false);
+      } catch {
+        if (!isCancelled) {
+          setError(
+            "Error al sincronizar el radar con PokéAPI. Reintentá en unos segundos."
+          );
+          setLoading(false);
+        }
       }
     }
 
@@ -69,6 +78,12 @@ export function usePokemonRadar() {
     return () => {
       isCancelled = true;
     };
+  }, [reloadNonce]);
+
+  const retryLoad = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    setReloadNonce((n) => n + 1);
   }, []);
 
   // Filter entities according to search and type (all biomes always visible across the map)
@@ -122,6 +137,8 @@ export function usePokemonRadar() {
     entities: filteredEntities,
     totalSpotted: entities.length,
     loading,
+    error,
+    retryLoad,
     searchTerm,
     setSearchTerm,
     selectedType,

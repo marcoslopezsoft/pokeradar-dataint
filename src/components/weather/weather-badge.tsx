@@ -12,28 +12,34 @@ interface WeatherBadgeProps {
 }
 
 export function WeatherBadge({ lat, lng, biomeName }: WeatherBadgeProps) {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const coordKey = `${lat},${lng}`;
+  const [weatherState, setWeatherState] = useState<{
+    key: string;
+    data: WeatherData | null;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
 
     fetchBiomeWeather(lat, lng)
       .then((data) => {
         if (isMounted) {
-          setWeather(data);
-          setLoading(false);
+          setWeatherState({ key: coordKey, data });
         }
       })
       .catch(() => {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setWeatherState({ key: coordKey, data: null });
+        }
       });
 
     return () => {
       isMounted = false;
     };
-  }, [lat, lng]);
+  }, [lat, lng, coordKey]);
+
+  const loading = weatherState?.key !== coordKey;
+  const weather = weatherState?.key === coordKey ? weatherState.data : null;
 
   const getWeatherIcon = (code: number) => {
     if (code === 0 || code === 1) return <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 shrink-0" />;

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored/prebuilt static worker asset:
+    "public/maplibre-gl-worker.mjs",
   ]),
 ]);
 

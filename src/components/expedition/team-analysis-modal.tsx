@@ -8,7 +8,6 @@ import {
   Check,
   ShieldCheck,
   AlertTriangle,
-  Sparkles,
   MapPin,
 } from "lucide-react";
 import { PokemonRadarEntity } from "@/types/pokemon";
@@ -138,7 +137,7 @@ export function TeamAnalysisModal({
                             key={idx}
                             className="flex items-start gap-2 text-[11px] sm:text-xs text-slate-600 leading-snug"
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 mt-1.5" />
                             <span>{note}</span>
                           </li>
                         ))}

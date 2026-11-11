@@ -121,15 +121,26 @@ export function DetailDrawer({
   isInParty,
   isPartyFull,
 }: DetailDrawerProps) {
-  const [description, setDescription] = useState<string>("");
-  const [isLoadingDesc, setIsLoadingDesc] = useState(false);
+  const scrollKey = `${pokemon?.id ?? "none"}-${isOpen ? "open" : "closed"}`;
+  const [descState, setDescState] = useState<{ id: number; text: string } | null>(null);
   const [abilityTranslations, setAbilityTranslations] = useState<Record<string, string>>({});
-  const [scrollY, setScrollY] = useState(0);
+  const [scrollState, setScrollState] = useState<{ key: string; y: number }>({
+    key: scrollKey,
+    y: 0,
+  });
 
   const scrollWrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollContentRef = useRef<HTMLDivElement | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const openedAtRef = useRef<number>(0);
+  const scrollKeyRef = useRef<string>(scrollKey);
+  useEffect(() => {
+    scrollKeyRef.current = scrollKey;
+  }, [scrollKey]);
+
+  const scrollY = scrollState.key === scrollKey ? scrollState.y : 0;
+  const isLoadingDesc = Boolean(pokemon && descState?.id !== pokemon.id);
+  const description = descState && descState.id === pokemon?.id ? descState.text : "";
 
   // Initialize Lenis smooth scroll on desktop only (mobile uses native 60fps touch scroll)
   useEffect(() => {
@@ -149,7 +160,7 @@ export function DetailDrawer({
     lenisRef.current = lenis;
 
     lenis.on("scroll", (e: { scroll: number }) => {
-      setScrollY(e.scroll);
+      setScrollState({ key: scrollKeyRef.current, y: e.scroll });
     });
 
     let rafId: number;
@@ -166,10 +177,9 @@ export function DetailDrawer({
     };
   }, [isOpen]);
 
-  // Always reset scroll to top when opening or switching pokemon
+  // Always reset DOM scroll position when opening or switching pokemon
   useEffect(() => {
     if (isOpen) {
-      setScrollY(0);
       if (scrollWrapperRef.current) {
         scrollWrapperRef.current.scrollTop = 0;
       }
@@ -183,25 +193,27 @@ export function DetailDrawer({
   useEffect(() => {
     if (!pokemon) return;
     let isMounted = true;
-    setIsLoadingDesc(true);
+    const targetId = pokemon.id;
 
-    fetchPokemonDescription(pokemon.id)
+    fetchPokemonDescription(targetId)
       .then((desc) => {
         if (isMounted) {
-          setDescription(desc);
-          setIsLoadingDesc(false);
+          setDescState({ id: targetId, text: desc });
         }
       })
       .catch(() => {
         if (isMounted) {
-          setIsLoadingDesc(false);
+          setDescState({
+            id: targetId,
+            text: "Registro de especie catalogado por los sensores del PokéRadar.",
+          });
         }
       });
 
     return () => {
       isMounted = false;
     };
-  }, [pokemon?.id]);
+  }, [pokemon]);
 
   // Fetch official PokéAPI Spanish ability names
   useEffect(() => {
@@ -293,7 +305,9 @@ export function DetailDrawer({
           {/* Behance Pokédex Sheet Drawer with Smooth GPU-Accelerated Slide */}
           <motion.aside
             ref={scrollWrapperRef}
-            onScroll={(e) => setScrollY(e.currentTarget.scrollTop)}
+            onScroll={(e) =>
+              setScrollState({ key: scrollKey, y: e.currentTarget.scrollTop })
+            }
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -513,11 +527,20 @@ export function DetailDrawer({
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
                     Descripción Pokédex
                   </div>
-                  <p className="text-xs leading-relaxed text-slate-600 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 italic">
-                    {isLoadingDesc
-                      ? "Consultando registro Pokédex..."
-                      : `"${description}"`}
-                  </p>
+                  {isLoadingDesc ? (
+                    <div
+                      aria-label="Cargando descripción Pokédex"
+                      className="space-y-2 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 animate-pulse"
+                    >
+                      <div className="h-3 w-full rounded bg-slate-200" />
+                      <div className="h-3 w-5/6 rounded bg-slate-200" />
+                      <div className="h-3 w-2/3 rounded bg-slate-200" />
+                    </div>
+                  ) : (
+                    <p className="text-xs leading-relaxed text-slate-600 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 italic">
+                      &quot;{description}&quot;
+                    </p>
+                  )}
                 </div>
 
                 {/* 6. Peso y Altura */}

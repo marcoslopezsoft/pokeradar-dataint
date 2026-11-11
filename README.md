@@ -8,11 +8,11 @@
 
 ### ¿Qué es PokéRadar?
 PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartográfica inmersiva basada en biomas reales de Argentina. Inspirado en el concepto visual moderno de Pokédex (Behance), en lugar de colocar marcadores estáticos sobre un mapa genérico, el sistema fusiona:
-- **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Normal/Psíquico), Cumbre del Aconcagua (Volador/Dragón) y Península Valdés (Agua/Hada/Siniestro).
-- **Meteorología en Tiempo Real (Open-Meteo)**: El clima vivo de cada región condiciona la atmósfera y contextualiza los avistamientos de las criaturas.
-- **Visualización Limpia sin Cajas**: Marcadores sobre el mapa representados directamente por el sprite nativo del espécimen, con sombras de contacto en el terreno y microinteracciones de elevación (`scale-125`).
-- **Audio Auténtico (`cries.latest`) & SFX Web Audio**: Reproducción de alaridos sonoros oficiales en formato `.ogg` y sintetizador de efectos auditivos para radares, capturas y liberaciones.
-- **Equipo de Expedición (Party Dock)**: Dock flotante donde el investigador recluta hasta 6 Pokémon con persistencia en `localStorage`, celebración con confetti y diagnóstico táctico de cobertura elemental y estadísticas.
+- **Biomas Geográficos Auténticos**: Glaciar Perito Moreno (Hielo/Agua), Selva de Iguazú (Planta/Bicho/Agua), Quebrada de Humahuaca (Roca/Tierra/Fuego), Metrópolis de Buenos Aires (Eléctrico/Normal/Psíquico), Cumbre del Aconcagua (Volador/Dragón) y Península Valdés (Agua/Hada/Siniestro), delimitados con polígonos GeoJSON y pines interactivos al alejar el zoom.
+- **Meteorología en Tiempo Real (Open-Meteo)**: Telemetría climática en vivo por bioma (temperatura, condición atmosférica y velocidad del viento) para contextualizar la exploración en terreno.
+- **Visualización Limpia sin Cajas**: Marcadores sobre el mapa representados directamente por el sprite animado del espécimen, con sombras de contacto en el terreno y microinteracciones optimizadas a 60 FPS en desktop y mobile.
+- **Audio Auténtico (`cries.latest`) & SFX Web Audio**: Reproducción de alaridos sonoros oficiales en formato `.ogg`, música ambiental con controles de volumen y sintetizador Web Audio de efectos para diálogos, capturas y liberaciones.
+- **Equipo de Expedición (Party Dock & Diagnóstico Táctico)**: Dock flotante donde el investigador recluta hasta 6 Pokémon con persistencia en `localStorage`, guía interactiva del Profesor Oak y un Diagnóstico Táctico grupal e individual con matriz de efectividad elemental (18 tipos), roles de combate, resistencias y debilidades compartidas.
 - **Diseño Pokédex Blanco & Tipografía Poppins**: Paleta clara, pulida y tipografía Poppins (400, 500, 600) con elementos en español.
 
 ---
@@ -24,42 +24,48 @@ PokéRadar transforma los datos de la **PokéAPI v2** en una expedición cartogr
 - **Lenguaje**: TypeScript Estricto (cero `any`).
 - **Gestor de Paquetes**: **pnpm** (aislamiento eficiente de dependencias y rendimiento).
 - **Motor Geoespacial**: [MapLibre GL JS](https://maplibre.org/) con raster tiles optimizados de OpenStreetMap a 60 FPS, sin marcas de agua ni API keys.
-- **Animaciones e Interacciones**: [Framer Motion](https://www.framer.com/motion/) para transiciones de radar, drawer lateral, microinteracciones, halo pulsante y barras de estadísticas.
-- **Estilos**: Tailwind CSS v4 para diseño Pokédex claro con efectos de cristal y acentos vibrantes.
-- **Tipografía**: Google Font **Poppins** (Regular, Medium y SemiBold) configurada en Next.js Font.
-- **Iconografía**: [Lucide React](https://lucide.dev/).
+- **Animaciones e Interacciones**: [Framer Motion](https://www.framer.com/motion/) para transiciones del drawer lateral, diálogos, microinteracciones y barras de estadísticas, más **Lenis** para scroll suave en desktop.
+- **Estilos**: Tailwind CSS v4 para diseño Pokédex claro y responsive en mobile/desktop.
+- **Tipografía**: Google Font **Poppins** (Regular, Medium y SemiBold) configurada con `next/font/google`.
+- **Iconografía**: [Lucide React](https://lucide.dev/) e [Iconify (`@iconify/react`)](https://iconify.design/).
 - **Efectos**: `canvas-confetti` al reclutar criaturas.
 
 ### Estructura del Código
 ```text
 src/
 ├── app/
-│   ├── layout.tsx              # Shell global con fuentes Poppins y supresión de hydration warnings
+│   ├── layout.tsx              # Shell global con fuente Poppins y metadata
 │   ├── page.tsx                # Dashboard principal integrador
-│   └── globals.css             # Estilos de radar, scrollbars tácticas y temas MapLibre
+│   └── globals.css             # Estilos globales, scrollbars tácticas y temas MapLibre
 ├── components/
+│   ├── audio/
+│   │   └── audio-settings-modal.tsx # Controles de música de fondo y efectos SFX
 │   ├── map/
 │   │   ├── map-container.tsx   # Envoltorio client-side con dynamic(..., { ssr: false })
-│   │   ├── map-view.tsx        # Instancia MapLibre GL, halos de biomas y sprites directos
-│   │   └── radar-hud.tsx       # Controles superiores, biomas, búsqueda y filtro de tipos en español
+│   │   ├── map-view.tsx        # Instancia MapLibre GL, polígonos GeoJSON, pines de bioma y sprites
+│   │   └── radar-hud.tsx       # Barra Pokédex superior, biomas, búsqueda y filtro de tipos en español
 │   ├── pokemon/
-│   │   ├── detail-drawer.tsx   # Panel lateral Behance con sprite animado, fondo dinámico y stats
+│   │   ├── detail-drawer.tsx   # Panel lateral Pokédex con sprite animado, skeleton y stats
 │   │   ├── stats-bars.tsx      # Barras animadas de stats base (HP, Ataque, Defensa, Velocidad)
 │   │   ├── cry-player.tsx      # Reproductor reactivo de audio (.ogg) con visualizador de ondas
-│   │   └── type-badge.tsx      # Badges con colores oficiales de tipos en español
+│   │   └── type-badge.tsx      # Badges con colores e íconos oficiales de tipos en español
 │   ├── expedition/
 │   │   ├── party-dock.tsx      # Dock flotante con el equipo de 6 y persistencia en localStorage
-│   │   └── team-analysis-modal.tsx # Diagnóstico táctico de cobertura elemental y exportación
+│   │   └── team-analysis-modal.tsx # Diagnóstico táctico grupal, debilidades y detalle por integrante
+│   ├── ui/
+│   │   ├── professor-oak-dialog.tsx # Diálogo narrativo con efecto typewriter e intro/tutorial
+│   │   └── welcome-screen.tsx  # Pantalla de bienvenida con carga paralela y reintento ante error
 │   └── weather/
-│       └── weather-badge.tsx   # Widget en vivo conectado a Open-Meteo
+│       └── weather-badge.tsx   # Widget meteorológico en vivo conectado a Open-Meteo
 ├── hooks/
-│   ├── use-pokemon-radar.ts    # Orquestador del estado de criaturas, biomas y filtros
-│   └── use-expedition.ts       # Manejo reactivo del equipo con persistencia
+│   ├── use-pokemon-radar.ts    # Carga paralela de PokéAPI, estado de error/reintento y filtros
+│   └── use-expedition.ts       # Manejo reactivo del equipo con useSyncExternalStore + localStorage
 ├── lib/
-│   ├── biomes.ts               # Coordenadas, estilo raster claro y tablas de distribución
+│   ├── biomes.ts               # Coordenadas, estilo raster claro y pools de especies por bioma
 │   ├── pokeapi.ts              # Cliente tipado de PokéAPI y Open-Meteo con cache
-│   ├── sound-effects.ts        # Motor de efectos de audio sintetizados con Web Audio API
-│   └── utils.ts                # Clsx + Tailwind Merge y traductor de tipos a español
+│   ├── sound-effects.ts        # Motor de audio ambiental y SFX sintetizados con Web Audio API
+│   ├── team-analysis.ts        # Matriz de efectividad (18 tipos), roles tácticos y sinergia de equipo
+│   └── utils.ts                # Clsx + Tailwind Merge y diccionarios de tipos/habilidades ES
 └── types/
     └── pokemon.ts              # Modelos e interfaces TypeScript estrictas
 ```
